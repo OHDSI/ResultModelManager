@@ -37,3 +37,11 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+.Rproj.user
+
+/check/
+/.idea/
+/doc/
+/Meta/
+/renv/
+renv.lock
