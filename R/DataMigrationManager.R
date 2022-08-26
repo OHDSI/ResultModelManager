@@ -34,9 +34,9 @@
 #' R6 class for management of database migration
 #'
 #' @field migrationPath                 Path migrations exist in
-#' @field resulultsDatabaseSchema       Path migrations exist in
-#' @field connection                    Database connection
+#' @field databaseSchema                Path migrations exist in
 #' @field packageName                   packageName, can be null
+#' @field tablePrefix                   packageName, can be null
 #'
 #' @export
 DataMigrationManager <- R6::R6Class(
@@ -44,25 +44,34 @@ DataMigrationManager <- R6::R6Class(
   public = list(
     migrationPath = NULL,
     tablePrefix = "",
-    resultsDatabaseSchema = NULL,
-    connection = NULL,
+    databaseSchema = NULL,
     packageName = NULL,
-    #' initalize
+    #'
+    #' @param connectionDetails         DatabaseConnector connection details object
+    #' @param databaseSchema            Database Schema to execute on
+    #' @param tablePrefix               Optional table prefix for all tables (e.g. plp, cm, cd etc)
+    #' @param packageName               If in package mode, the name of the R package
+    #' @param migrationPath             Path to location of migration sql files. If in package mode, this should just
+    #'                                  be a folder (e.g. "migrations") that lives in the location "sql/sql_server" (and)
+    #'                                  other database platforms.
+    #'                                  If in folder model, the folder must include "sql_server" in the relative path,
+    #'                                  (e.g if  migrationPath = 'migrations' then the folder 'migrations/sql_server' should exists)
+    #' @param migrationRegexp            (Optional) regular expression pattern default is `(Migration_([0-9]+))-(.+).sql`
     initialize = function(connectionDetails,
-                          resultsDatabaseSchema,
+                          databaseSchema,
                           tablePrefix = "",
                           migrationPath,
                           packageName = NULL,
                           migrationRegexp = .defaultMigrationRegexp) {
-      checkmate::checkString(resultsDatabaseSchema)
+      checkmate::checkString(databaseSchema)
       checkmate::checkString(tablePrefix)
       checkmate::checkString(migrationPath)
       # Set required variables
       self$tablePrefix <- tablePrefix
-      self$resultsDatabaseSchema <- resultsDatabaseSchema
+      self$databaseSchema <- databaseSchema
       private$migrationRegexp <- migrationRegexp
       self$packageName <- packageName
-      self$connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      private$connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
       self$migrationPath <- migrationPath
 
       if (self$isPackage()) {
@@ -72,12 +81,18 @@ DataMigrationManager <- R6::R6Class(
       }
     },
 
+    #' Migration table exists
+    #' @description
+    #' Check if migration table is present in schema
+    #' @return boolean
     migrationTableExists = function() {
-      tables <- DatabaseConnector::getTableNames(self$connection, self$resultsDatabaseSchema)
+      tables <- DatabaseConnector::getTableNames(private$connection, self$databaseSchema)
       return(toupper(paste0(self$tablePrefix, "migration")) %in% tables)
     },
 
     #' Get path of migrations
+    #' @description
+    #' Get path to sql migration files
     #' @param dbms               Optionally specify the dbms that the migration fits under
     getMigrationsPath = function(dbms = "sql server") {
       checkmate::assert_choice(dbms, .availableDbms)
@@ -90,7 +105,8 @@ DataMigrationManager <- R6::R6Class(
     },
 
     #' Get status of result model
-    #'
+    #' @description
+    #' Get status of all migrations (executed or not)
     #' @returns data frame all migrations, including file name, order and execution status
     getStatus = function() {
       allMigrations <- list.files(self$getMigrationsPath(), pattern = "*.sql")
@@ -118,8 +134,8 @@ DataMigrationManager <- R6::R6Class(
     },
 
     #' Check migrations in folder
-    #'
-    #'
+    #' @description
+    #' Check if file names are valid for migrations
     check = function() {
       # Check to see if files follow pattern
       sqlFiles <- list.files(self$getMigrationsPath(), pattern = "*.sql")
@@ -134,6 +150,8 @@ DataMigrationManager <- R6::R6Class(
     },
 
     #' Execute Migrations
+    #' @description
+    #' Execute any unexecuted migrations
     executeMigrations = function() {
       # if migrations table doesn't exist, create it
       if (!self$migrationTableExists()) {
@@ -148,40 +166,46 @@ DataMigrationManager <- R6::R6Class(
       }
     },
 
+    #' isPackage
+    #' @description
+    #' is a package folder structure or not
     isPackage = function() {
       return(!is.null(self$packageName))
     },
 
+     #' finalize
+     #' @description close database connection
     finalize = function() {
-      DatabaseConnector::disconnect(self$connection)
+      DatabaseConnector::disconnect(private$connection)
     }
   ),
   private = list(
     migrationRegexp = NULL,
+    connection = NULL,
     executeMigration = function(migration) {
       ParallelLogger::logInfo("Executing migration: ", migration$migrationFile)
       # Load, render, translate and execute sql
       if (self$isPackage()) {
         sql <- SqlRender::loadRenderTranslateSql(file.path(self$migrationPath, migration$migrationFile),
-                                                 dbms = self$connection@dbms,
-                                                 database_schema = self$resultsDatabaseSchema,
+                                                 dbms = private$connection@dbms,
+                                                 database_schema = self$databaseSchema,
                                                  table_prefix = self$tablePrefix,
                                                  packageName = self$packageName)
-        DatabaseConnector::executeSql(connection = self$connection, sql = sql)
+        DatabaseConnector::executeSql(connection = private$connection, sql = sql)
       } else {
         # Check to see if a file for database platform exists
-        if (file.exists(file.path(self$migrationPath, self$connection@dbms, migration$migrationFile))) {
-          sql <- SqlRender::readSql(file.path(self$migrationPath, self$connection@dbms, migration$migrationFile))
+        if (file.exists(file.path(self$migrationPath, private$connection@dbms, migration$migrationFile))) {
+          sql <- SqlRender::readSql(file.path(self$migrationPath, private$connection@dbms, migration$migrationFile))
           sql <- SqlRender::render(sql,
-                                   database_schema = self$resultsDatabaseSchema,
+                                   database_schema = self$databaseSchema,
                                    table_prefix = self$tablePrefix)
-          DatabaseConnector::executeSql(connection = self$connection, sql = sql)
+          DatabaseConnector::executeSql(connection = private$connection, sql = sql)
         } else {
           # Default to using sql_server as path
           sql <- SqlRender::readSql(file.path(self$migrationPath, "sql_server", migration$migrationFile))
-          DatabaseConnector::renderTranslateExecuteSql(connection = self$connection,
+          DatabaseConnector::renderTranslateExecuteSql(connection = private$connection,
                                                        sql = sql,
-                                                       database_schema = self$resultsDatabaseSchema,
+                                                       database_schema = self$databaseSchema,
                                                        table_prefix = self$tablePrefix)
         }
       }
@@ -189,11 +213,11 @@ DataMigrationManager <- R6::R6Class(
       # Save migration in set of migrations
       iSql <- "
       {DEFAULT @migration = migration}
-      INSERT INTO @results_schema.@table_prefix@migration (migration_file, migration_order)
+      INSERT INTO @database_schema.@table_prefix@migration (migration_file, migration_order)
         VALUES ('@migration_file', @order);
       "
-      DatabaseConnector::renderTranslateExecuteSql(self$connection,
-                                                   sql = iSql, results_schema = self$resultsDatabaseSchema,
+      DatabaseConnector::renderTranslateExecuteSql(private$connection,
+                                                   sql = iSql, database_schema = self$databaseSchema,
                                                    migration_file = migration$migrationFile,
                                                    table_prefix = self$table_prefix,
                                                    order = migration$migrationOrder)
@@ -205,14 +229,14 @@ DataMigrationManager <- R6::R6Class(
       sql <- "
       {DEFAULT @migration = migration}
       --HINT DISTRIBUTE ON RANDOM
-      CREATE TABLE @results_schema.@table_prefix@migration (
+      CREATE TABLE @database_schema.@table_prefix@migration (
           migration_file VARCHAR PRIMARY KEY, --string value represents file name
           migration_order INT NOT NULL unique
       );"
 
-      DatabaseConnector::renderTranslateExecuteSql(self$connection,
+      DatabaseConnector::renderTranslateExecuteSql(private$connection,
                                                    sql = sql,
-                                                   results_schema = self$resultsDatabaseSchema,
+                                                   database_schema = self$databaseSchema,
                                                    table_prefix = self$tablePrefix)
       ParallelLogger::logInfo("Migrations table created")
     },
@@ -224,10 +248,10 @@ DataMigrationManager <- R6::R6Class(
 
       sql <- "
       {DEFAULT @migration = migration}
-      SELECT migration_file, migration_order FROM @result_schema.@table_prefix@migration ORDER BY migration_order;"
-      migrationsExecuted <- DatabaseConnector::renderTranslateQuerySql(self$connection,
+      SELECT migration_file, migration_order FROM @database_schema.@table_prefix@migration ORDER BY migration_order;"
+      migrationsExecuted <- DatabaseConnector::renderTranslateQuerySql(private$connection,
                                                                        sql = sql,
-                                                                       result_schema = self$resultsDatabaseSchema,
+                                                                       database_schema = self$databaseSchema,
                                                                        table_prefix = self$tablePrefix,
                                                                        snakeCaseToCamelCase = TRUE)
 

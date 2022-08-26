@@ -15,7 +15,7 @@ test_that("regexp pattern works", {
 test_that("Migrations manager runs in package mode", {
   on.exit(unlink(sqliteFile))
   manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      resultsDatabaseSchema = "main",
+                                      databaseSchema = "main",
                                       tablePrefix = "",
                                       migrationPath = "migrations",
                                       packageName = "ResultModelManager")
@@ -31,7 +31,7 @@ test_that("Migrations manager runs in package mode", {
   checkmate::expect_data_frame(migrations, nrows = 2)
 
   manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      resultsDatabaseSchema = "main",
+                                      databaseSchema = "main",
                                       tablePrefix = "",
                                       migrationPath = "migrations",
                                       packageName = "ResultModelManager")
@@ -44,7 +44,7 @@ test_that("Migrations manager runs in package mode", {
 test_that("Migrations manager runs in folder mode", {
 
   manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      resultsDatabaseSchema = "main",
+                                      databaseSchema = "main",
                                       tablePrefix = "",
                                       migrationPath = "migrations",
                                       packageName = NULL)
@@ -65,7 +65,7 @@ test_that("Add migration and execute", {
   CREATE TABLE @database_schema.@table_prefix@moo (id INT);", file.path("migrations", "sql_server", "Migration_3-test-add.sql"))
   on.exit(unlink(file.path("migrations", "sql_server", "Migration_3-test-add.sql")))
   manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      resultsDatabaseSchema = "main",
+                                      databaseSchema = "main",
                                       tablePrefix = "",
                                       migrationPath = "migrations",
                                       packageName = NULL)
@@ -81,7 +81,7 @@ test_that("Add invalid filename", {
   write("", file.path("migrations", "sql_server", "foo.sql"))
   on.exit(unlink(file.path("migrations", "sql_server", "foo.sql")))
   manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      resultsDatabaseSchema = "main",
+                                      databaseSchema = "main",
                                       tablePrefix = "",
                                       migrationPath = "migrations",
                                       packageName = NULL)
@@ -90,7 +90,7 @@ test_that("Add invalid filename", {
 
 test_that("Empty project works", {
   manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      resultsDatabaseSchema = "main",
+                                      databaseSchema = "main",
                                       tablePrefix = "",
                                       migrationPath = tempfile(),
                                       packageName = NULL)
