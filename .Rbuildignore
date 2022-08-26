@@ -1,5 +1,6 @@
 ^ResultsModelManager\.Rproj$
 ^\.Rproj\.user$
+^\.idea$
 ^renv$
 ^renv\.lock$
 extras

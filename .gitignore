@@ -45,3 +45,5 @@ vignettes/*.pdf
 /Meta/
 /renv/
 renv.lock
+.Rprofile
+*errorReportSql.txt
