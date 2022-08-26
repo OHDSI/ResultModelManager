@@ -77,13 +77,14 @@ DataMigrationManager <- R6::R6Class(
       return(toupper(paste0(self$tablePrefix, "migration")) %in% tables)
     },
 
-    #'
-    #'
-    getMigrationsPath = function() {
-      if (is.null(self$packageName)) {
-        path <- list.files(file.path(self$migrationPath, "sql_server"), pattern = "*.sql")
+    #' Get path of migrations
+    #' @param dbms               Optionally specify the dbms that the migration fits under
+    getMigrationsPath = function(dbms = "sql server") {
+      checkmate::assert_choice(dbms, .availableDbms)
+      if (!self$isPackage()) {
+        path <- file.path(self$migrationPath, gsub(" ", "_", dbms))
       } else {
-        path <- system.file(file.path("sql", "sql_server", self$migrationPath), package = self$packageName)
+        path <- system.file(file.path("sql", gsub(" ", "_", dbms), self$migrationPath), package = self$packageName)
       }
       return(path)
     },
@@ -93,25 +94,23 @@ DataMigrationManager <- R6::R6Class(
     #' @returns data frame all migrations, including file name, order and execution status
     getStatus = function() {
       allMigrations <- list.files(self$getMigrationsPath(), pattern = "*.sql")
+      if (length(allMigrations) == 0) {
+        return(data.frame())
+      }
 
-      if (self$migrationTableExists()) {
-        migrationsExecuted <- private$getCompletedMigrations()
-        if (nrow(migrationsExecuted) > 0) {
-          migrationsExecuted$executed <- TRUE
-          migrationsToExecute <- setdiff(allMigrations, migrationsExecuted$migrationFile)
-          browser()
-          migrations <- private$getMigrationOrder(migrationsToExecute)
-          migrations$executed <- FALSE
-          migrations <- rbind(migrationsExecuted, migrations)
-          migrations[order(migrationOrder), ]
-        } else {
-          migrationsToExecute <- allMigrations
-          migrations <- private$getMigrationOrder(migrationsToExecute)
+      migrationsExecuted <- private$getCompletedMigrations()
+      if (nrow(migrationsExecuted) > 0) {
+        migrationsExecuted$executed <- TRUE
+        migrationsToExecute <- setdiff(allMigrations, migrationsExecuted$migrationFile)
+        migrations <- private$getMigrationOrder(migrationsToExecute)
+
+        if (nrow(migrations) > 0 ) {
           migrations$executed <- FALSE
         }
+        migrations <- rbind(migrationsExecuted, migrations)
+        migrations[order(migrations$migrationOrder),]
       } else {
-        migrationsToExecute <- allMigrations
-        migrations <- private$getMigrationOrder(migrationsToExecute)
+        migrations <- private$getMigrationOrder(allMigrations)
         migrations$executed <- FALSE
       }
 
@@ -124,25 +123,18 @@ DataMigrationManager <- R6::R6Class(
     check = function() {
       # Check to see if files follow pattern
       sqlFiles <- list.files(self$getMigrationsPath(), pattern = "*.sql")
-      # TODO: check if files for different db platforms are in valid directories
       fileNameValidity <- grepl(private$migrationRegexp, sqlFiles)
 
       if (any(fileNameValidity == 0)) {
         ParallelLogger::logError(paste("File name not valid", sqlFiles[fileNameValidity == 0], collapse = "\n"))
       }
+
+      # Check if files exist for other db platforms
      return(all(fileNameValidity > 0))
     },
 
     #' Execute Migrations
-    #'
-    #'
     executeMigrations = function() {
-      # if (interactive()) {
-      #   resp <- askYesNo("Migrations can cause permanent alteration and result in data loss. Backups are reccomended. Proceed?")
-      #   if (is.na(resp) | isFALSE(resp)) {
-      #     return()
-      #   }
-      # }
       # if migrations table doesn't exist, create it
       if (!self$migrationTableExists()) {
         private$createMigrationsTable()
@@ -178,15 +170,15 @@ DataMigrationManager <- R6::R6Class(
         DatabaseConnector::executeSql(connection = self$connection, sql = sql)
       } else {
         # Check to see if a file for database platform exists
-        if (file.exists(file.path(self$migrationPath, self$connection$dbms, migration$filePath))) {
-          sql <- SqlRender::readSql(file.path(self$migrationPath, self$connection$dbms, migration$filePath))
+        if (file.exists(file.path(self$migrationPath, self$connection@dbms, migration$migrationFile))) {
+          sql <- SqlRender::readSql(file.path(self$migrationPath, self$connection@dbms, migration$migrationFile))
           sql <- SqlRender::render(sql,
                                    database_schema = self$resultsDatabaseSchema,
                                    table_prefix = self$tablePrefix)
           DatabaseConnector::executeSql(connection = self$connection, sql = sql)
         } else {
           # Default to using sql_server as path
-          sql <- SqlRender::readSql(file.path(self$migrationPath, "sql_server", migration$filePath))
+          sql <- SqlRender::readSql(file.path(self$migrationPath, "sql_server", migration$migrationFile))
           DatabaseConnector::renderTranslateExecuteSql(connection = self$connection,
                                                        sql = sql,
                                                        database_schema = self$resultsDatabaseSchema,
@@ -226,9 +218,13 @@ DataMigrationManager <- R6::R6Class(
     },
 
     getCompletedMigrations = function() {
+      if (!self$migrationTableExists()) {
+        return(data.frame())
+      }
+
       sql <- "
       {DEFAULT @migration = migration}
-      SELECT migration_file FROM @result_schema.@table_prefix@migration ORDER BY migration_order;"
+      SELECT migration_file, migration_order FROM @result_schema.@table_prefix@migration ORDER BY migration_order;"
       migrationsExecuted <- DatabaseConnector::renderTranslateQuerySql(self$connection,
                                                                        sql = sql,
                                                                        result_schema = self$resultsDatabaseSchema,
