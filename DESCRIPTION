@@ -16,6 +16,6 @@ Depends:
   ParallelLogger,
   checkmate
 Suggests: 
-  testthat (>= 3.0.0)
-  
+  testthat (>= 3.0.0),
+  RSqlite
 Config/testthat/edition: 3

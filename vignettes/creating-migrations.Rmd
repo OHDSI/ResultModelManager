@@ -15,3 +15,5 @@ vignette: >
 ---
 
 # Introduction
+Migrating existing data models can be a tricky process that often creates incompatitbilites between result viewers and
+existing result sets.
