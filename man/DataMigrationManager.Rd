@@ -31,6 +31,7 @@ R6 class for management of database migration
 \item \href{#method-DataMigrationManager-getMigrationsPath}{\code{DataMigrationManager$getMigrationsPath()}}
 \item \href{#method-DataMigrationManager-getStatus}{\code{DataMigrationManager$getStatus()}}
 \item \href{#method-DataMigrationManager-check}{\code{DataMigrationManager$check()}}
+\item \href{#method-DataMigrationManager-test}{\code{DataMigrationManager$test()}}
 \item \href{#method-DataMigrationManager-executeMigrations}{\code{DataMigrationManager$executeMigrations()}}
 \item \href{#method-DataMigrationManager-isPackage}{\code{DataMigrationManager$isPackage()}}
 \item \href{#method-DataMigrationManager-finalize}{\code{DataMigrationManager$finalize()}}
@@ -125,6 +126,15 @@ Check if file names are valid for migrations
 Execute Migrations
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$check()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DataMigrationManager-test"></a>}}
+\if{latex}{\out{\hypertarget{method-DataMigrationManager-test}{}}}
+\subsection{Method \code{test()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$test()}\if{html}{\out{</div>}}
 }
 
 }

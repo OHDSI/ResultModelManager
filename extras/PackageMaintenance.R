@@ -28,13 +28,13 @@ dir.create(path = "./inst/doc/", showWarnings = FALSE)
 
 
 rmarkdown::render("vignettes/creating-migrations.Rmd",
-                  output_file = "../inst/doc/.pdf",
+                  output_file = "../inst/doc/creating-migrations.pdf",
                   rmarkdown::pdf_document(latex_engine = "pdflatex",
                                           toc = TRUE,
                                           number_sections = TRUE))
 
 rmarkdown::render("vignettes/design-specifications.Rmd",
-                  output_file = "../inst/doc/.pdf",
+                  output_file = "../inst/doc/design-specifications.pdf",
                   rmarkdown::pdf_document(latex_engine = "pdflatex",
                                           toc = TRUE,
                                           number_sections = TRUE))

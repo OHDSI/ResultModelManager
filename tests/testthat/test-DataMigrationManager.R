@@ -1,24 +1,26 @@
 test_that("regexp pattern works", {
-  expect_true(grepl(.defaultMigrationRegexp, "Migration_1-MyMigration.sql") > 0 )
-  expect_true(grepl(.defaultMigrationRegexp, "Migration_2-v3.2whaterver.sql") > 0 )
-  expect_true(grepl(.defaultMigrationRegexp, "Migration_4-TEST.sql") > 0 )
+  expect_true(grepl(.defaultMigrationRegexp, "Migration_1-MyMigration.sql") > 0)
+  expect_true(grepl(.defaultMigrationRegexp, "Migration_2-v3.2whaterver.sql") > 0)
+  expect_true(grepl(.defaultMigrationRegexp, "Migration_4-TEST.sql") > 0)
 
-  expect_false(grepl(.defaultMigrationRegexp, "Migration_4-.sql") > 0 )
-  expect_false(grepl(.defaultMigrationRegexp, "Migration_4-missing_letter.sl") > 0 )
-  expect_false(grepl(.defaultMigrationRegexp, "Migraton_4-a.sql") > 0 )
-  expect_false(grepl(.defaultMigrationRegexp, "Migration_2v3.2whaterver.sql") > 0 )
-  expect_false(grepl(.defaultMigrationRegexp, "foo.sql") > 0 )
-  expect_false(grepl(.defaultMigrationRegexp, "UpdateVersionNumber.sql") > 0 )
+  expect_false(grepl(.defaultMigrationRegexp, "Migration_4-.sql") > 0)
+  expect_false(grepl(.defaultMigrationRegexp, "Migration_4-missing_letter.sl") > 0)
+  expect_false(grepl(.defaultMigrationRegexp, "Migraton_4-a.sql") > 0)
+  expect_false(grepl(.defaultMigrationRegexp, "Migration_2v3.2whaterver.sql") > 0)
+  expect_false(grepl(.defaultMigrationRegexp, "foo.sql") > 0)
+  expect_false(grepl(.defaultMigrationRegexp, "UpdateVersionNumber.sql") > 0)
 })
 
 
 test_that("Migrations manager runs in package mode", {
   on.exit(unlink(sqliteFile))
-  manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      databaseSchema = "main",
-                                      tablePrefix = "",
-                                      migrationPath = "migrations",
-                                      packageName = "ResultModelManager")
+  manager <- DataMigrationManager$new(
+    connectionDetails = connectionDetails,
+    databaseSchema = "main",
+    tablePrefix = "",
+    migrationPath = "migrations",
+    packageName = "ResultModelManager"
+  )
   expect_true(manager$check())
   checkmate::expect_data_frame(manager$getStatus(), nrows = 2)
   expect_false(all(manager$getStatus()$executed))
@@ -30,24 +32,26 @@ test_that("Migrations manager runs in package mode", {
   migrations <- DatabaseConnector::renderTranslateQuerySql(connection, "SELECT * FROM migration")
   checkmate::expect_data_frame(migrations, nrows = 2)
 
-  manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      databaseSchema = "main",
-                                      tablePrefix = "",
-                                      migrationPath = "migrations",
-                                      packageName = "ResultModelManager")
+  manager <- DataMigrationManager$new(
+    connectionDetails = connectionDetails,
+    databaseSchema = "main",
+    tablePrefix = "",
+    migrationPath = "migrations",
+    packageName = "ResultModelManager"
+  )
 
   checkmate::expect_data_frame(manager$getStatus(), nrows = 2)
   expect_true(all(manager$getStatus()$executed))
-
 })
 
 test_that("Migrations manager runs in folder mode", {
-
-  manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      databaseSchema = "main",
-                                      tablePrefix = "",
-                                      migrationPath = "migrations",
-                                      packageName = NULL)
+  manager <- DataMigrationManager$new(
+    connectionDetails = connectionDetails,
+    databaseSchema = "main",
+    tablePrefix = "",
+    migrationPath = "migrations",
+    packageName = NULL
+  )
 
   expect_true(manager$check())
   manager$executeMigrations()
@@ -64,11 +68,13 @@ test_that("Add migration and execute", {
   {DEFAULT @moo = moo}
   CREATE TABLE @database_schema.@table_prefix@moo (id INT);", file.path("migrations", "sql_server", "Migration_3-test-add.sql"))
   on.exit(unlink(file.path("migrations", "sql_server", "Migration_3-test-add.sql")))
-  manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      databaseSchema = "main",
-                                      tablePrefix = "",
-                                      migrationPath = "migrations",
-                                      packageName = NULL)
+  manager <- DataMigrationManager$new(
+    connectionDetails = connectionDetails,
+    databaseSchema = "main",
+    tablePrefix = "",
+    migrationPath = "migrations",
+    packageName = NULL
+  )
   checkmate::expect_data_frame(manager$getStatus(), nrows = 3)
   expect_false(all(manager$getStatus()$executed))
   manager$executeMigrations()
@@ -80,20 +86,24 @@ test_that("Add migration and execute", {
 test_that("Add invalid filename", {
   write("", file.path("migrations", "sql_server", "foo.sql"))
   on.exit(unlink(file.path("migrations", "sql_server", "foo.sql")))
-  manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      databaseSchema = "main",
-                                      tablePrefix = "",
-                                      migrationPath = "migrations",
-                                      packageName = NULL)
+  manager <- DataMigrationManager$new(
+    connectionDetails = connectionDetails,
+    databaseSchema = "main",
+    tablePrefix = "",
+    migrationPath = "migrations",
+    packageName = NULL
+  )
   expect_false(manager$check())
 })
 
 test_that("Empty project works", {
-  manager <- DataMigrationManager$new(connectionDetails = connectionDetails,
-                                      databaseSchema = "main",
-                                      tablePrefix = "",
-                                      migrationPath = tempfile(),
-                                      packageName = NULL)
+  manager <- DataMigrationManager$new(
+    connectionDetails = connectionDetails,
+    databaseSchema = "main",
+    tablePrefix = "",
+    migrationPath = tempfile(),
+    packageName = NULL
+  )
   checkmate::expect_data_frame(manager$getStatus(), nrows = 0)
   expect_true(manager$check())
 })
