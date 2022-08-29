@@ -17,5 +17,5 @@ Depends:
   checkmate
 Suggests: 
   testthat (>= 3.0.0),
-  RSQlite
+  RSQLite
 Config/testthat/edition: 3
