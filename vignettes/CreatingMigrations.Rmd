@@ -39,13 +39,73 @@ Data migrations should exist in an isolated folder within the `/inst/sql/` direc
 The recommended convention is to use `migrations` across all Hades package.
 As migrations are supported by multiple database platforms this folder should exist within the generic
 (and SqlRender OHDSI common sql) `sql_server` folder, `inst/sql/sql_server/migrations`.
-For any database specific migrations they should be
+For any database specific migrations they should be in the approprate sub directory.
+For example:
+```{bash eval = FALSE}
+inst/sql/
+    sql_server/migrations/Migration_1-create.sql
+    sqlite/migrations/Migration_1-create.sql
+    redshift/migrations/Migration_1-create.sql
+```
 
 ## Using folder structure
+A folder structure requires a slightly different set up.
+Here, the migrations should be split via database platform within the `migration` path.
+For example.
 
+```{bash eval = FALSE}
+migrations/
+    sql_server/Migration_1-create.sql
+    sqlite/Migration_1-create.sql
+    redshift/Migration_1-create.sql
+```
 
 # Adding a migration
 
+To add a migration it must conform to the regular expression:
+
+```
+(Migration_([0-9]+))-(.+).sql
+```
+
+# Adding migrator
+Each package/project should expose an instantiated DMM with the package specfic considerations.
+For example, for the package `CohortDiagnostics` a function such as the following may be written:
+
+```{r, eval = FALSE}
+#' @export
+getDataMigrator <- function(connectionDetails, databaseSchema, tablePrefix) {
+  ResultModelManager::DataMigrationManager$new(connectionDetails = connectionDetails,
+                                               databaseSchema = databaseSchema,
+                                               tablePrefix = tablePrefix,
+                                               migrationPath = "migrations",
+                                               packageName = "CohortDiagnostics")
+}
+```
+This will return an instance of data migrator that will expose teh functionality on a given data set.
+Naturally, the package is not strictly required for creating a migration manager (should the directory structure conform
+to the above outline) here you should set it according to your project's set up.
+
+Loading the migrator is then straightforward:
+```{r eval = FALSE}
+connectionDetails <- DatabaseConnector::createConnectionDetails(MySettings)
+migrator <- getDataMigrator(connectionDetails = connectionDetails, databaseSchema = "mySchema", tablePrefix = "cd_")
+
+```
+To check migrations are valid
+```{r eval = FALSE}
+migrator$check() # Will return false and display any eronious files
+```
+To get the status of all migrations
+```{r eval = FALSE}
+migrator$getStatus() # Will return data frame of all sql migrations and if they have been executed or not
+```
+To run the migrations:
+
+```{r eval = FALSE}
+## It is strongly recommended that you create some form of backup before doing this
+migrator$executeMigrations()
+```
 
 # Unit testing
 No specific advice is given for how to write unit tests for migrations, however, it is strongly advised that migrations
