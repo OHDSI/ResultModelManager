@@ -8,7 +8,7 @@ Description: Database data model management utilities for OHDSI packages.
 License: Apache License
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
 Depends:
   R6,
   DatabaseConnector (>= 5.0.0)
@@ -16,9 +16,10 @@ Imports:
   SqlRender,
   ParallelLogger,
   checkmate,
-  DBI
+  DBI,
+  pool
 Suggests: 
   testthat (>= 3.0.0),
   RSQLite,
-  pool
+  withr
 Config/testthat/edition: 3

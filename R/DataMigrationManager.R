@@ -49,9 +49,11 @@ isUnitTest <- function() {
 #' @field packageName                   packageName, can be null
 #' @field tablePrefix                   packageName, can be null
 #'
-#' @export
+#' @importFrom ParallelLogger logError logInfo
+#'
+#' @export  DataMigrationManager
 DataMigrationManager <- R6::R6Class(
-  "DataMigrationManager",
+  classname = "DataMigrationManager",
   public = list(
     migrationPath = NULL,
     tablePrefix = "",
@@ -309,20 +311,20 @@ DataMigrationManager <- R6::R6Class(
     },
 
     # Wrapper calls to stop ParallelLogger outputting annoying messages
-    log = function(level, ...) {
-     if (isUnitTest() | isRmdCheck()) {
-      writeLines(text = .makeMessage(...))
-     } else {
-       ParallelLogger::log(level = level, ...)
-     }
-    },
-
     logError = function(...) {
-      private$log(level = "ERROR")
+      if (isUnitTest() | isRmdCheck()) {
+        writeLines(text = .makeMessage(...))
+      } else {
+        ParallelLogger::logError(...)
+      }
     },
 
     logInfo = function(...) {
-      private$log(level = "INFO")
+      if (isUnitTest() | isRmdCheck()) {
+        writeLines(text = .makeMessage(...))
+      } else {
+        ParallelLogger::logInfo(...)
+      }
     }
   ),
 )

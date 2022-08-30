@@ -27,11 +27,9 @@
 #' @importFrom DBI dbIsValid
 #' @importFrom SqlRender render translate
 #'
-#'
-#'
-#' @export
+#' @export ConnectionHandler
 ConnectionHandler <- R6::R6Class(
-  "ConnectionHandler",
+  classname = "ConnectionHandler",
   public = list(
     connectionDetails = NULL,
     con = NULL,
@@ -111,10 +109,10 @@ ConnectionHandler <- R6::R6Class(
     #' Masks call to DBI::dbIsValid. Returns False if connection is NULL
     #' @returns boolean TRUE if connection is valid
     dbIsValid = function() {
-      if (is.null(con)) {
+      if (is.null(self$con)) {
         return(FALSE)
       }
-      return(DBI::dbIsValid(dbObj = con))
+      return(DBI::dbIsValid(dbObj = self$con))
     },
 
     #' queryDb
@@ -155,7 +153,7 @@ ConnectionHandler <- R6::R6Class(
         }
       )
 
-      return(dplyr::as_tibble(data))
+      return(data)
     },
     #' executeSql
     #' @description
@@ -208,10 +206,9 @@ ConnectionHandler <- R6::R6Class(
 #' @importFrom pool dbPool poolClose
 #' @importFrom DBI dbIsValid
 #'
-#'
-#' @export
+#' @export PooledConnectionHandler
 PooledConnectionHandler <- R6::R6Class(
-  "PooledConnectionHandler",
+  classname = "PooledConnectionHandler",
   inherit = ConnectionHandler,
   public = list(
     #' Init connection
