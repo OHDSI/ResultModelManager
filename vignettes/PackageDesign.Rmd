@@ -1,5 +1,5 @@
 ---
-title: "Design specifications"
+title: "Package Design"
 author: "James P. Gilbert"
 date: "`r Sys.Date()`"
 output:
@@ -15,6 +15,8 @@ vignette: >
 ---
 
 # Introduction
+ResultModelManager is a package that aims to standardize the handling of data models across OHDSI Hades packages.
+This package is designed to have minimal requirements and be easily imported by others.
 
 ## Problem statement
 At the time of writing, OHDSI analytics packages have many different and specific results data models that can change between package versions.

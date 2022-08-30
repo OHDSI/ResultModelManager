@@ -31,7 +31,6 @@ R6 class for management of database migration
 \item \href{#method-DataMigrationManager-getMigrationsPath}{\code{DataMigrationManager$getMigrationsPath()}}
 \item \href{#method-DataMigrationManager-getStatus}{\code{DataMigrationManager$getStatus()}}
 \item \href{#method-DataMigrationManager-check}{\code{DataMigrationManager$check()}}
-\item \href{#method-DataMigrationManager-test}{\code{DataMigrationManager$test()}}
 \item \href{#method-DataMigrationManager-executeMigrations}{\code{DataMigrationManager$executeMigrations()}}
 \item \href{#method-DataMigrationManager-isPackage}{\code{DataMigrationManager$isPackage()}}
 \item \href{#method-DataMigrationManager-finalize}{\code{DataMigrationManager$finalize()}}
@@ -130,24 +129,22 @@ Execute Migrations
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DataMigrationManager-test"></a>}}
-\if{latex}{\out{\hypertarget{method-DataMigrationManager-test}{}}}
-\subsection{Method \code{test()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$test()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DataMigrationManager-executeMigrations"></a>}}
 \if{latex}{\out{\hypertarget{method-DataMigrationManager-executeMigrations}{}}}
 \subsection{Method \code{executeMigrations()}}{
 Execute any unexecuted migrations
-isPackage
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$executeMigrations()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$executeMigrations(stopMigrationVersion = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{stopMigrationVersion}}{(Optional) Migrate to a specific migration number
+isPackage}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DataMigrationManager-isPackage"></a>}}

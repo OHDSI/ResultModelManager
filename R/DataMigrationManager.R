@@ -14,7 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+isRmdCheck <- function() {
+  return(Sys.getenv("_R_CHECK_PACKAGE_NAME_", "") != "")
+}
+
+isUnitTest <- function() {
+  return(tolower(Sys.getenv("TESTTHAT", "")) == "true")
+}
+
 .defaultMigrationRegexp <- "(Migration_([0-9]+))-(.+).sql"
+# Taken from database connector - may be better if the package exposed this list formally
 .availableDbms <- c(
   "oracle",
   "hive",
@@ -76,13 +85,13 @@ DataMigrationManager <- R6::R6Class(
       private$migrationRegexp <- migrationRegexp
       self$packageName <- packageName
       private$connectionDetails <- connectionDetails
-      private$connection <- DatabaseConnector::connect(connectionDetails = connectionDetails)
+      private$connectionHandler <- ConnectionHandler$new(connectionDetails, loadConnection = FALSE)
       self$migrationPath <- migrationPath
 
       if (self$isPackage()) {
-        ParallelLogger::logInfo("Migrator using SQL files in ", packageName)
+        private$logInfo("Migrator using SQL files in ", packageName)
       } else {
-        ParallelLogger::logInfo("Migrator using SQL files in directory structure")
+        private$logInfo("Migrator using SQL files in directory structure")
       }
     },
 
@@ -91,7 +100,7 @@ DataMigrationManager <- R6::R6Class(
     #' Check if migration table is present in schema
     #' @return boolean
     migrationTableExists = function() {
-      tables <- DatabaseConnector::getTableNames(private$connection, self$databaseSchema)
+      tables <- DatabaseConnector::getTableNames(private$connectionHandler$getConnection(), self$databaseSchema)
       return(toupper(paste0(self$tablePrefix, "migration")) %in% tables)
     },
 
@@ -153,7 +162,7 @@ DataMigrationManager <- R6::R6Class(
         fileNameValidity <- grepl(private$migrationRegexp, sqlFiles)
 
         if (any(fileNameValidity == 0)) {
-          ParallelLogger::logError(paste("File name not valid", sqlFiles[fileNameValidity == 0], collapse = "\n"))
+          private$logError(paste("File name not valid", sqlFiles[fileNameValidity == 0], collapse = "\n"))
         }
 
         allNameValidity <- c(allNameValidity, fileNameValidity)
@@ -162,7 +171,7 @@ DataMigrationManager <- R6::R6Class(
           for (file in sqlFiles) {
             if (!file %in% baseFiles) {
               allDirValid <- c(allDirValid, FALSE)
-              ParallelLogger::logError(paste(
+              private$logError(paste(
                 "File ", file.path(dbms, file),
                 "not found in sql server dir. Even if migration is platform specific ",
                 "it should be mached in sql_server with dummy sql"
@@ -180,7 +189,8 @@ DataMigrationManager <- R6::R6Class(
     #' Execute Migrations
     #' @description
     #' Execute any unexecuted migrations
-    executeMigrations = function() {
+    #' @param stopMigrationVersion                      (Optional) Migrate to a specific migration number
+    executeMigrations = function(stopMigrationVersion = NULL) {
       if (!self$check()) {
         stop("Check failed, aborting migrations until issues are resolved")
       }
@@ -193,8 +203,15 @@ DataMigrationManager <- R6::R6Class(
       migrations <- self$getStatus()
       # execute migrations that haven't been executed yet
       migrations <- migrations[!migrations$executed, ]
+      if (is.null(stopMigrationVersion)) {
+        stopMigrationVersion <- max(migrations$migrationOrder)
+      }
+
       for (i in 1:nrow(migrations)) {
-        private$executeMigration(migrations[i, ])
+        migration <- migrations[i, ]
+        if (migration$migrationOrder <= stopMigrationVersion) {
+          private$executeMigration(migration)
+        }
       }
     },
 
@@ -208,61 +225,52 @@ DataMigrationManager <- R6::R6Class(
     #' finalize
     #' @description close database connection
     finalize = function() {
-      DatabaseConnector::disconnect(private$connection)
+      private$connectionHandler$finalize()
     }
   ),
   private = list(
     migrationRegexp = NULL,
-    connection = NULL,
+    connectionHandler = NULL,
     connectionDetails = NULL,
     executeMigration = function(migration) {
-      ParallelLogger::logInfo("Executing migration: ", migration$migrationFile)
+      private$logInfo("Executing migration: ", migration$migrationFile)
       # Load, render, translate and execute sql
       if (self$isPackage()) {
         sql <- SqlRender::loadRenderTranslateSql(file.path(self$migrationPath, migration$migrationFile),
-          dbms = private$connection@dbms,
-          database_schema = self$databaseSchema,
-          table_prefix = self$tablePrefix,
-          packageName = self$packageName
-        )
-        DatabaseConnector::executeSql(connection = private$connection, sql = sql)
+                                                 dbms = private$connectionDetails$dbms,
+                                                 database_schema = self$databaseSchema,
+                                                 table_prefix = self$tablePrefix,
+                                                 packageName = self$packageName)
+        private$connectionHandler$executeSql(sql)
       } else {
         # Check to see if a file for database platform exists
-        if (file.exists(file.path(self$migrationPath, private$connection@dbms, migration$migrationFile))) {
-          sql <- SqlRender::readSql(file.path(self$migrationPath, private$connection@dbms, migration$migrationFile))
-          sql <- SqlRender::render(sql,
-            database_schema = self$databaseSchema,
-            table_prefix = self$tablePrefix
-          )
-          DatabaseConnector::executeSql(connection = private$connection, sql = sql)
+        if (file.exists(file.path(self$migrationPath, private$connectionDetails$dbms, migration$migrationFile))) {
+          sql <- SqlRender::readSql(file.path(self$migrationPath, private$connectionDetails$dbms, migration$migrationFile))
         } else {
           # Default to using sql_server as path
           sql <- SqlRender::readSql(file.path(self$migrationPath, "sql_server", migration$migrationFile))
-          DatabaseConnector::renderTranslateExecuteSql(
-            connection = private$connection,
-            sql = sql,
-            database_schema = self$databaseSchema,
-            table_prefix = self$tablePrefix
-          )
         }
+        private$connectionHandler$executeSql(sql,
+                                             database_schema = self$databaseSchema,
+                                             table_prefix = self$tablePrefix)
       }
-      ParallelLogger::logInfo("Saving migration: ", migration$filePath)
+      private$logInfo("Saving migration: ", migration$migrationFile)
       # Save migration in set of migrations
       iSql <- "
       {DEFAULT @migration = migration}
       INSERT INTO @database_schema.@table_prefix@migration (migration_file, migration_order)
         VALUES ('@migration_file', @order);
       "
-      DatabaseConnector::renderTranslateExecuteSql(private$connection,
-        sql = iSql, database_schema = self$databaseSchema,
-        migration_file = migration$migrationFile,
-        table_prefix = self$table_prefix,
-        order = migration$migrationOrder
+      private$connectionHandler$executeSql(iSql,
+                                           database_schema = self$databaseSchema,
+                                           migration_file = migration$migrationFile,
+                                           table_prefix = self$table_prefix,
+                                           order = migration$migrationOrder
       )
-      ParallelLogger::logInfo("Migration complete ", migration$filePath)
+      private$logInfo("Migration complete ", migration$migrationFile)
     },
     createMigrationsTable = function() {
-      ParallelLogger::logInfo("Creating migrations table")
+      private$logInfo("Creating migrations table")
       sql <- "
       {DEFAULT @migration = migration}
       --HINT DISTRIBUTE ON RANDOM
@@ -271,12 +279,10 @@ DataMigrationManager <- R6::R6Class(
           migration_order INT NOT NULL unique
       );"
 
-      DatabaseConnector::renderTranslateExecuteSql(private$connection,
-        sql = sql,
-        database_schema = self$databaseSchema,
-        table_prefix = self$tablePrefix
-      )
-      ParallelLogger::logInfo("Migrations table created")
+      private$connectionHandler$executeSql(sql,
+                                           database_schema = self$databaseSchema,
+                                           table_prefix = self$tablePrefix)
+      private$logInfo("Migrations table created")
     },
     getCompletedMigrations = function() {
       if (!self$migrationTableExists()) {
@@ -286,12 +292,9 @@ DataMigrationManager <- R6::R6Class(
       sql <- "
       {DEFAULT @migration = migration}
       SELECT migration_file, migration_order FROM @database_schema.@table_prefix@migration ORDER BY migration_order;"
-      migrationsExecuted <- DatabaseConnector::renderTranslateQuerySql(private$connection,
-        sql = sql,
-        database_schema = self$databaseSchema,
-        table_prefix = self$tablePrefix,
-        snakeCaseToCamelCase = TRUE
-      )
+      migrationsExecuted <- private$connectionHandler$queryDb(sql,
+                                                              database_schema = self$databaseSchema,
+                                                              table_prefix = self$tablePrefix)
 
       return(migrationsExecuted)
     },
@@ -303,6 +306,23 @@ DataMigrationManager <- R6::R6Class(
         migrationOrder = as.integer(gsub(private$migrationRegexp, "\\2", migrations))
       )
       return(execution[order(execution$migrationOrder), ])
+    },
+
+    # Wrapper calls to stop ParallelLogger outputting annoying messages
+    log = function(level, ...) {
+     if (isUnitTest() | isRmdCheck()) {
+      writeLines(text = .makeMessage(...))
+     } else {
+       ParallelLogger::log(level = level, ...)
+     }
+    },
+
+    logError = function(...) {
+      private$log(level = "ERROR")
+    },
+
+    logInfo = function(...) {
+      private$log(level = "INFO")
     }
   ),
 )

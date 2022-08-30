@@ -11,12 +11,14 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Depends:
   R6,
-  DatabaseConnector
+  DatabaseConnector (>= 5.0.0)
 Imports:
   SqlRender,
   ParallelLogger,
-  checkmate
+  checkmate,
+  DBI
 Suggests: 
   testthat (>= 3.0.0),
-  RSQLite
+  RSQLite,
+  pool
 Config/testthat/edition: 3
