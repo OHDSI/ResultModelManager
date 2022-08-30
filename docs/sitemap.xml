@@ -7,6 +7,12 @@
     <loc>/LICENSE-text.html</loc>
   </url>
   <url>
+    <loc>/articles/CreatingMigrations.html</loc>
+  </url>
+  <url>
+    <loc>/articles/PackageDesign.html</loc>
+  </url>
+  <url>
     <loc>/articles/creating-migrations.html</loc>
   </url>
   <url>
@@ -28,7 +34,13 @@
     <loc>/pull_request_template.html</loc>
   </url>
   <url>
+    <loc>/reference/ConnectionHandler.html</loc>
+  </url>
+  <url>
     <loc>/reference/DataMigrationManager.html</loc>
+  </url>
+  <url>
+    <loc>/reference/PooledConnectionHandler.html</loc>
   </url>
   <url>
     <loc>/reference/ResultModelManager-package.html</loc>

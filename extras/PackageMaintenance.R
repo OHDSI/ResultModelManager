@@ -27,14 +27,14 @@ system("R CMD Rd2pdf ./ --output=extras/CohortDiagnostics.pdf")
 dir.create(path = "./inst/doc/", showWarnings = FALSE)
 
 
-rmarkdown::render("vignettes/creating-migrations.Rmd",
-                  output_file = "../inst/doc/creating-migrations.pdf",
+rmarkdown::render("vignettes/CreatingMigrations.Rmd",
+                  output_file = "../inst/doc/CreatingMigrations.pdf",
                   rmarkdown::pdf_document(latex_engine = "pdflatex",
                                           toc = TRUE,
                                           number_sections = TRUE))
 
-rmarkdown::render("vignettes/design-specifications.Rmd",
-                  output_file = "../inst/doc/design-specifications.pdf",
+rmarkdown::render("vignettes/PackageDesign.Rmd",
+                  output_file = "../inst/doc/PackageDesign.pdf",
                   rmarkdown::pdf_document(latex_engine = "pdflatex",
                                           toc = TRUE,
                                           number_sections = TRUE))
