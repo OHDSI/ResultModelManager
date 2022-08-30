@@ -130,16 +130,87 @@ As migrations are supported by multiple database platforms this folder
 should exist within the generic (and SqlRender OHDSI common sql)
 <code>sql_server</code> folder,
 <code>inst/sql/sql_server/migrations</code>. For any database specific
-migrations they should be</p>
+migrations they should be in the approprate sub directory. For
+example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">inst/sql/</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">sql_server/migrations/Migration_1-create.sql</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">sqlite/migrations/Migration_1-create.sql</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">redshift/migrations/Migration_1-create.sql</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="using-folder-structure">Using folder structure<a class="anchor" aria-label="anchor" href="#using-folder-structure"></a>
 </h3>
+<p>A folder structure requires a slightly different set up. Here, the
+migrations should be split via database platform within the
+<code>migration</code> path. For example.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">migrations/</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">sql_server/Migration_1-create.sql</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">sqlite/Migration_1-create.sql</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">redshift/Migration_1-create.sql</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="adding-a-migration">Adding a migration<a class="anchor" aria-label="anchor" href="#adding-a-migration"></a>
 </h2>
+<p>All data migrations are assumed to be in OHSI SQL and stored within a
+migration folder (see above for set up). Inside this folder only
+migrations that conform to a regular expression such as
+<code>(Migration_[0-9]+)-(.+).sql</code>. Explicitly, this encodes
+several things:</p>
+<ul>
+<li>That the file is a migration and only intended to be executed once
+and by a DMM instance</li>
+<li>The position in the sequence in which the migration will be executed
+(i.e. a natural number)</li>
+<li>The string name of the migration</li>
+<li>The fact that its an sql file</li>
+</ul>
+<p>For example, the following file names will work:</p>
+<pre><code><span><span class="va">Migration_2</span><span class="op">-</span><span class="va">MyMigration.sql</span></span>
+<span><span class="va">Migration_2</span><span class="op">-</span><span class="va">v3.2whaterver.sql</span></span>
+<span><span class="va">Migration_4</span><span class="op">-</span><span class="va">TEST.sql</span></span>
+<span><span class="va">Migration_4</span><span class="op">-</span><span class="fl">2018922</span><span class="op">-</span><span class="va">vAAAA.sql</span></span></code></pre>
+<p>However, the following would be invalid:</p>
+<pre><code><span><span class="va">MyMigration.sql</span> <span class="co"># Does not include Migration_1</span></span>
+<span><span class="va">Migration_2v3.2whaterver.sql</span> <span class="co"># missing -</span></span>
+<span><span class="op">-</span><span class="va">TEST_Migration_1.sql</span> <span class="co"># Wrong order</span></span>
+<span><span class="va">Migraton_4</span><span class="op">-</span><span class="va">a.sql</span> <span class="co"># Migration spelt wrong</span></span></code></pre>
+</div>
+<div class="section level2">
+<h2 id="adding-migrator">Adding migrator<a class="anchor" aria-label="anchor" href="#adding-migrator"></a>
+</h2>
+<p>Each package/project should expose an instantiated DMM with the
+package specfic considerations. For example, for the package
+<code>CohortDiagnostics</code> a function such as the following may be
+written:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#' @export</span></span>
+<span><span class="va">getDataMigrator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">connectionDetails</span>, <span class="va">databaseSchema</span>, <span class="va">tablePrefix</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">ResultModelManager</span><span class="fu">::</span><span class="va"><a href="../reference/DataMigrationManager.html">DataMigrationManager</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
+<span>                                               databaseSchema <span class="op">=</span> <span class="va">databaseSchema</span>,</span>
+<span>                                               tablePrefix <span class="op">=</span> <span class="va">tablePrefix</span>,</span>
+<span>                                               migrationPath <span class="op">=</span> <span class="st">"migrations"</span>,</span>
+<span>                                               packageName <span class="op">=</span> <span class="st">"CohortDiagnostics"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p>This will return an instance of data migrator that will expose teh
+functionality on a given data set. Naturally, the package is not
+strictly required for creating a migration manager (should the directory
+structure conform to the above outline) here you should set it according
+to your project’s set up.</p>
+<p>Loading the migrator is then straightforward:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span><span class="va">MySettings</span><span class="op">)</span></span>
+<span><span class="va">migrator</span> <span class="op">&lt;-</span> <span class="fu">getDataMigrator</span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>, databaseSchema <span class="op">=</span> <span class="st">"mySchema"</span>, tablePrefix <span class="op">=</span> <span class="st">"cd_"</span><span class="op">)</span></span></code></pre></div>
+<p>To check migrations are valid</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">migrator</span><span class="op">$</span><span class="fu">check</span><span class="op">(</span><span class="op">)</span> <span class="co"># Will return false and display any eronious files</span></span></code></pre></div>
+<p>To get the status of all migrations</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">migrator</span><span class="op">$</span><span class="fu">getStatus</span><span class="op">(</span><span class="op">)</span> <span class="co"># Will return data frame of all sql migrations and if they have been executed or not</span></span></code></pre></div>
+<p>To run the migrations:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## It is strongly recommended that you create some form of backup before doing this</span></span>
+<span><span class="va">migrator</span><span class="op">$</span><span class="fu">executeMigrations</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="unit-testing">Unit testing<a class="anchor" aria-label="anchor" href="#unit-testing"></a>

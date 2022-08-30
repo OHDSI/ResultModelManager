@@ -62,10 +62,29 @@ migrations/
 
 # Adding a migration
 
-To add a migration it must conform to the regular expression:
+All data migrations are assumed to be in OHSI SQL and stored within a migration folder (see above for set up).
+Inside this folder only migrations that conform to a regular expression such as `(Migration_[0-9]+)-(.+).sql`.
+Explicitly, this encodes several things:
 
+* That the file is a migration and only intended to be executed once and by a DMM instance
+* The position in the sequence in which the migration will be executed (i.e. a natural number)
+* The string name of the migration
+* The fact that its an sql file
+
+For example, the following file names will work:
 ```
-(Migration_([0-9]+))-(.+).sql
+Migration_2-MyMigration.sql
+Migration_2-v3.2whaterver.sql
+Migration_4-TEST.sql
+Migration_4-2018922-vAAAA.sql
+```
+
+However, the following would be invalid:
+```
+MyMigration.sql # Does not include Migration_1
+Migration_2v3.2whaterver.sql # missing -
+-TEST_Migration_1.sql # Wrong order
+Migraton_4-a.sql # Migration spelt wrong
 ```
 
 # Adding migrator
