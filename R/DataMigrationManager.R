@@ -213,7 +213,7 @@ DataMigrationManager <- R6::R6Class(
 
         for (i in 1:nrow(migrations)) {
           migration <- migrations[i, ]
-          if (migration$migrationOrder <= stopMigrationVersion) {
+          if (isTRUE(migration$migrationOrder <= stopMigrationVersion)) {
             private$executeMigration(migration)
           }
         }
