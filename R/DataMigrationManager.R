@@ -269,7 +269,7 @@ DataMigrationManager <- R6::R6Class(
       private$connectionHandler$executeSql(iSql,
                                            database_schema = self$databaseSchema,
                                            migration_file = migration$migrationFile,
-                                           table_prefix = self$table_prefix,
+                                           table_prefix = self$tablePrefix,
                                            order = migration$migrationOrder
       )
       private$logInfo("Migration complete ", migration$migrationFile)

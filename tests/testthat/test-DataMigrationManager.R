@@ -48,7 +48,7 @@ test_that("Migrations manager runs in folder mode", {
   manager <- DataMigrationManager$new(
     connectionDetails = connectionDetails,
     databaseSchema = "main",
-    tablePrefix = "",
+    tablePrefix = "mg_",
     migrationPath = "migrations",
     packageName = NULL
   )
@@ -59,7 +59,7 @@ test_that("Migrations manager runs in folder mode", {
 
   connection <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
-  migrations <- DatabaseConnector::renderTranslateQuerySql(connection, "SELECT * FROM migration")
+  migrations <- DatabaseConnector::renderTranslateQuerySql(connection, "SELECT * FROM mg_migration")
   checkmate::expect_data_frame(migrations, nrows = 2)
 })
 
@@ -71,7 +71,7 @@ test_that("Add migration and execute", {
   manager <- DataMigrationManager$new(
     connectionDetails = connectionDetails,
     databaseSchema = "main",
-    tablePrefix = "",
+    tablePrefix = "mg_",
     migrationPath = "migrations",
     packageName = NULL
   )
