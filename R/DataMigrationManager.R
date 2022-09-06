@@ -203,16 +203,15 @@ DataMigrationManager <- R6::R6Class(
       }
       # load list of migrations
       migrations <- self$getStatus()
-
+      # execute migrations that haven't been executed yet
+      migrations <- migrations[!migrations$executed,]
       if (nrow(migrations) > 0) {
-        # execute migrations that haven't been executed yet
-        migrations <- migrations[!migrations$executed, ]
         if (is.null(stopMigrationVersion)) {
           stopMigrationVersion <- max(migrations$migrationOrder)
         }
 
         for (i in 1:nrow(migrations)) {
-          migration <- migrations[i, ]
+          migration <- migrations[i,]
           if (isTRUE(migration$migrationOrder <= stopMigrationVersion)) {
             private$executeMigration(migration)
           }
