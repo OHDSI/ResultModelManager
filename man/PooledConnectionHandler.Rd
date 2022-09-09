@@ -2,15 +2,8 @@
 % Please edit documentation in R/ConnectionHandler.R
 \name{PooledConnectionHandler}
 \alias{PooledConnectionHandler}
-\title{Pooled Connection Handler
-Transparently works the same way as a standard connection handler but stores pooled connections.
-Useful for long running applications that serve multiple concurrent requests.}
+\title{Pooled Connection Handler}
 \description{
-Pooled Connection Handler
-Transparently works the same way as a standard connection handler but stores pooled connections.
-Useful for long running applications that serve multiple concurrent requests.
-
-Pooled Connection Handler
 Transparently works the same way as a standard connection handler but stores pooled connections.
 Useful for long running applications that serve multiple concurrent requests.
 }
@@ -66,7 +59,7 @@ query Function
 \if{html}{\out{<a id="method-PooledConnectionHandler-queryFunction"></a>}}
 \if{latex}{\out{\hypertarget{method-PooledConnectionHandler-queryFunction}{}}}
 \subsection{Method \code{queryFunction()}}{
-Overrides ConnectionHandler Call
+Overrides ConnectionHandler Call. Does not translate or render sql.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$queryFunction(sql, snakeCaseToCamelCase = TRUE)}\if{html}{\out{</div>}}
 }

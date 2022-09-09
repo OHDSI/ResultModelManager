@@ -183,6 +183,7 @@ ConnectionHandler <- R6::R6Class(
     #' query Function
     #' @description
     #' queryFunction that can be overriden with subclasses (e.g. use different base function or intercept query)
+    #' Does not translate or render sql.
     #' @param sql                                   sql query string
     #' @param snakeCaseToCamelCase                  (Optional) Boolean. return the results columns in camel case (default)
     queryFunction = function(sql, snakeCaseToCamelCase = TRUE) {
@@ -192,6 +193,7 @@ ConnectionHandler <- R6::R6Class(
     #' execute Function
     #' @description
     #' exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
+    #' Does not translate or render sql.
     #' @param sql                                   sql query string
     executeFunction = function(sql) {
       DatabaseConnector::executeSql(self$getConnection(), sql)
@@ -200,6 +202,7 @@ ConnectionHandler <- R6::R6Class(
 )
 
 #' Pooled Connection Handler
+#' @description
 #' Transparently works the same way as a standard connection handler but stores pooled connections.
 #' Useful for long running applications that serve multiple concurrent requests.
 #'
@@ -244,7 +247,7 @@ PooledConnectionHandler <- R6::R6Class(
 
     #' query Function
     #' @description
-    #' Overrides ConnectionHandler Call
+    #' Overrides ConnectionHandler Call. Does not translate or render sql.
     #' @param sql                                   sql query string
     #' @param snakeCaseToCamelCase                  (Optional) Boolean. return the results columns in camel case (default)
     queryFunction = function(sql, snakeCaseToCamelCase = TRUE) {

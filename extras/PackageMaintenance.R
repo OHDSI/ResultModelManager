@@ -39,5 +39,11 @@ rmarkdown::render("vignettes/PackageDesign.Rmd",
                                           toc = TRUE,
                                           number_sections = TRUE))
 
+rmarkdown::render("vignettes/UsingConnectionHandlers.pdf",
+                  output_file = "../inst/doc/PackageDesign.pdf",
+                  rmarkdown::pdf_document(latex_engine = "pdflatex",
+                                          toc = TRUE,
+                                          number_sections = TRUE))
+
 pkgdown::build_site()
 OhdsiRTools::fixHadesLogo()

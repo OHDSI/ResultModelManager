@@ -37,12 +37,15 @@
     <li>
       <a href="../articles/PackageDesign.html">Package Design</a>
     </li>
+    <li>
+      <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
+    </li>
   </ul></li>
 <li>
   <a href="../news/index.html">Changelog</a>
 </li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
-  <a href="https://ohdsi.github.io/Hades" class="external-link"><img src='https://ohdsi.github.io/Hades/images/hadesMini.png' width=80 height=17 style='vertical-align: top;'></a>
+  <a href="https://ohdsi.github.io/Hades" class="external-link">hadesLogo</a>
 </li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -68,7 +71,11 @@
     
 
 <p>data frame all migrations, including file name, order and execution status
-Check migrations in folder</p>
+Get connection handler</p>
+    </div>
+    <div id="see-also">
+    <h2>See also</h2>
+    <div class="dont-index"><p><a href="ConnectionHandler.html">ConnectionHandler</a> for information on returned class</p></div>
     </div>
     <div id="public-fields">
     <h2>Public fields</h2>
@@ -100,6 +107,7 @@ Check migrations in folder</p>
 <li><p><a href="#method-DataMigrationManager-migrationTableExists"><code>DataMigrationManager$migrationTableExists()</code></a></p></li>
 <li><p><a href="#method-DataMigrationManager-getMigrationsPath"><code>DataMigrationManager$getMigrationsPath()</code></a></p></li>
 <li><p><a href="#method-DataMigrationManager-getStatus"><code>DataMigrationManager$getStatus()</code></a></p></li>
+<li><p><a href="#method-DataMigrationManager-getConnectionHandler"><code>DataMigrationManager$getConnectionHandler()</code></a></p></li>
 <li><p><a href="#method-DataMigrationManager-check"><code>DataMigrationManager$check()</code></a></p></li>
 <li><p><a href="#method-DataMigrationManager-executeMigrations"><code>DataMigrationManager$executeMigrations()</code></a></p></li>
 <li><p><a href="#method-DataMigrationManager-isPackage"><code>DataMigrationManager$isPackage()</code></a></p></li>
@@ -192,11 +200,24 @@ Get status of result model</p></dd>
 </div>
 
 
+</div><p></p><hr><a id="method-DataMigrationManager-getConnectionHandler"></a><div class="section">
+<h3 id="method-getconnectionhandler-">Method <code>getConnectionHandler()</code><a class="anchor" aria-label="anchor" href="#method-getconnectionhandler-"></a></h3>
+<p>Return connection handler instance</p><div class="section">
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">DataMigrationManager</span><span class="op">$</span><span class="fu">getConnectionHandler</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="returns-1">Returns<a class="anchor" aria-label="anchor" href="#returns-1"></a></h4>
+<p>ConnectionHandler instance
+Check migrations in folder</p>
+</div>
+
 </div><p></p><hr><a id="method-DataMigrationManager-check"></a><div class="section">
 <h3 id="method-check-">Method <code>check()</code><a class="anchor" aria-label="anchor" href="#method-check-"></a></h3>
 <p>Check if file names are valid for migrations
 Execute Migrations</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">DataMigrationManager</span><span class="op">$</span><span class="fu">check</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -204,7 +225,7 @@ Execute Migrations</p><div class="section">
 </div><p></p><hr><a id="method-DataMigrationManager-executeMigrations"></a><div class="section">
 <h3 id="method-executemigrations-">Method <code>executeMigrations()</code><a class="anchor" aria-label="anchor" href="#method-executemigrations-"></a></h3>
 <p>Execute any unexecuted migrations</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">DataMigrationManager</span><span class="op">$</span><span class="fu">executeMigrations</span><span class="op">(</span>stopMigrationVersion <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -222,7 +243,7 @@ isPackage</p></dd>
 <h3 id="method-ispackage-">Method <code>isPackage()</code><a class="anchor" aria-label="anchor" href="#method-ispackage-"></a></h3>
 <p>is a package folder structure or not
 finalize</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">DataMigrationManager</span><span class="op">$</span><span class="fu">isPackage</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -230,7 +251,7 @@ finalize</p><div class="section">
 </div><p></p><hr><a id="method-DataMigrationManager-finalize"></a><div class="section">
 <h3 id="method-finalize-">Method <code>finalize()</code><a class="anchor" aria-label="anchor" href="#method-finalize-"></a></h3>
 <p>close database connection</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">DataMigrationManager</span><span class="op">$</span><span class="fu">finalize</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -238,7 +259,7 @@ finalize</p><div class="section">
 </div><p></p><hr><a id="method-DataMigrationManager-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">DataMigrationManager</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 

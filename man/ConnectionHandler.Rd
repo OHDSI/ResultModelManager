@@ -196,6 +196,7 @@ query Function}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-queryFunction}{}}}
 \subsection{Method \code{queryFunction()}}{
 queryFunction that can be overriden with subclasses (e.g. use different base function or intercept query)
+Does not translate or render sql.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$queryFunction(sql, snakeCaseToCamelCase = TRUE)}\if{html}{\out{</div>}}
 }
@@ -216,6 +217,7 @@ execute Function}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-executeFunction}{}}}
 \subsection{Method \code{executeFunction()}}{
 exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
+Does not translate or render sql.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$executeFunction(sql)}\if{html}{\out{</div>}}
 }

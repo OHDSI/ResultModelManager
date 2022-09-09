@@ -5,10 +5,13 @@
 \title{DataMigrationManager (DMM)}
 \value{
 data frame all migrations, including file name, order and execution status
-Check migrations in folder
+Get connection handler
 }
 \description{
 R6 class for management of database migration
+}
+\seealso{
+\link{ConnectionHandler} for information on returned class
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -30,6 +33,7 @@ R6 class for management of database migration
 \item \href{#method-DataMigrationManager-migrationTableExists}{\code{DataMigrationManager$migrationTableExists()}}
 \item \href{#method-DataMigrationManager-getMigrationsPath}{\code{DataMigrationManager$getMigrationsPath()}}
 \item \href{#method-DataMigrationManager-getStatus}{\code{DataMigrationManager$getStatus()}}
+\item \href{#method-DataMigrationManager-getConnectionHandler}{\code{DataMigrationManager$getConnectionHandler()}}
 \item \href{#method-DataMigrationManager-check}{\code{DataMigrationManager$check()}}
 \item \href{#method-DataMigrationManager-executeMigrations}{\code{DataMigrationManager$executeMigrations()}}
 \item \href{#method-DataMigrationManager-isPackage}{\code{DataMigrationManager$isPackage()}}
@@ -116,6 +120,20 @@ Get status of all migrations (executed or not)
 \if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$getStatus()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DataMigrationManager-getConnectionHandler"></a>}}
+\if{latex}{\out{\hypertarget{method-DataMigrationManager-getConnectionHandler}{}}}
+\subsection{Method \code{getConnectionHandler()}}{
+Return connection handler instance
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$getConnectionHandler()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+ConnectionHandler instance
+Check migrations in folder
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DataMigrationManager-check"></a>}}

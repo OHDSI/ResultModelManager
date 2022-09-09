@@ -149,6 +149,15 @@ DataMigrationManager <- R6::R6Class(
       return(migrations)
     },
 
+    #' Get connection handler
+    #' @description
+    #' Return connection handler instance
+    #' @seealso[ConnectionHandler] for information on returned class
+    #' @return  ConnectionHandler instance
+    getConnectionHandler = function() {
+      return(private$connectionHandler)
+    },
+
     #' Check migrations in folder
     #' @description
     #' Check if file names are valid for migrations
