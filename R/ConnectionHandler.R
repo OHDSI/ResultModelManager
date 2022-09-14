@@ -27,7 +27,7 @@
 #' @importFrom DBI dbIsValid
 #' @importFrom SqlRender render translate
 #'
-#' @export ConnectionHandler
+#' @export
 ConnectionHandler <- R6::R6Class(
   classname = "ConnectionHandler",
   public = list(
@@ -209,7 +209,7 @@ ConnectionHandler <- R6::R6Class(
 #' @importFrom pool dbPool poolClose
 #' @importFrom DBI dbIsValid
 #'
-#' @export PooledConnectionHandler
+#' @export
 PooledConnectionHandler <- R6::R6Class(
   classname = "PooledConnectionHandler",
   inherit = ConnectionHandler,
