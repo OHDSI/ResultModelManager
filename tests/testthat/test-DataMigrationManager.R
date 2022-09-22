@@ -43,6 +43,7 @@ test_that("Migrations manager runs in package mode", {
   checkmate::expect_data_frame(manager$getStatus(), nrows = 2)
   expect_true(all(manager$getStatus()$executed))
   manager$finalize()
+  unlink(connectionDetails$server())
 })
 
 test_that("Migrations manager runs in folder mode", {
@@ -62,6 +63,7 @@ test_that("Migrations manager runs in folder mode", {
   on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
   migrations <- DatabaseConnector::renderTranslateQuerySql(connection, "SELECT * FROM mg_migration")
   checkmate::expect_data_frame(migrations, nrows = 2)
+  unlink(connectionDetails$server())
 })
 
 test_that("Add migration and execute", {
@@ -81,6 +83,7 @@ test_that("Add migration and execute", {
   manager$executeMigrations()
   expect_true(all(manager$getStatus()$executed))
   manager$finalize()
+  unlink(connectionDetails$server())
 })
 
 
@@ -110,4 +113,4 @@ test_that("Empty project works", {
   expect_true(manager$check())
   manager$finalize()
 })
-
+R
