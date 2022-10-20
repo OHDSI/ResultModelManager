@@ -46,4 +46,4 @@ ResultModelManager is being developed in R Studio.
 Development status
 ==================
 
-Under development - do not use
+Initial release - use with care

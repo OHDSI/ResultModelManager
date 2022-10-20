@@ -13,6 +13,7 @@ test_that("regexp pattern works", {
 
 
 test_that("Migrations manager runs in package mode", {
+  unlink(sqliteFile)
   on.exit(unlink(sqliteFile))
   manager <- DataMigrationManager$new(
     connectionDetails = connectionDetails,
