@@ -9,7 +9,7 @@
 Database data model management utilities for OHDSI packages.
 }
 \author{
-\strong{Maintainer}: James Gilbert \email{gilbert@ohdsi.org} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: Jamie Gilbert \email{gilbert@ohdsi.org}
 
 }
 \keyword{internal}
