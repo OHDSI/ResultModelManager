@@ -47,4 +47,4 @@ vignettes/*.pdf
 renv.lock
 .Rprofile
 *errorReportSql.txt
-/sql/
+/sql

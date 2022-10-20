@@ -21,8 +21,8 @@ styler::style_pkg()
 devtools::spell_check()
 
 # Create manual and vignettes:
-unlink("extras/CohortDiagnostics.pdf")
-system("R CMD Rd2pdf ./ --output=extras/CohortDiagnostics.pdf")
+unlink("extras/ResultModelManager.pdf")
+system("R CMD Rd2pdf ./ --output=extras/ResultModelManager.pdf")
 
 dir.create(path = "./inst/doc/", showWarnings = FALSE)
 

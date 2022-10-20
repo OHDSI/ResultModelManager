@@ -33,4 +33,3 @@ compare_versions
 ^doc$
 ^Meta$
 LICENSE
-sql/
