@@ -4,14 +4,19 @@
 \alias{generateSqlSchema}
 \title{Schema generator}
 \usage{
-generateSqlSchema(csvFilpath, sqlOutputPath, overwrite = FALSE)
+generateSqlSchema(csvFilpath, sqlOutputPath = NULL, overwrite = FALSE)
 }
 \arguments{
 \item{sqlOutputPath}{File to write sql to.}
 
 \item{overwrite}{Boolean - overwrite existing file?}
 
-\item{csvFilepath}{Path to schema file.}
+\item{csvFilepath}{Path to schema file. Csv file must have the columns:
+"table_name", "colum_name", "data_type", "is_required", "primary_key"
+Note -}
+}
+\value{
+string containing the sql for the table
 }
 \description{
 Take a csv schema definition and create a basic sql script with it.

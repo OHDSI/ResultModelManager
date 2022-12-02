@@ -19,10 +19,6 @@
   str <- paste("\t", field$columnName, toupper(field$dataType))
 
   if (field$primaryKey == "yes") {
-    str <- paste(str, "PRIMARY KEY")
-  }
-
-  if (field$primaryKey == "yes") {
     str <- paste(str, "NOT NULL")
   }
 
@@ -33,16 +29,21 @@
 #' @description
 #' Take a csv schema definition and create a basic sql script with it.
 #'
-#' @param csvFilepath                   Path to schema file.
+#' @param csvFilepath                   Path to schema file. Csv file must have the columns:
+#'                                      "table_name", "colum_name", "data_type", "is_required", "primary_key"
+#'                                      Note -
 #' @param sqlOutputPath                 File to write sql to.
-#' @param overwrite                      Boolean - overwrite existing file?
+#' @param overwrite                     Boolean - overwrite existing file?
 #' @export
 #'
+#'
+#' @return
+#'  string containing the sql for the table
 generateSqlSchema <- function(csvFilpath,
-                              sqlOutputPath,
+                              sqlOutputPath = NULL,
                               overwrite = FALSE) {
 
-  if (file.exists(sqlOutputPath) & !overwrite)
+  if (!is.null(sqlOutputPath) && (file.exists(sqlOutputPath) & !overwrite))
     stop("Output file ", sqlOutputPath, "already exists. Set overwrite = TRUE to continue")
 
   checkmate::assertFileExists(csvFilpath)
@@ -52,7 +53,7 @@ generateSqlSchema <- function(csvFilpath,
   checkmate::assertNames(colnames(schemaDefinition), must.include = requiredFields)
 
   tableSqlStr <- "
-CREATE TABLE @results_database_schema.@table_prefix@table_name (
+CREATE TABLE @database_schema.@table_prefix@table_name (
   @table_fields
 );
 "
@@ -62,6 +63,13 @@ CREATE TABLE @results_database_schema.@table_prefix@table_name (
   for(table in unique(schemaDefinition$tableName)) {
     tableFields <- schemaDefinition %>% dplyr::filter(tableName == table)
     fieldDefinitions <- apply(tableFields, 1, .writeFieldDefinition)
+
+    primaryKeyFields <- tableFields %>% dplyr::filter(primaryKey == "yes")
+    if (nrow(primaryKeyFields)) {
+      pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$columnName, collapse = ","), ")")
+      fieldDefinitions <- c(fieldDefinitions, pkeyField)
+    }
+
     fieldDefinitions <- paste(fieldDefinitions, collapse = ",\n")
     tableString <- SqlRender::render(tableSqlStr,
                                      table_name = paste0("@", table),
@@ -74,8 +82,9 @@ CREATE TABLE @results_database_schema.@table_prefix@table_name (
   }
 
   # Get fields for each table
+  lines <- paste(defs, fullScript)
+  if (!is.null(sqlOutputPath))
+    writeLines(lines, sqlOutputPath)
 
-  writeLines(paste(defs, fullScript), sqlOutputPath)
-
-  invisible(NULL)
+  lines
 }

@@ -21,7 +21,8 @@
 #'
 #' @field connectionDetails             DatabaseConnector connectionDetails object
 #' @field con                           DatabaseConnector connection object
-#' @field isActive                      Is connection active or not
+#' @field isActive                      Is connection active or not#'
+#' @field snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
 #'
 #' @import checkmate
 #' @import R6
@@ -35,13 +36,15 @@ ConnectionHandler <- R6::R6Class(
     connectionDetails = NULL,
     con = NULL,
     isActive = FALSE,
+    snakeCaseToCamelCase = TRUE,
     #'
     #' @param connectionDetails             DatabaseConnector::connectionDetails class
     #' @param loadConnection                Boolean option to load connection right away
-    initialize = function(connectionDetails, loadConnection = TRUE) {
+    #' @param snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
+    initialize = function(connectionDetails, loadConnection = TRUE, snakeCaseToCamelCase = TRUE) {
       checkmate::assertClass(connectionDetails, "connectionDetails")
       self$connectionDetails <- connectionDetails
-
+      self$snakeCaseToCamelCase <- snakeCaseToCamelCase
       if (loadConnection) {
         self$initConnection()
       }
@@ -128,7 +131,7 @@ ConnectionHandler <- R6::R6Class(
     #'                                              You may wish to ignore it.
     #' @param ...                                   Additional query parameters
     #' @returns boolean TRUE if connection is valid
-    queryDb = function(sql, snakeCaseToCamelCase = TRUE, overrideRowLimit = FALSE, ...) {
+    queryDb = function(sql, snakeCaseToCamelCase = self$snakeCaseToCamelCase, overrideRowLimit = FALSE, ...) {
       # Limit row count is intended for web applications that may cause a denial of service if they consume too many
       # resources.
       limitRowCount <- as.integer(Sys.getenv("LIMIT_ROW_COUNT"))
@@ -186,7 +189,7 @@ ConnectionHandler <- R6::R6Class(
     #' Does not translate or render sql.
     #' @param sql                                   sql query string
     #' @param snakeCaseToCamelCase                  (Optional) Boolean. return the results columns in camel case (default)
-    queryFunction = function(sql, snakeCaseToCamelCase = TRUE) {
+    queryFunction = function(sql, snakeCaseToCamelCase = self$snakeCaseToCamelCase) {
       DatabaseConnector::querySql(self$getConnection(), sql, snakeCaseToCamelCase = snakeCaseToCamelCase)
     },
 
