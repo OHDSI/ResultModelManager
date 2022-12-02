@@ -36,18 +36,18 @@
 #' @param overwrite                     Boolean - overwrite existing file?
 #' @export
 #'
-#'
+#' @importFrom readr read_csv
 #' @return
 #'  string containing the sql for the table
-generateSqlSchema <- function(csvFilpath,
+generateSqlSchema <- function(csvFilepath,
                               sqlOutputPath = NULL,
                               overwrite = FALSE) {
 
   if (!is.null(sqlOutputPath) && (file.exists(sqlOutputPath) & !overwrite))
     stop("Output file ", sqlOutputPath, "already exists. Set overwrite = TRUE to continue")
 
-  checkmate::assertFileExists(csvFilpath)
-  schemaDefinition <- readr::read_csv(csvFilpath, show_col_types = FALSE)
+  checkmate::assertFileExists(csvFilepath)
+  schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
   colnames(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(colnames(schemaDefinition))
   requiredFields <- c("tableName", "columnName", "dataType", "isRequired", "primaryKey")
   checkmate::assertNames(colnames(schemaDefinition), must.include = requiredFields)
