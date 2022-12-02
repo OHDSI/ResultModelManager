@@ -3,6 +3,7 @@
 export(ConnectionHandler)
 export(DataMigrationManager)
 export(PooledConnectionHandler)
+export(generateSqlSchema)
 import(DatabaseConnector)
 import(R6)
 import(checkmate)

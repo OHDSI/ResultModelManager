@@ -35,7 +35,7 @@
 #'
 #' @param csvFilepath                   Path to schema file.
 #' @param sqlOutputPath                 File to write sql to.
-#' @parm overwrite                      Boolean - overwrite existing file?
+#' @param overwrite                      Boolean - overwrite existing file?
 #' @export
 #'
 generateSqlSchema <- function(csvFilpath,
