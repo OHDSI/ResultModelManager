@@ -213,14 +213,14 @@ DataMigrationManager <- R6::R6Class(
       # load list of migrations
       migrations <- self$getStatus()
       # execute migrations that haven't been executed yet
-      migrations <- migrations[!migrations$executed,]
+      migrations <- migrations[!migrations$executed, ]
       if (nrow(migrations) > 0) {
         if (is.null(stopMigrationVersion)) {
           stopMigrationVersion <- max(migrations$migrationOrder)
         }
 
         for (i in 1:nrow(migrations)) {
-          migration <- migrations[i,]
+          migration <- migrations[i, ]
           if (isTRUE(migration$migrationOrder <= stopMigrationVersion)) {
             private$executeMigration(migration)
           }
@@ -250,10 +250,11 @@ DataMigrationManager <- R6::R6Class(
       # Load, render, translate and execute sql
       if (self$isPackage()) {
         sql <- SqlRender::loadRenderTranslateSql(file.path(self$migrationPath, migration$migrationFile),
-                                                 dbms = private$connectionDetails$dbms,
-                                                 database_schema = self$databaseSchema,
-                                                 table_prefix = self$tablePrefix,
-                                                 packageName = self$packageName)
+          dbms = private$connectionDetails$dbms,
+          database_schema = self$databaseSchema,
+          table_prefix = self$tablePrefix,
+          packageName = self$packageName
+        )
         private$connectionHandler$executeSql(sql)
       } else {
         # Check to see if a file for database platform exists
@@ -264,8 +265,9 @@ DataMigrationManager <- R6::R6Class(
           sql <- SqlRender::readSql(file.path(self$migrationPath, "sql_server", migration$migrationFile))
         }
         private$connectionHandler$executeSql(sql,
-                                             database_schema = self$databaseSchema,
-                                             table_prefix = self$tablePrefix)
+          database_schema = self$databaseSchema,
+          table_prefix = self$tablePrefix
+        )
       }
       private$logInfo("Saving migration: ", migration$migrationFile)
       # Save migration in set of migrations
@@ -275,10 +277,10 @@ DataMigrationManager <- R6::R6Class(
         VALUES ('@migration_file', @order);
       "
       private$connectionHandler$executeSql(iSql,
-                                           database_schema = self$databaseSchema,
-                                           migration_file = migration$migrationFile,
-                                           table_prefix = self$tablePrefix,
-                                           order = migration$migrationOrder
+        database_schema = self$databaseSchema,
+        migration_file = migration$migrationFile,
+        table_prefix = self$tablePrefix,
+        order = migration$migrationOrder
       )
       private$logInfo("Migration complete ", migration$migrationFile)
     },
@@ -293,8 +295,9 @@ DataMigrationManager <- R6::R6Class(
       );"
 
       private$connectionHandler$executeSql(sql,
-                                           database_schema = self$databaseSchema,
-                                           table_prefix = self$tablePrefix)
+        database_schema = self$databaseSchema,
+        table_prefix = self$tablePrefix
+      )
       private$logInfo("Migrations table created")
     },
     getCompletedMigrations = function() {
@@ -306,8 +309,9 @@ DataMigrationManager <- R6::R6Class(
       {DEFAULT @migration = migration}
       SELECT migration_file, migration_order FROM @database_schema.@table_prefix@migration ORDER BY migration_order;"
       migrationsExecuted <- private$connectionHandler$queryDb(sql,
-                                                              database_schema = self$databaseSchema,
-                                                              table_prefix = self$tablePrefix)
+        database_schema = self$databaseSchema,
+        table_prefix = self$tablePrefix
+      )
 
       return(migrationsExecuted)
     },
@@ -329,7 +333,6 @@ DataMigrationManager <- R6::R6Class(
         ParallelLogger::logError(...)
       }
     },
-
     logInfo = function(...) {
       if (isUnitTest() | isRmdCheck()) {
         writeLines(text = .makeMessage(...))

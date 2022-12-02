@@ -1,0 +1,35 @@
+table_name,column_name,data_type,is_required,primary_key,min_cell_count,description
+cohort_definition,cohort_definition_id,bigint,yes,yes,no,cohort definition id
+cohort_definition,concept_id,bigint,yes,no,no,covariate id
+cohort_definition,cohort_name,varchar,yes,no,no,cohort definition name
+cohort_definition,short_name,varchar,yes,no,no,cohort definition name
+cohort_definition,atc_flag,int,yes,no,no,cohort definition name
+cohort_definition,database_id,bigint,yes,yes,no,database definition id
+cdm_source_info,database_id,bigint,yes,yes,no,database definition id
+cdm_source_info,cdm_source_abbreviation,varchar,no,no,no,cdm info
+cdm_source_info,cdm_holder,varchar,no,no,no,cdm info
+cdm_source_info,source_description,varchar,no,no,no,cdm info
+cdm_source_info,source_documentation_reference,varchar,no,no,no,cdm info
+cdm_source_info,cdm_etl_reference,varchar,no,no,no,cdm info
+cdm_source_info,source_release_date,date,no,no,no,cdm info
+cdm_source_info,cdm_release_date,date,no,no,no,cdm info
+cdm_source_info,cdm_version,varchar,no,no,no,cdm info
+cdm_source_info,vocabulary_version,varchar,no,no,no,cdm info
+cohort_counts,num_persons,bigint,yes,no,yes,cohort size
+cohort_counts,cohort_definition_id,bigint,yes,yes,no,cohort definition id
+cohort_counts,database_id,bigint,yes,yes,no,database definition id
+cosine_similarity,database_id,bigint,yes,yes,no,database definition id
+cosine_similarity,cohort_definition_id_1,bigint,yes,yes,no,database definition id
+cosine_similarity,cohort_definition_id_2,bigint,yes,yes,no,database definition id
+cosine_similarity,covariate_type,varchar,yes,no,no,database definition id
+cosine_similarity,cosine_similarity,float,yes,no,no,database definition id
+covariate_definition,covariate_id,bigint,yes,no,no,covariate id
+covariate_definition,covariate_name,varchar,yes,no,no,covariate name
+covariate_definition,concept_id,bigint,yes,no,no,covariate id
+covariate_definition,time_at_risk_start,int,yes,no,no,time at risk start
+covariate_definition,time_at_risk_end,int,yes,no,no,time at risk end
+covariate_definition,covariate_type,varchar,yes,no,no,database definition id
+covariate_mean,database_id,bigint,yes,yes,no,database definition id
+covariate_mean,cohort_definition_id,bigint,yes,yes,no,database definition id
+covariate_mean,covariate_id,bigint,yes,yes,no,database definition id
+covariate_mean,covariate_mean,float,yes,yes,no,database definition id
