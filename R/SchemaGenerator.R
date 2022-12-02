@@ -61,10 +61,10 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
   defs <- "{DEFAULT @table_prefix = ''}\n"
 
   for(table in unique(schemaDefinition$tableName)) {
-    tableFields <- schemaDefinition %>% dplyr::filter(tableName == table)
+    tableFields <- schemaDefinition[schemaDefinition$tableName == table,]
     fieldDefinitions <- apply(tableFields, 1, .writeFieldDefinition)
 
-    primaryKeyFields <- tableFields %>% dplyr::filter(primaryKey == "yes")
+    primaryKeyFields <- tableFields[tableFields$primaryKey == "yes",]
     if (nrow(primaryKeyFields)) {
       pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$columnName, collapse = ","), ")")
       fieldDefinitions <- c(fieldDefinitions, pkeyField)
