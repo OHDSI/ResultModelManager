@@ -42,9 +42,9 @@
 generateSqlSchema <- function(csvFilepath,
                               sqlOutputPath = NULL,
                               overwrite = FALSE) {
-
-  if (!is.null(sqlOutputPath) && (file.exists(sqlOutputPath) & !overwrite))
+  if (!is.null(sqlOutputPath) && (file.exists(sqlOutputPath) & !overwrite)) {
     stop("Output file ", sqlOutputPath, "already exists. Set overwrite = TRUE to continue")
+  }
 
   checkmate::assertFileExists(csvFilepath)
   schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
@@ -60,11 +60,11 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
   fullScript <- ""
   defs <- "{DEFAULT @table_prefix = ''}\n"
 
-  for(table in unique(schemaDefinition$tableName)) {
-    tableFields <- schemaDefinition[schemaDefinition$tableName == table,]
+  for (table in unique(schemaDefinition$tableName)) {
+    tableFields <- schemaDefinition[schemaDefinition$tableName == table, ]
     fieldDefinitions <- apply(tableFields, 1, .writeFieldDefinition)
 
-    primaryKeyFields <- tableFields[tableFields$primaryKey == "yes",]
+    primaryKeyFields <- tableFields[tableFields$primaryKey == "yes", ]
     if (nrow(primaryKeyFields)) {
       pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$columnName, collapse = ","), ")")
       fieldDefinitions <- c(fieldDefinitions, pkeyField)
@@ -72,8 +72,9 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
 
     fieldDefinitions <- paste(fieldDefinitions, collapse = ",\n")
     tableString <- SqlRender::render(tableSqlStr,
-                                     table_name = paste0("@", table),
-                                     table_fields = fieldDefinitions)
+      table_name = paste0("@", table),
+      table_fields = fieldDefinitions
+    )
 
     tableDefStr <- paste0("{DEFAULT @", table, " = ", table, "}\n")
     defs <- paste0(defs, tableDefStr)
@@ -83,8 +84,9 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
 
   # Get fields for each table
   lines <- paste(defs, fullScript)
-  if (!is.null(sqlOutputPath))
+  if (!is.null(sqlOutputPath)) {
     writeLines(lines, sqlOutputPath)
+  }
 
   lines
 }

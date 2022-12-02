@@ -18,13 +18,11 @@ genericTests <- function(connClass, classes, connectionClass) {
   "
   DatabaseConnector::renderTranslateExecuteSql(testConnection, sql)
 
-  on.exit(
-    {
-      sql <- "DROP TABLE IF EXISTS main.concept;"
-      DatabaseConnector::renderTranslateExecuteSql(testConnection, sql)
-      DatabaseConnector::disconnect(testConnection)
-    }
-  )
+  on.exit({
+    sql <- "DROP TABLE IF EXISTS main.concept;"
+    DatabaseConnector::renderTranslateExecuteSql(testConnection, sql)
+    DatabaseConnector::disconnect(testConnection)
+  })
 
   conn <- connClass$new(connectionDetails)
   checkmate::expect_class(conn, classes)
@@ -74,12 +72,14 @@ genericTests <- function(connClass, classes, connectionClass) {
 
 test_that("Database Connector Class works", {
   genericTests(ConnectionHandler,
-               classes = c("ConnectionHandler"),
-               connectionClass = "DatabaseConnectorDbiConnection")
+    classes = c("ConnectionHandler"),
+    connectionClass = "DatabaseConnectorDbiConnection"
+  )
 })
 
 test_that("Pooled connector Class works", {
   genericTests(PooledConnectionHandler,
-               classes = c("PooledConnectionHandler", "ConnectionHandler"),
-               connectionClass = "Pool")
+    classes = c("PooledConnectionHandler", "ConnectionHandler"),
+    connectionClass = "Pool"
+  )
 })

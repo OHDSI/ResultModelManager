@@ -78,11 +78,13 @@ ConnectionHandler <- R6::R6Class(
     #' Connects automatically if it isn't yet loaded
     #' @returns DatabaseConnector Connection instance
     getConnection = function() {
-      if (is.null(self$con))
+      if (is.null(self$con)) {
         self$initConnection()
+      }
 
-      if (!self$dbIsValid())
+      if (!self$dbIsValid()) {
         self$initConnection()
+      }
 
       return(self$con)
     },
@@ -137,8 +139,8 @@ ConnectionHandler <- R6::R6Class(
       limitRowCount <- as.integer(Sys.getenv("LIMIT_ROW_COUNT"))
       if (!is.na(limitRowCount) & limitRowCount > 0 & !overrideRowLimit) {
         sql <- SqlRender::render("SELECT TOP @limit_row_count * FROM (@query) result;",
-                                 query = gsub(";$", "", sql), # Remove last semi-colon
-                                   limit_row_count = limitRowCount
+          query = gsub(";$", "", sql), # Remove last semi-colon
+          limit_row_count = limitRowCount
         )
       }
       sql <- self$renderTranslateSql(sql, ...)
@@ -203,4 +205,3 @@ ConnectionHandler <- R6::R6Class(
     }
   )
 )
-
