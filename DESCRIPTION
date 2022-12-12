@@ -17,7 +17,9 @@ Imports:
   ParallelLogger,
   checkmate,
   DBI,
-  pool
+  pool,
+  dplyr,
+  dbplyr
 Suggests: 
   testthat (>= 3.0.0),
   RSQLite,

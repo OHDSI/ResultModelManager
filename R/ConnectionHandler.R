@@ -52,6 +52,12 @@ ConnectionHandler <- R6::R6Class(
     dbms = function() {
       DatabaseConnector::dbms(self$getConnection())
     },
+
+    #' @title tbl
+    #' @description get a dplyr table object (i.e. lazy loaded)
+    tbl = function(table, ...) {
+      dplyr::tbl(self$getConnection(), table, ...)
+    },
     #' Render Translate Sql.
     #' @description
     #' Masked call to SqlRender
