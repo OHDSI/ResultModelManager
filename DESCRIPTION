@@ -11,7 +11,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Depends:
   R6,
-  DatabaseConnector (>= 5.0.0)
+  DatabaseConnector (>= 6.0.0)
 Imports:
   SqlRender,
   ParallelLogger,
@@ -23,5 +23,7 @@ Suggests:
   RSQLite,
   withr,
   knitr,
-  rmarkdown
+  rmarkdown,
+Remotes:
+  OHDSI/DatabaseConnector@beta_6.0.0
 Config/testthat/edition: 3

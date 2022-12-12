@@ -47,6 +47,11 @@ ConnectionHandler <- R6::R6Class(
       }
     },
 
+    #' @title dbms
+    #' @description Get the dbms type of the connection
+    dbms = function() {
+      DatabaseConnector::dbms(self$getConnection())
+    },
     #' Render Translate Sql.
     #' @description
     #' Masked call to SqlRender

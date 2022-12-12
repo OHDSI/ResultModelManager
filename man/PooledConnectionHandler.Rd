@@ -17,19 +17,20 @@ Useful for long running applications that serve multiple concurrent requests.
 \item \href{#method-PooledConnectionHandler-initConnection}{\code{PooledConnectionHandler$initConnection()}}
 \item \href{#method-PooledConnectionHandler-closeConnection}{\code{PooledConnectionHandler$closeConnection()}}
 \item \href{#method-PooledConnectionHandler-queryFunction}{\code{PooledConnectionHandler$queryFunction()}}
+\item \href{#method-PooledConnectionHandler-executeFunction}{\code{PooledConnectionHandler$executeFunction()}}
 \item \href{#method-PooledConnectionHandler-clone}{\code{PooledConnectionHandler$clone()}}
 }
 }
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbIsValid"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbIsValid'><code>ResultModelManager::ConnectionHandler$dbIsValid()</code></a></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeFunction"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-executeFunction'><code>ResultModelManager::ConnectionHandler$executeFunction()</code></a></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-executeSql'><code>ResultModelManager::ConnectionHandler$executeSql()</code></a></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="finalize"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-finalize'><code>ResultModelManager::ConnectionHandler$finalize()</code></a></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="getConnection"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-getConnection'><code>ResultModelManager::ConnectionHandler$getConnection()</code></a></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="queryDb"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-queryDb'><code>ResultModelManager::ConnectionHandler$queryDb()</code></a></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="renderTranslateSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-renderTranslateSql'><code>ResultModelManager::ConnectionHandler$renderTranslateSql()</code></a></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbIsValid"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbIsValid'><code>ResultModelManager::ConnectionHandler$dbIsValid()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbms"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbms'><code>ResultModelManager::ConnectionHandler$dbms()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-executeSql'><code>ResultModelManager::ConnectionHandler$executeSql()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="finalize"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-finalize'><code>ResultModelManager::ConnectionHandler$finalize()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="getConnection"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-getConnection'><code>ResultModelManager::ConnectionHandler$getConnection()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="queryDb"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-queryDb'><code>ResultModelManager::ConnectionHandler$queryDb()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="renderTranslateSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-renderTranslateSql'><code>ResultModelManager::ConnectionHandler$renderTranslateSql()</code></a></span></li>
 </ul>
 </details>
 }}
@@ -86,7 +87,28 @@ Overrides ConnectionHandler Call. Does not translate or render sql.
 \describe{
 \item{\code{sql}}{sql query string}
 
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
+execute Function}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PooledConnectionHandler-executeFunction"></a>}}
+\if{latex}{\out{\hypertarget{method-PooledConnectionHandler-executeFunction}{}}}
+\subsection{Method \code{executeFunction()}}{
+exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
+Does not translate or render sql.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$executeFunction(sql, translate = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{sql}}{sql query string}
+
+\item{\code{translate}}{translate the sql query or not}
 }
 \if{html}{\out{</div>}}
 }

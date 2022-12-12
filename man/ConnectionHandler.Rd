@@ -2,7 +2,7 @@
 % Please edit documentation in R/ConnectionHandler.R
 \name{ConnectionHandler}
 \alias{ConnectionHandler}
-\title{ConnectionHandler}
+\title{dbms}
 \value{
 DatabaseConnector Connection instance
 close Connection
@@ -16,6 +16,9 @@ executeSql
 \description{
 Class for handling DatabaseConnector:connection objects with consistent R6 interfaces for pooled and non-pooled connections.
 Allows a connection to cleanly be opened and closed and stored within class/object variables
+}
+\details{
+ConnectionHandler
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -32,6 +35,7 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-ConnectionHandler-new}{\code{ConnectionHandler$new()}}
+\item \href{#method-ConnectionHandler-dbms}{\code{ConnectionHandler$dbms()}}
 \item \href{#method-ConnectionHandler-renderTranslateSql}{\code{ConnectionHandler$renderTranslateSql()}}
 \item \href{#method-ConnectionHandler-initConnection}{\code{ConnectionHandler$initConnection()}}
 \item \href{#method-ConnectionHandler-getConnection}{\code{ConnectionHandler$getConnection()}}
@@ -58,11 +62,21 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \describe{
 \item{\code{connectionDetails}}{DatabaseConnector::connectionDetails class}
 
-\item{\code{loadConnection}}{Boolean option to load connection right away
-Render Translate Sql.}
+\item{\code{loadConnection}}{Boolean option to load connection right away}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ConnectionHandler-dbms"></a>}}
+\if{latex}{\out{\hypertarget{method-ConnectionHandler-dbms}{}}}
+\subsection{Method \code{dbms()}}{
+Get the dbms type of the connection
+Render Translate Sql.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$dbms()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-renderTranslateSql"></a>}}
