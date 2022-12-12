@@ -85,9 +85,8 @@ PooledConnectionHandler <- R6::R6Class(
     #' exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
     #' Does not translate or render sql.
     #' @param sql                                   sql query string
-    #' @param translate                             translate the sql query or not
-    executeFunction = function(sql, translate = FALSE) {
-      DatabaseConnector::dbExecute(self$getConnection(), sql, translate = translate)
+    executeFunction = function(sql) {
+      DatabaseConnector::dbExecute(self$getConnection(), sql, translate = FALSE)
     }
   )
 )

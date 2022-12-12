@@ -31,6 +31,7 @@ Useful for long running applications that serve multiple concurrent requests.
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="getConnection"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-getConnection'><code>ResultModelManager::ConnectionHandler$getConnection()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="queryDb"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-queryDb'><code>ResultModelManager::ConnectionHandler$queryDb()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="renderTranslateSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-renderTranslateSql'><code>ResultModelManager::ConnectionHandler$renderTranslateSql()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="tbl"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-tbl'><code>ResultModelManager::ConnectionHandler$tbl()</code></a></span></li>
 </ul>
 </details>
 }}
@@ -100,15 +101,13 @@ execute Function}
 exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
 Does not translate or render sql.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$executeFunction(sql, translate = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$executeFunction(sql)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{sql}}{sql query string}
-
-\item{\code{translate}}{translate the sql query or not}
 }
 \if{html}{\out{</div>}}
 }
