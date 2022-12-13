@@ -66,7 +66,9 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \describe{
 \item{\code{connectionDetails}}{DatabaseConnector::connectionDetails class}
 
-\item{\code{loadConnection}}{Boolean option to load connection right away
+\item{\code{loadConnection}}{Boolean option to load connection right away}
+
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
 get dbms}
 }
 \if{html}{\out{</div>}}
@@ -98,9 +100,6 @@ get a dplyr table object (i.e. lazy loaded)
 \item{\code{table}}{table name}
 
 \item{\code{databaseSchema}}{databaseSchema to which table belongs
-\item{\code{loadConnection}}{Boolean option to load connection right away}
-
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
 Render Translate Sql.}
 }
 \if{html}{\out{</div>}}
