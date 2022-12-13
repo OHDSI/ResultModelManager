@@ -1,6 +1,6 @@
 Package: ResultModelManager
 Title: Result Model Manager (RMM) for OHDSI packages
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
 Description: Database data model management utilities for OHDSI packages.
@@ -11,21 +11,18 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Depends:
   R6,
-  DatabaseConnector (>= 6.0.0)
+  DatabaseConnector (>= 5.0.0)
 Imports:
   SqlRender,
   ParallelLogger,
   checkmate,
   DBI,
   pool,
-  dplyr,
-  dbplyr
+  readr
 Suggests: 
   testthat (>= 3.0.0),
   RSQLite,
   withr,
   knitr,
-  rmarkdown,
-Remotes:
-  OHDSI/DatabaseConnector@beta_6.0.0
+  rmarkdown
 Config/testthat/edition: 3

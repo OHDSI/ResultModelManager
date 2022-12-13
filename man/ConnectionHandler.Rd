@@ -24,7 +24,9 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 
 \item{\code{con}}{DatabaseConnector connection object}
 
-\item{\code{isActive}}{Is connection active or not}
+\item{\code{isActive}}{Is connection active or not#'}
+
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
 }
 \if{html}{\out{</div>}}
 }
@@ -52,7 +54,11 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$new(connectionDetails, loadConnection = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$new(
+  connectionDetails,
+  loadConnection = TRUE,
+  snakeCaseToCamelCase = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -92,6 +98,9 @@ get a dplyr table object (i.e. lazy loaded)
 \item{\code{table}}{table name}
 
 \item{\code{databaseSchema}}{databaseSchema to which table belongs
+\item{\code{loadConnection}}{Boolean option to load connection right away}
+
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
 Render Translate Sql.}
 }
 \if{html}{\out{</div>}}
@@ -183,7 +192,7 @@ resources.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$queryDb(
   sql,
-  snakeCaseToCamelCase = TRUE,
+  snakeCaseToCamelCase = self$snakeCaseToCamelCase,
   overrideRowLimit = FALSE,
   ...
 )}\if{html}{\out{</div>}}
@@ -231,7 +240,10 @@ query Function}
 queryFunction that can be overriden with subclasses (e.g. use different base function or intercept query)
 Does not translate or render sql.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$queryFunction(sql, snakeCaseToCamelCase = TRUE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$queryFunction(
+  sql,
+  snakeCaseToCamelCase = self$snakeCaseToCamelCase
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
