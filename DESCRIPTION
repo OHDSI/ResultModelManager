@@ -25,6 +25,7 @@ Suggests:
   withr,
   knitr,
   rmarkdown,
+  keyring
 Remotes:
   OHDSI/DatabaseConnector@beta_6.0.0
 Config/testthat/edition: 3
