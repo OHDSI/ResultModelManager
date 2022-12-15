@@ -34,6 +34,8 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-ConnectionHandler-new}{\code{ConnectionHandler$new()}}
+\item \href{#method-ConnectionHandler-dbms}{\code{ConnectionHandler$dbms()}}
+\item \href{#method-ConnectionHandler-tbl}{\code{ConnectionHandler$tbl()}}
 \item \href{#method-ConnectionHandler-renderTranslateSql}{\code{ConnectionHandler$renderTranslateSql()}}
 \item \href{#method-ConnectionHandler-initConnection}{\code{ConnectionHandler$initConnection()}}
 \item \href{#method-ConnectionHandler-getConnection}{\code{ConnectionHandler$getConnection()}}
@@ -67,6 +69,37 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \item{\code{loadConnection}}{Boolean option to load connection right away}
 
 \item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
+get dbms}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ConnectionHandler-dbms"></a>}}
+\if{latex}{\out{\hypertarget{method-ConnectionHandler-dbms}{}}}
+\subsection{Method \code{dbms()}}{
+Get the dbms type of the connection
+get table
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$dbms()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ConnectionHandler-tbl"></a>}}
+\if{latex}{\out{\hypertarget{method-ConnectionHandler-tbl}{}}}
+\subsection{Method \code{tbl()}}{
+get a dplyr table object (i.e. lazy loaded)
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$tbl(table, databaseSchema = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{table}}{table name}
+
+\item{\code{databaseSchema}}{databaseSchema to which table belongs
 Render Translate Sql.}
 }
 \if{html}{\out{</div>}}
