@@ -54,6 +54,14 @@ PooledConnectionHandler <- R6::R6Class(
       self$isActive <- TRUE
     },
 
+    #' get dbms
+    #' @description Get the dbms type of the connection
+    dbms = function() {
+      conn <- pool::poolCheckout(self$getConnection())
+      on.exit(pool::poolReturn(conn))
+      DatabaseConnector::dbms(conn)
+    },
+
     #' Close Connection
     #' @description
     #' Overrides ConnectionHandler Call
@@ -80,6 +88,16 @@ PooledConnectionHandler <- R6::R6Class(
         colnames(data) <- toupper(colnames(data))
       }
       return(data)
+    },
+
+    #' query Function
+    #' @description
+    #' Overrides ConnectionHandler Call. Does not translate or render sql.
+    #' @param sql                                   sql query string
+    executeFunction = function(sql) {
+      conn <- pool::poolCheckout(self$getConnection())
+      on.exit(pool::poolReturn(conn))
+      DatabaseConnector::dbExecute(conn, sql, translate = FALSE)
     }
   )
 )
