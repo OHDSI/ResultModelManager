@@ -208,7 +208,8 @@ test_that("deleting results rows by database id works", {
         connection = testDatabaseConnection,
         schema = testSchema,
         tableName = tableName,
-        databaseId = "test2"
+        databaseId = "test2",
+        idIsInt = FALSE
       )
 
       sql <-

@@ -183,7 +183,7 @@ checkAndFixDuplicateRows <-
           sum(duplicatedRows)
         )
       )
-      return(table[!duplicatedRows, ])
+      return(table[!duplicatedRows,])
     } else {
       return(table)
     }
@@ -210,7 +210,7 @@ appendNewRows <-
            specifications) {
     if (nrow(data) > 0) {
       primaryKeys <- specifications %>%
-        dplyr::filter(tableName== !!tableName &
+        dplyr::filter(tableName == !!tableName &
                         primaryKey == "Yes") %>%
         dplyr::select("fieldName") %>%
         dplyr::pull()
@@ -305,13 +305,13 @@ naToZero <- function(x) {
 #' @param specifications   A tibble data frame object with specifications.
 #'
 #' @export
-uploadResults <-   function(connectionDetails = NULL,
-                            schema,
-                            zipFileName,
-                            forceOverWriteOfSpecifications = FALSE,
-                            purgeSiteDataBeforeUploading = TRUE,
-                            tempFolder = tempdir(),
-                            specifications) {
+uploadResults <- function(connectionDetails = NULL,
+                          schema,
+                          zipFileName,
+                          forceOverWriteOfSpecifications = FALSE,
+                          purgeSiteDataBeforeUploading = TRUE,
+                          tempFolder = tempdir(),
+                          specifications) {
   start <- Sys.time()
   connection <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection))
@@ -342,12 +342,20 @@ uploadResults <-   function(connectionDetails = NULL,
       dplyr::pull()
 
     if (purgeSiteDataBeforeUploading &&
-        "database_id" %in% primaryKey) {
+      "database_id" %in% primaryKey) {
+
+      type <- specifications %>%
+        dplyr::filter(tableName == !!tableName &
+                        fieldName == "database_id") %>%
+        dplyr::select("type") %>%
+        dplyr::pull()
+
       deleteAllRowsForDatabaseId(
         connection = connection,
         schema = schema,
         tableName = tableName,
-        databaseId = databaseId
+        databaseId = databaseId,
+        idIsInt = type %in% c("int", "bigint")
       )
     }
 
@@ -358,7 +366,7 @@ uploadResults <-   function(connectionDetails = NULL,
       env$tableName <- tableName
       env$primaryKey <- primaryKey
       if (purgeSiteDataBeforeUploading &&
-          "database_id" %in% primaryKey) {
+        "database_id" %in% primaryKey) {
         env$primaryKeyValuesInDb <- NULL
       } else {
         sql <- "SELECT DISTINCT @primary_key FROM @schema.@table_name;"
@@ -436,7 +444,7 @@ uploadResults <-   function(connectionDetails = NULL,
                               by = env$primaryKey)
           if (nrow(duplicates) != 0) {
             if ("database_id" %in% env$primaryKey ||
-                forceOverWriteOfSpecifications) {
+              forceOverWriteOfSpecifications) {
               ParallelLogger::logInfo(
                 "- Found ",
                 nrow(duplicates),
@@ -463,7 +471,7 @@ uploadResults <-   function(connectionDetails = NULL,
             # Remove duplicates we already dealt with:
             env$primaryKeyValuesInDb <-
               env$primaryKeyValuesInDb %>%
-              dplyr::anti_join(duplicates, by = env$primaryKey)
+                dplyr::anti_join(duplicates, by = env$primaryKey)
           }
         }
         if (nrow(chunk) == 0) {
@@ -480,6 +488,7 @@ uploadResults <-   function(connectionDetails = NULL,
           )
         }
       }
+
       readr::read_csv_chunked(
         file = file.path(unzipFolder, csvFileName),
         callback = uploadChunk,
@@ -495,6 +504,7 @@ uploadResults <-   function(connectionDetails = NULL,
 
     }
   }
+
   invisible(lapply(unique(specifications$tableName), uploadTable))
   delta <- Sys.time() - start
   writeLines(paste("Uploading data took", signif(delta, 3), attr(delta, "units")))
@@ -514,6 +524,7 @@ uploadResults <-   function(connectionDetails = NULL,
 #' @export
 deleteAllRowsForPrimaryKey <-
   function(connection, schema, tableName, keyValues) {
+
     createSqlStatement <- function(i) {
       sql <- paste0(
         "DELETE FROM ",
@@ -522,12 +533,13 @@ deleteAllRowsForPrimaryKey <-
         tableName,
         "\nWHERE ",
         paste(paste0(
-          colnames(keyValues), " = '", keyValues[i, ], "'"
+          colnames(keyValues), " = '", keyValues[i,], "'"
         ), collapse = " AND "),
         ";"
       )
       return(sql)
     }
+
     batchSize <- 1000
     for (start in seq(1, nrow(keyValues), by = batchSize)) {
       end <- min(start + batchSize - 1, nrow(keyValues))
@@ -553,15 +565,23 @@ deleteAllRowsForPrimaryKey <-
 #' @param schema            The schema on the postgres server where the results table exists
 #' @param tableName         Database table name
 #' @param databaseId        Results source database identifier
+#' @param idIsInt           Identified is a numeric type? If not character is used
 #'
 #' @export
 deleteAllRowsForDatabaseId <-
   function(connection,
            schema,
            tableName,
-           databaseId) {
-    sql <-
-      "SELECT COUNT(*) FROM @schema.@table_name WHERE database_id = '@database_id';"
+           databaseId,
+           idIsInt = TRUE) {
+
+    if (idIsInt) {
+      sql <-
+        "SELECT COUNT(*) FROM @schema.@table_name WHERE database_id = @database_id;"
+    } else {
+      sql <-
+        "SELECT COUNT(*) FROM @schema.@table_name WHERE database_id = '@database_id';"
+    }
     sql <- SqlRender::render(
       sql = sql,
       schema = schema,
@@ -578,8 +598,14 @@ deleteAllRowsForDatabaseId <-
           databaseId
         )
       )
-      sql <-
-        "DELETE FROM @schema.@table_name WHERE database_id = '@database_id';"
+      if (idIsInt) {
+        sql <-
+          "DELETE FROM @schema.@table_name WHERE database_id = @database_id;"
+      } else {
+        sql <-
+          "DELETE FROM @schema.@table_name WHERE database_id = '@database_id';"
+      }
+
       sql <- SqlRender::render(
         sql = sql,
         schema = schema,
