@@ -48,7 +48,6 @@ generateSqlSchema <- function(csvFilepath,
 
   checkmate::assertFileExists(csvFilepath)
   schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
-  colnames(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(colnames(schemaDefinition))
   requiredFields <- c("tableName", "columnName", "dataType", "isRequired", "primaryKey")
   checkmate::assertNames(colnames(schemaDefinition), must.include = requiredFields)
 

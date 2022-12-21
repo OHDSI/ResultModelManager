@@ -1,14 +1,3 @@
-testDatabaseConnectionDetails <- getTestConnectionDetails()
-testDatabaseConnection <- DatabaseConnector::connect(testDatabaseConnectionDetails)
-withr::defer({
-  DatabaseConnector::disconnect(testDatabaseConnection)
-}, testthat::teardown_env())
-
-
-test_that("results utility functions work", {
-  expect_true(naToEmpty(NA) == "")
-  expect_true(naToZero(NA) == 0)
-})
 
 # get test results data model specifications data from the csv file in this package
 getResultsDataModelSpecifications <- function() {
@@ -235,53 +224,5 @@ test_that("deleting results rows by database id works", {
       expect_true(databaseIdCount == 0)
     }
   }
-
-})
-
-test_that("fixing table metadata for backward compatibility works", {
-  skip_if_results_db_not_available()
-  table <- dplyr::tibble(
-    database_id = "test1",
-    analysis_id = 123,
-    analysis_name = "abc",
-    domain_id = "drug_exposure",
-    start_day = 456.12,
-    end_date = 678.3,
-    is_binary = "N",
-    missing_means_zero = "Y"
-  )
-
-  # metadata JSON added for cohort table
-  outputTable <- fixTableMetadataForBackwardCompatibility(table = table, tableName = "cohort")
-  expectedMetadata <- RJSONIO::fromJSON(asText = TRUE, content = '{\n\t\"database_id\" : \"test1\",\n\t\"analysis_id\" : 123,\n\t\"analysis_name\" : \"abc\",\n\t\"domain_id\" : \"drug_exposure\",\n\t\"start_day\" : 456.12000000000000454747,\n\t\"end_date\" : 678.29999999999995452526,\n\t\"is_binary\" : \"N\",\n\t\"missing_means_zero\" : \"Y\"\n}')
-  expect_equal(expectedMetadata, RJSONIO::fromJSON(outputTable$metadata))
-
-  # metadata JSON added for phenotype_description table
-  outputTable <- fixTableMetadataForBackwardCompatibility(table = table, tableName = "phenotype_description")
-  expectedMetadata <- RJSONIO::fromJSON(asText = TRUE, content = '{\n\t\"database_id\" : \"test1\",\n\t\"analysis_id\" : 123,\n\t\"analysis_name\" : \"abc\",\n\t\"domain_id\" : \"drug_exposure\",\n\t\"start_day\" : 456.12000000000000454747,\n\t\"end_date\" : 678.29999999999995452526,\n\t\"is_binary\" : \"N\",\n\t\"missing_means_zero\" : \"Y\"\n}')
-  expect_equal(expectedMetadata, RJSONIO::fromJSON(outputTable$metadata))
-
-  # metadata JSON is not added for other tables
-  outputTable <- fixTableMetadataForBackwardCompatibility(table = table, tableName = "blah")
-  expect_true(!"metadata" %in% colnames(outputTable))
-
-  # table that includes referent_concept_id column
-  table <- dplyr::tibble(
-    database_id = "test1",
-    analysis_id = 123,
-    analysis_name = "abc",
-    domain_id = "drug_exposure",
-    start_day = 456.12,
-    end_date = 678.3,
-    is_binary = "N",
-    missing_means_zero = "Y",
-    referent_concept_id = 56789
-  )
-
-  # remove referent_concept_id column from table and add it as a single value in the metadata JSON
-  outputTable <- fixTableMetadataForBackwardCompatibility(table = table, tableName = "cohort")
-  expect_true(!"referent_concept_id" %in% colnames(outputTable))
-  expectedMetadata <- RJSONIO::fromJSON(asText = TRUE, content = '{\n \"database_id\": \"test1\",\n\"analysis_id\":      123,\n\"analysis_name\": \"abc\",\n\"domain_id\": \"drug_exposure\",\n\"start_day\":   456.12,\n\"end_date\":    678.3,\n\"is_binary\": \"N\",\n\"missing_means_zero\": \"Y\",\n\"referent_concept_id\":    56789 \n}')
-  expect_equal(expectedMetadata, RJSONIO::fromJSON(outputTable$metadata))
 
 })

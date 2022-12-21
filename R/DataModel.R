@@ -15,46 +15,6 @@
 # limitations under the License.
 #
 
-#' Fix table metadata for backward compatibility
-#'
-#' @param table           Data Table
-#' @param tableName       Database table name
-#'
-#' @return
-#' table
-#'
-#' @noRd
-fixTableMetadataForBackwardCompatibility <-
-  function(table, tableName) {
-    if (tableName %in% c("cohort", "phenotype_description")) {
-      if (!"metadata" %in% colnames(table)) {
-        data <- list()
-        for (i in seq_len(nrow(table))) {
-          data[[i]] <- table[i, ]
-          colnamesDf <- colnames(data[[i]])
-          metaDataList <- list()
-          for (j in seq_len(length(colnamesDf))) {
-            metaDataList[[colnamesDf[[j]]]] <-
-              data[[i]][colnamesDf[[j]]] %>% dplyr::pull()
-          }
-          data[[i]]$metadata <-
-            RJSONIO::toJSON(metaDataList, pretty = TRUE, digits = 23)
-        }
-        table <- dplyr::bind_rows(data)
-      }
-      if ("referent_concept_id" %in% colnames(table)) {
-        table <- table %>%
-          dplyr::select(-"referent_concept_id")
-      }
-    }
-    if (tableName %in% c("covariate_value", "temporal_covariate_value")) {
-      if (!"sum_value" %in% colnames(table)) {
-        table$sum_value <- -1
-      }
-    }
-    return(table)
-  }
-
 
 #' Check and fix column names
 #'
@@ -72,31 +32,22 @@ checkAndFixColumnNames <-
            tableName,
            zipFileName,
            specifications) {
-    if (tableName %in% c(
-      "cohort",
-      "phenotype_description",
-      "covariate_value",
-      "temporal_covariate_value"
-    )) {
-      table <- fixTableMetadataForBackwardCompatibility(table = table,
-                                                        tableName = tableName)
-    }
     observeredNames <- colnames(table)[order(colnames(table))]
-    
+
     tableSpecs <- specifications %>%
       dplyr::filter(tableName == !!tableName)
-    
+
     optionalNames <- tableSpecs %>%
       dplyr::filter(optional == "Yes") %>%
       dplyr::select("fieldName")
-    
+
     expectedNames <- tableSpecs %>%
       dplyr::select("fieldName") %>%
       dplyr::anti_join(dplyr::filter(optionalNames, !fieldName %in% observeredNames),
                        by = "fieldName") %>%
       dplyr::arrange("fieldName") %>%
       dplyr::pull()
-    
+
     if (!(all(expectedNames %in% observeredNames))) {
       stop(
         sprintf(
@@ -131,7 +82,7 @@ checkAndFixDataTypes <-
            specifications) {
     tableSpecs <- specifications %>%
       dplyr::filter(tableName == !!tableName)
-    
+
     observedTypes <- sapply(table, class)
     for (i in seq_len(length(observedTypes))) {
       fieldName <- names(observedTypes)[i]
@@ -251,7 +202,7 @@ checkAndFixDuplicateRows <-
 #' @importFrom rlang .data
 #'
 #' @noRd
-#' 
+#'
 appendNewRows <-
   function(data,
            newData,
@@ -268,123 +219,6 @@ appendNewRows <-
     }
     return(dplyr::bind_rows(data, newData))
   }
-
-
-#' Pre-merge results files
-#'
-#' @description
-#' This function combines results from one or more databases into a single file.
-#' The single file may, for example, be used as the input for a shiny app.
-#' Original location of this function: https://github.com/OHDSI/CohortDiagnostics/blob/93e8915b504318300c68a565945dd17807a88567/R/Shiny.R
-#'
-#' It also checks whether the results conform to the results data model specifications.
-#'
-#' @param dataFolder       folder where the exported results zip files are stored. Zip files containing results
-#'                         from multiple databases may be placed in the same folder.
-#' @param tempFolder       A folder on the local file system where the zip files are extracted to. Will be cleaned
-#'                         up when the function is finished. Can be used to specify a temp folder on a drive that
-#'                         has sufficient space if the default system temp space is too limited.
-#' @param specifications   A tibble data frame object with specifications.
-#'
-#' @export
-preMergeResultsFiles <-
-  function(dataFolder,
-           tempFolder = tempdir(),
-           specifications) {
-    zipFiles <-
-      dplyr::tibble(
-        zipFile = list.files(
-          dataFolder,
-          pattern = ".zip",
-          full.names = TRUE,
-          recursive = TRUE
-        ),
-        unzipFolder = ""
-      )
-    ParallelLogger::logInfo("Merging ", nrow(zipFiles), " zip files.")
-    
-    unzipMainFolder <-
-      tempfile("unzipTempFolder", tmpdir = tempFolder)
-    dir.create(path = unzipMainFolder, recursive = TRUE)
-    on.exit(unlink(unzipMainFolder, recursive = TRUE))
-    
-    for (i in seq_len(nrow(zipFiles))) {
-      ParallelLogger::logInfo("- Unzipping ", basename(zipFiles$zipFile[i]))
-      unzipFolder <-
-        file.path(unzipMainFolder, sub(".zip", "", basename(zipFiles$zipFile[i])))
-      dir.create(unzipFolder)
-      zip::unzip(zipFiles$zipFile[i], exdir = unzipFolder)
-      zipFiles$unzipFolder[i] <- unzipFolder
-    }
-    
-    # Storing output in an environment for now. If things get too big, we may want to write
-    # directly to CSV files for insertion into database:
-    newEnvironment <- new.env()
-    
-    processTable <- function(tableName, env) {
-      ParallelLogger::logInfo("Processing table ", tableName)
-      csvFileName <- paste0(tableName, ".csv")
-      data <- dplyr::tibble()
-      for (i in seq_len(nrow(zipFiles))) {
-        if (csvFileName %in% list.files(zipFiles$unzipFolder[i])) {
-          newData <-
-            readr::read_csv(
-              file.path(zipFiles$unzipFolder[i], csvFileName),
-              col_types = readr::cols(),
-              guess_max = min(1e6)
-            )
-          if (nrow(newData) > 0) {
-            newData <- checkAndFixColumnNames(
-              table = newData,
-              tableName = tableName,
-              zipFileName = zipFiles$zipFile[i],
-              specifications = specifications
-            )
-            newData <- checkAndFixDataTypes(
-              table = newData,
-              tableName = tableName,
-              zipFileName = zipFiles$zipFile[i],
-              specifications = specifications
-            )
-            newData <- checkAndFixDuplicateRows(
-              table = newData,
-              tableName = tableName,
-              zipFileName = zipFiles$zipFile[i],
-              specifications = specifications
-            )
-            data <- appendNewRows(
-              data = data,
-              newData = newData,
-              tableName = tableName,
-              specifications = specifications
-            )
-            
-          }
-        }
-      }
-      if (nrow(data) == 0) {
-        ParallelLogger::logInfo("- No data found for table ", tableName)
-      } else {
-        colnames(data) <- SqlRender::snakeCaseToCamelCase(colnames(data))
-        assign(SqlRender::snakeCaseToCamelCase(tableName),
-               data,
-               envir = env)
-      }
-    }
-    invisible(lapply(unique(specifications$tableName), processTable, env = newEnvironment))
-    ParallelLogger::logInfo("Creating PreMerged.Rdata file. This might take some time.")
-    save(
-      list = ls(newEnvironment),
-      envir = newEnvironment,
-      compress = TRUE,
-      compression_level = 2,
-      file = file.path(dataFolder, "PreMerged.RData")
-    )
-    rm(list = ls(newEnvironment), envir = newEnvironment)
-    ParallelLogger::logInfo("Merged data saved in ",
-                            file.path(dataFolder, "PreMerged.RData"))
-  }
-
 
 #' Create the results data model tables on a database server.
 #'
@@ -481,14 +315,14 @@ uploadResults <-   function(connectionDetails = NULL,
   start <- Sys.time()
   connection <- DatabaseConnector::connect(connectionDetails)
   on.exit(DatabaseConnector::disconnect(connection))
-  
+
   unzipFolder <- tempfile("unzipTempFolder", tmpdir = tempFolder)
   dir.create(path = unzipFolder, recursive = TRUE)
   on.exit(unlink(unzipFolder, recursive = TRUE), add = TRUE)
-  
+
   ParallelLogger::logInfo("Unzipping ", zipFileName)
   zip::unzip(zipFileName, exdir = unzipFolder)
-  
+
   if (purgeSiteDataBeforeUploading) {
     database <-
       readr::read_csv(file = file.path(unzipFolder, "database.csv"),
@@ -497,16 +331,16 @@ uploadResults <-   function(connectionDetails = NULL,
       SqlRender::snakeCaseToCamelCase(colnames(database))
     databaseId <- database$databaseId
   }
-  
+
   uploadTable <- function(tableName) {
     ParallelLogger::logInfo("Uploading table ", tableName)
-    
+
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
       dplyr::select("fieldName") %>%
       dplyr::pull()
-    
+
     if (purgeSiteDataBeforeUploading &&
         "database_id" %in% primaryKey) {
       deleteAllRowsForDatabaseId(
@@ -516,7 +350,7 @@ uploadResults <-   function(connectionDetails = NULL,
         databaseId = databaseId
       )
     }
-    
+
     csvFileName <- paste0(tableName, ".csv")
     if (csvFileName %in% list.files(unzipFolder)) {
       env <- new.env()
@@ -540,13 +374,13 @@ uploadResults <-   function(connectionDetails = NULL,
           tolower(colnames(primaryKeyValuesInDb))
         env$primaryKeyValuesInDb <- primaryKeyValuesInDb
       }
-      
+
       uploadChunk <- function(chunk, pos) {
         ParallelLogger::logInfo("- Preparing to upload rows ",
                                 pos,
                                 " through ",
                                 pos + nrow(chunk) - 1)
-        
+
         chunk <- checkAndFixColumnNames(
           table = chunk,
           tableName = env$tableName,
@@ -565,7 +399,7 @@ uploadResults <-   function(connectionDetails = NULL,
           zipFileName = zipFileName,
           specifications = specifications
         )
-        
+
         # Primary key fields cannot be NULL, so for some tables convert NAs to empty or zero:
         toEmpty <- specifications %>%
           dplyr::filter(
@@ -579,7 +413,7 @@ uploadResults <-   function(connectionDetails = NULL,
           chunk <- chunk %>%
             dplyr::mutate_at(toEmpty, naToEmpty)
         }
-        
+
         tozero <- specifications %>%
           dplyr::filter(
             tableName == env$tableName &
@@ -592,7 +426,7 @@ uploadResults <-   function(connectionDetails = NULL,
           chunk <- chunk %>%
             dplyr::mutate_at(tozero, naToZero)
         }
-        
+
         # Check if inserting data would violate primary key constraints:
         if (!is.null(env$primaryKeyValuesInDb)) {
           primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
@@ -615,7 +449,7 @@ uploadResults <-   function(connectionDetails = NULL,
                 tableName = env$tableName,
                 keyValues = duplicates
               )
-              
+
             } else {
               ParallelLogger::logInfo(
                 "- Found ",
@@ -654,11 +488,11 @@ uploadResults <-   function(connectionDetails = NULL,
         guess_max = 1e6,
         progress = FALSE
       )
-      
+
       # chunk <- readr::read_csv(file = file.path(unzipFolder, csvFileName),
       # col_types = readr::cols(),
       # guess_max = 1e6)
-      
+
     }
   }
   invisible(lapply(unique(specifications$tableName), uploadTable))
