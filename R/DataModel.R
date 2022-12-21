@@ -225,10 +225,10 @@ appendNewRows <-
 #' @details
 #' Only PostgreSQL servers are supported.
 #'
-#' @template Connection
-#' @template ConnectionDetails
-#' @param schema         The schema on the postgres server where the tables will be created.
-#' @param sql            The postgres sql with the results data model DDL.
+#' @param connection            DatabaseConnector connection instance or null
+#' @param connectionDetails     DatabaseConnector connectionDetails instance or null
+#' @param schema                The schema on the postgres server where the tables will be created.
+#' @param sql                   The postgres sql with the results data model DDL.
 #'
 #' @export
 createResultsDataModel <-
@@ -506,7 +506,7 @@ uploadResults <-   function(connectionDetails = NULL,
 #' @details
 #' Only PostgreSQL servers are supported.
 #'
-#' @template Connection
+#' @param connection        DatabaseConnector connection instance
 #' @param schema            The schema on the postgres server where the results table exists
 #' @param tableName         Database table name
 #' @param keyValues         Key values of results rows to be deleted
@@ -549,7 +549,7 @@ deleteAllRowsForPrimaryKey <-
 #' @details
 #' Only PostgreSQL servers are supported.
 #'
-#' @template Connection
+#' @param connection                                     DatabaseConnector connection instance
 #' @param schema            The schema on the postgres server where the results table exists
 #' @param tableName         Database table name
 #' @param databaseId        Results source database identifier
