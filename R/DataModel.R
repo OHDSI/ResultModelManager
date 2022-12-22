@@ -293,6 +293,7 @@ naToZero <- function(x) {
 #'                            DatabaseConnector package.
 #' @param schema         The schema on the postgres server where the tables have been created.
 #' @param zipFileName    The name of the zip file.
+#' @param tablePrefix    String to prefix table names with - default is empty string
 #' @param forceOverWriteOfSpecifications  If TRUE, specifications of the phenotypes, cohort definitions, and analysis
 #'                       will be overwritten if they already exist on the database. Only use this if these specifications
 #'                       have changed since the last upload.
@@ -308,6 +309,7 @@ naToZero <- function(x) {
 uploadResults <- function(connectionDetails = NULL,
                           schema,
                           zipFileName,
+                          tablePrefix = "",
                           forceOverWriteOfSpecifications = FALSE,
                           purgeSiteDataBeforeUploading = TRUE,
                           tempFolder = tempdir(),
@@ -505,7 +507,7 @@ uploadResults <- function(connectionDetails = NULL,
     }
   }
 
-  invisible(lapply(unique(specifications$tableName), uploadTable))
+  invisible(lapply(paste0(tablePrefix, unique(specifications$tableName)), uploadTable))
   delta <- Sys.time() - start
   writeLines(paste("Uploading data took", signif(delta, 3), attr(delta, "units")))
 }
