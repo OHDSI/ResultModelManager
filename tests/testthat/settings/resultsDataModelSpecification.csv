@@ -1,4 +1,4 @@
-tableName,fieldName,type,isRequired,primaryKey,optional,emptyIsNa
+tableName,fieldName,dataType,isRequired,primaryKey,optional,emptyIsNa
 test_table_1,database_id,varchar,Yes,Yes,No,Yes
 test_table_1,analysis_id,bigint,Yes,Yes,No,Yes
 test_table_1,analysis_name,varchar,Yes,No,No,Yes

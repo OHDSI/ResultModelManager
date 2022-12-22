@@ -1,35 +1,35 @@
-tableName,fieldName,dataType,isRequired,primaryKey,minCellCount,description
-cohort_definition,cohort_definition_id,bigint,yes,yes,no,cohort definition id
-cohort_definition,concept_id,bigint,yes,no,no,covariate id
-cohort_definition,cohort_name,varchar,yes,no,no,cohort definition name
-cohort_definition,short_name,varchar,yes,no,no,cohort definition name
-cohort_definition,atc_flag,int,yes,no,no,cohort definition name
-cohort_definition,database_id,bigint,yes,yes,no,database definition id
-cdm_source_info,database_id,bigint,yes,yes,no,database definition id
-cdm_source_info,cdm_source_abbreviation,varchar,no,no,no,cdm info
-cdm_source_info,cdm_holder,varchar,no,no,no,cdm info
-cdm_source_info,source_description,varchar,no,no,no,cdm info
-cdm_source_info,source_documentation_reference,varchar,no,no,no,cdm info
-cdm_source_info,cdm_etl_reference,varchar,no,no,no,cdm info
-cdm_source_info,source_release_date,date,no,no,no,cdm info
-cdm_source_info,cdm_release_date,date,no,no,no,cdm info
-cdm_source_info,cdm_version,varchar,no,no,no,cdm info
-cdm_source_info,vocabulary_version,varchar,no,no,no,cdm info
-cohort_counts,num_persons,bigint,yes,no,yes,cohort size
-cohort_counts,cohort_definition_id,bigint,yes,yes,no,cohort definition id
-cohort_counts,database_id,bigint,yes,yes,no,database definition id
-cosine_similarity,database_id,bigint,yes,yes,no,database definition id
-cosine_similarity,cohort_definition_id_1,bigint,yes,yes,no,database definition id
-cosine_similarity,cohort_definition_id_2,bigint,yes,yes,no,database definition id
-cosine_similarity,covariate_type,varchar,yes,no,no,database definition id
-cosine_similarity,cosine_similarity,float,yes,no,no,database definition id
-covariate_definition,covariate_id,bigint,yes,no,no,covariate id
-covariate_definition,covariate_name,varchar,yes,no,no,covariate name
-covariate_definition,concept_id,bigint,yes,no,no,covariate id
-covariate_definition,time_at_risk_start,int,yes,no,no,time at risk start
-covariate_definition,time_at_risk_end,int,yes,no,no,time at risk end
-covariate_definition,covariate_type,varchar,yes,no,no,database definition id
-covariate_mean,database_id,bigint,yes,yes,no,database definition id
-covariate_mean,cohort_definition_id,bigint,yes,yes,no,database definition id
-covariate_mean,covariate_id,bigint,yes,yes,no,database definition id
-covariate_mean,covariate_mean,float,yes,yes,no,database definition id
+tableName,fieldName,dataType,optional,primaryKey,minCellCount,description,emptyIsNa
+cohort_definition,cohort_definition_id,bigint,no,yes,no,cohort definition id,Yes
+cohort_definition,concept_id,bigint,no,no,no,covariate id,Yes
+cohort_definition,cohort_name,varchar,no,no,no,cohort definition name,Yes
+cohort_definition,short_name,varchar,no,no,no,cohort definition name,Yes
+cohort_definition,atc_flag,int,no,no,no,cohort definition name,Yes
+cohort_definition,database_id,bigint,no,yes,no,database definition id,Yes
+cdm_source_info,database_id,bigint,no,yes,no,database definition id,Yes
+cdm_source_info,cdm_source_abbreviation,varchar,yes,no,no,cdm info,Yes
+cdm_source_info,cdm_holder,varchar,yes,no,no,cdm info,Yes
+cdm_source_info,source_description,varchar,yes,no,no,cdm info,Yes
+cdm_source_info,source_documentation_reference,varchar,yes,no,no,cdm info,Yes
+cdm_source_info,cdm_etl_reference,varchar,yes,no,no,cdm info,Yes
+cdm_source_info,source_release_date,date,yes,no,no,cdm info,Yes
+cdm_source_info,cdm_release_date,date,yes,no,no,cdm info,Yes
+cdm_source_info,cdm_version,varchar,yes,no,no,cdm info,Yes
+cdm_source_info,vocabulary_version,varchar,yes,no,no,cdm info,Yes
+cohort_counts,num_persons,bigint,no,no,yes,cohort size,Yes
+cohort_counts,cohort_definition_id,bigint,no,yes,no,cohort definition id,Yes
+cohort_counts,database_id,bigint,no,yes,no,database definition id,Yes
+cosine_similarity,database_id,bigint,no,yes,no,database definition id,Yes
+cosine_similarity,cohort_definition_id_1,bigint,no,yes,no,database definition id,Yes
+cosine_similarity,cohort_definition_id_2,bigint,no,yes,no,database definition id,Yes
+cosine_similarity,covariate_type,varchar,no,no,no,database definition id,Yes
+cosine_similarity,cosine_similarity,float,no,no,no,database definition id,Yes
+covariate_definition,covariate_id,bigint,no,no,no,covariate id,Yes
+covariate_definition,covariate_name,varchar,no,no,no,covariate name,Yes
+covariate_definition,concept_id,bigint,no,no,no,covariate id,Yes
+covariate_definition,time_at_risk_start,int,no,no,no,time at risk start,Yes
+covariate_definition,time_at_risk_end,int,no,no,no,time at risk end,Yes
+covariate_definition,covariate_type,varchar,no,no,no,database definition id,Yes
+covariate_mean,database_id,bigint,no,yes,no,database definition id,Yes
+covariate_mean,cohort_definition_id,bigint,no,yes,no,database definition id,Yes
+covariate_mean,covariate_id,bigint,no,yes,no,database definition id,Yes
+covariate_mean,covariate_mean,float,no,yes,no,database definition id,Yes

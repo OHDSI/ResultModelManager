@@ -32,7 +32,7 @@ checkAndFixColumnNames <-
            tableName,
            zipFileName,
            specifications) {
-    observeredNames <- colnames(table)[order(colnames(table))]
+    observeredNames <- tolower(colnames(table)[order(colnames(table))])
 
     tableSpecs <- specifications %>%
       dplyr::filter(tableName == !!tableName)
@@ -59,6 +59,8 @@ checkAndFixColumnNames <-
         )
       )
     }
+
+    colnames(table) <- tolower(colnames(table))
     return(table[, expectedNames])
   }
 
@@ -87,7 +89,8 @@ checkAndFixDataTypes <-
     for (i in seq_len(length(observedTypes))) {
       fieldName <- names(observedTypes)[i]
       expectedType <-
-        gsub("\\(.*\\)", "", tolower(tableSpecs$type[tableSpecs$fieldName == fieldName]))
+        gsub("\\(.*\\)", "", tolower(tableSpecs$dataType[tableSpecs$fieldName == fieldName]))
+
       if (expectedType == "bigint" || expectedType == "float") {
         if (observedTypes[i] != "numeric" && observedTypes[i] != "double") {
           ParallelLogger::logDebug(
@@ -142,7 +145,12 @@ checkAndFixDataTypes <-
               expectedType
             )
           )
-          table <- dplyr::mutate_at(table, i, as.Date)
+
+          dateFunc <- as.Date
+          if (is.numeric(table[,i] %>% dplyr::pull()))
+            dateFunc <- as.Date.POSIXct
+
+          table <- dplyr::mutate_at(table, i, dateFunc)
         }
       }
     }
@@ -349,7 +357,7 @@ uploadResults <- function(connectionDetails = NULL,
       type <- specifications %>%
         dplyr::filter(tableName == !!tableName &
                         fieldName == "database_id") %>%
-        dplyr::select("type") %>%
+        dplyr::select("dataType") %>%
         dplyr::pull()
 
       deleteAllRowsForDatabaseId(
@@ -414,8 +422,8 @@ uploadResults <- function(connectionDetails = NULL,
         toEmpty <- specifications %>%
           dplyr::filter(
             tableName == env$tableName &
-              emptyIsNa == "No" &
-              grepl("varchar", "type")
+              tolower(emptyIsNa) != "yes" &
+              grepl("varchar", dataType)
           ) %>%
           dplyr::select("fieldName") %>%
           dplyr::pull()
@@ -427,8 +435,8 @@ uploadResults <- function(connectionDetails = NULL,
         tozero <- specifications %>%
           dplyr::filter(
             tableName == env$tableName &
-              emptyIsNa == "No" &
-              type %in% c("int", "bigint", "float")
+              tolower(emptyIsNa) != "yes" &
+              dataType %in% c("int", "bigint", "float")
           ) %>%
           dplyr::select("fieldName") %>%
           dplyr::pull()
@@ -499,11 +507,6 @@ uploadResults <- function(connectionDetails = NULL,
         guess_max = 1e6,
         progress = FALSE
       )
-
-      # chunk <- readr::read_csv(file = file.path(unzipFolder, csvFileName),
-      # col_types = readr::cols(),
-      # guess_max = 1e6)
-
     }
   }
 
