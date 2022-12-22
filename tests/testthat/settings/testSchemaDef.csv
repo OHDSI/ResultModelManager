@@ -1,4 +1,4 @@
-tableName,columnName,dataType,isRequired,primaryKey,minCellCount,description
+tableName,fieldName,dataType,isRequired,primaryKey,minCellCount,description
 cohort_definition,cohort_definition_id,bigint,yes,yes,no,cohort definition id
 cohort_definition,concept_id,bigint,yes,no,no,covariate id
 cohort_definition,cohort_name,varchar,yes,no,no,cohort definition name

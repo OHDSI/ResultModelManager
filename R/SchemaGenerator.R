@@ -48,7 +48,7 @@ generateSqlSchema <- function(csvFilepath,
 
   checkmate::assertFileExists(csvFilepath)
   schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
-  requiredFields <- c("tableName", "columnName", "dataType", "isRequired", "primaryKey")
+  requiredFields <- c("tableName", "fieldName", "dataType", "isRequired", "primaryKey")
   checkmate::assertNames(colnames(schemaDefinition), must.include = requiredFields)
 
   tableSqlStr <- "
@@ -65,7 +65,7 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
 
     primaryKeyFields <- tableFields[tableFields$primaryKey == "yes", ]
     if (nrow(primaryKeyFields)) {
-      pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$columnName, collapse = ","), ")")
+      pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$fieldName, collapse = ","), ")")
       fieldDefinitions <- c(fieldDefinitions, pkeyField)
     }
 
