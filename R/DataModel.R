@@ -38,7 +38,7 @@ checkAndFixColumnNames <-
       dplyr::filter(tableName == !!tableName)
 
     optionalNames <- tableSpecs %>%
-      dplyr::filter(optional == "Yes") %>%
+      dplyr::filter(tolower(optional) == "yes") %>%
       dplyr::select("fieldName")
 
     expectedNames <- tableSpecs %>%
@@ -170,7 +170,7 @@ checkAndFixDuplicateRows <-
            specifications) {
     primaryKeys <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
+                      tolower(primaryKey) == "yes") %>%
       dplyr::select("fieldName") %>%
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
@@ -211,7 +211,7 @@ appendNewRows <-
     if (nrow(data) > 0) {
       primaryKeys <- specifications %>%
         dplyr::filter(tableName == !!tableName &
-                        primaryKey == "Yes") %>%
+                        tolower(primaryKey) == "yes") %>%
         dplyr::select("fieldName") %>%
         dplyr::pull()
       newData <- newData %>%
@@ -339,7 +339,7 @@ uploadResults <- function(connectionDetails = NULL,
 
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
+                      tolower(primaryKey) == "yes") %>%
       dplyr::select("fieldName") %>%
       dplyr::pull()
 
