@@ -42,7 +42,7 @@ ConnectionHandler <- R6::R6Class(
     #' @param loadConnection                Boolean option to load connection right away
     #' @param snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
     initialize = function(connectionDetails, loadConnection = TRUE, snakeCaseToCamelCase = TRUE) {
-      checkmate::assertClass(connectionDetails, "connectionDetails")
+      checkmate::assertClass(connectionDetails, "ConnectionDetails")
       self$connectionDetails <- connectionDetails
       self$snakeCaseToCamelCase <- snakeCaseToCamelCase
       if (loadConnection) {
