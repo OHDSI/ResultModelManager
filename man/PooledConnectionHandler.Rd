@@ -24,12 +24,14 @@ Useful for long running applications that serve multiple concurrent requests.
 <details><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbIsValid"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbIsValid'><code>ResultModelManager::ConnectionHandler$dbIsValid()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbms"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbms'><code>ResultModelManager::ConnectionHandler$dbms()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeFunction"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-executeFunction'><code>ResultModelManager::ConnectionHandler$executeFunction()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-executeSql'><code>ResultModelManager::ConnectionHandler$executeSql()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="finalize"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-finalize'><code>ResultModelManager::ConnectionHandler$finalize()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="getConnection"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-getConnection'><code>ResultModelManager::ConnectionHandler$getConnection()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="queryDb"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-queryDb'><code>ResultModelManager::ConnectionHandler$queryDb()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="renderTranslateSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-renderTranslateSql'><code>ResultModelManager::ConnectionHandler$renderTranslateSql()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="tbl"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-tbl'><code>ResultModelManager::ConnectionHandler$tbl()</code></a></span></li>
 </ul>
 </details>
 }}
