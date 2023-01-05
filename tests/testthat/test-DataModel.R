@@ -135,14 +135,14 @@ test_that("appending results rows using primary keys works", {
 
       # verify that the duplicate row was not appended (only the single existing row remains)
       rowCount <- mergedData %>%
-        dplyr::filter(.data$analysis3_id == '6542456') %>%
+        dplyr::filter(analysis3_id == '6542456') %>%
         dplyr::count() %>%
         dplyr::pull()
       expect_true(rowCount == 1)
 
       # verify that the two new rows were appended
       rowCount <- mergedData %>%
-        dplyr::filter(.data$analysis3_id == '3453111') %>%
+        dplyr::filter(analysis3_id == '3453111') %>%
         dplyr::count() %>%
         dplyr::pull()
       expect_true(rowCount == 2)

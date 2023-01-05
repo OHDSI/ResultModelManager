@@ -74,8 +74,6 @@ checkAndFixColumnNames <-
 #' @return
 #' table
 #'
-#' @importFrom rlang .data
-#'
 #' @noRd
 checkAndFixDataTypes <-
   function(table,
@@ -168,8 +166,6 @@ checkAndFixDataTypes <-
 #' @return
 #' table
 #'
-#' @importFrom rlang .data
-#'
 #' @noRd
 checkAndFixDuplicateRows <-
   function(table,
@@ -206,8 +202,6 @@ checkAndFixDuplicateRows <-
 #'
 #' @return
 #' table of combined data rows
-#'
-#' @importFrom rlang .data
 #'
 #' @noRd
 #'
