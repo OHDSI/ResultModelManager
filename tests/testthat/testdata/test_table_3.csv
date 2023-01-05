@@ -1,0 +1,3 @@
+database_id,analysis3_id,concept_id,logic_description,valid_start_date,concept_name,p_10_value
+"test1",6542456,7743237,"calculated","2020/02/14","test concept name 3",252.0
+"test1",3453466,6535277,"calculated","2021/02/05","test concept name 4",1.02

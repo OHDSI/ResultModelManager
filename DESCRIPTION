@@ -10,6 +10,7 @@ VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Depends:
+  R (>= 4.1.0),
   R6,
   DatabaseConnector (>= 6.0.0)
 Imports:
@@ -18,7 +19,9 @@ Imports:
   checkmate,
   DBI,
   pool,
-  readr
+  readr,
+  zip,
+  dplyr
 Suggests:
   testthat (>= 3.0.0),
   RSQLite,

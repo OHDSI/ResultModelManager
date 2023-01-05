@@ -30,8 +30,7 @@
 #' Take a csv schema definition and create a basic sql script with it.
 #'
 #' @param csvFilepath                   Path to schema file. Csv file must have the columns:
-#'                                      "table_name", "colum_name", "data_type", "is_required", "primary_key"
-#'                                      Note -
+#'                                      "tableName", "columnName", "dataType", "optional", "primaryKey"
 #' @param sqlOutputPath                 File to write sql to.
 #' @param overwrite                     Boolean - overwrite existing file?
 #' @export
@@ -48,8 +47,7 @@ generateSqlSchema <- function(csvFilepath,
 
   checkmate::assertFileExists(csvFilepath)
   schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
-  colnames(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(colnames(schemaDefinition))
-  requiredFields <- c("tableName", "columnName", "dataType", "isRequired", "primaryKey")
+  requiredFields <- c("tableName", "fieldName", "dataType", "optional", "primaryKey")
   checkmate::assertNames(colnames(schemaDefinition), must.include = requiredFields)
 
   tableSqlStr <- "
@@ -66,7 +64,7 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
 
     primaryKeyFields <- tableFields[tableFields$primaryKey == "yes", ]
     if (nrow(primaryKeyFields)) {
-      pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$columnName, collapse = ","), ")")
+      pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$fieldName, collapse = ","), ")")
       fieldDefinitions <- c(fieldDefinitions, pkeyField)
     }
 
