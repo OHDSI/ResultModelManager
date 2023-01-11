@@ -79,7 +79,11 @@ DataMigrationManager <- R6::R6Class(
       checkmate::checkString(databaseSchema)
       checkmate::checkString(tablePrefix)
       checkmate::checkString(migrationPath)
-      checkmate::checkClass(connectionDetails, "connectionDetails")
+      if (is(connectionDetails, "connectionDetails")) {
+        checkmate::assertClass(connectionDetails, "connectionDetails")
+      } else {
+        checkmate::assertClass(connectionDetails, "ConnectionDetails")
+      }
 
       # Set required variables
       self$tablePrefix <- tablePrefix
@@ -102,8 +106,11 @@ DataMigrationManager <- R6::R6Class(
     #' Check if migration table is present in schema
     #' @return boolean
     migrationTableExists = function() {
-      tables <- DatabaseConnector::getTableNames(private$connectionHandler$getConnection(), self$databaseSchema)
-      return(toupper(paste0(self$tablePrefix, "migration")) %in% tables)
+      return(DatabaseConnector::existsTable(
+        connection = private$connectionHandler$getConnection(),
+        databaseSchema = self$databaseSchema,
+        tableName = paste0(self$tablePrefix, "migration")
+      ))
     },
 
     #' Get path of migrations
