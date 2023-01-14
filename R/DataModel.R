@@ -483,7 +483,8 @@ uploadResults <- function(connectionDetails = NULL,
         } else {
           DatabaseConnector::insertTable(
             connection = connection,
-            tableName = paste(env$schema, env$tableName, sep = "."),
+            tableName = env$tableName,
+            databaseSchema = env$schema,
             data = chunk,
             dropTableIfExists = FALSE,
             createTable = FALSE,
