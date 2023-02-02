@@ -103,7 +103,7 @@ DataMigrationManager <- R6::R6Class(
     #' @return boolean
     migrationTableExists = function() {
       tables <- DatabaseConnector::getTableNames(private$connectionHandler$getConnection(), self$databaseSchema)
-      return(toupper(paste0(self$tablePrefix, "migration")) %in% tables)
+      return(tolower(paste0(self$tablePrefix, "migration")) %in% tables)
     },
 
     #' Get path of migrations

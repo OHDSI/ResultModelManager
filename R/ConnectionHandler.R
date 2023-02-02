@@ -42,7 +42,7 @@ ConnectionHandler <- R6::R6Class(
     #' @param loadConnection                Boolean option to load connection right away
     #' @param snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
     initialize = function(connectionDetails, loadConnection = TRUE, snakeCaseToCamelCase = TRUE) {
-      checkmate::assertClass(connectionDetails, "connectionDetails")
+      checkmate::assertClass(connectionDetails, "ConnectionDetails")
       self$connectionDetails <- connectionDetails
       self$snakeCaseToCamelCase <- snakeCaseToCamelCase
       if (loadConnection) {
@@ -50,6 +50,24 @@ ConnectionHandler <- R6::R6Class(
       }
     },
 
+    #' get dbms
+    #' @description Get the dbms type of the connection
+    dbms = function() {
+      DatabaseConnector::dbms(self$getConnection())
+    },
+
+    #' get table
+    #' @description get a dplyr table object (i.e. lazy loaded)
+    #' @param table                     table name
+    #' @param databaseSchema            databaseSchema to which table belongs
+    tbl = function(table, databaseSchema = NULL) {
+      checkmate::assertString(table)
+      checkmate::assertString(databaseSchema, null.ok = TRUE)
+      if (!is.null(databaseSchema))
+        table <- paste0(databaseSchema, ".", table)
+
+      dplyr::tbl(self$getConnection(), table)
+    },
     #' Render Translate Sql.
     #' @description
     #' Masked call to SqlRender
@@ -174,7 +192,7 @@ ConnectionHandler <- R6::R6Class(
         },
         error = function(error) {
           if (self$connectionDetails$dbms %in% c("postgresql", "redshift")) {
-            DatabaseConnector::dbExecute(self$getConnection(), "ABORT;")
+            self$executeFunction("ABORT;")
           }
           print(sql)
           stop(error)

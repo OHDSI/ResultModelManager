@@ -54,6 +54,14 @@ PooledConnectionHandler <- R6::R6Class(
       self$isActive <- TRUE
     },
 
+    #' get dbms
+    #' @description Get the dbms type of the connection
+    dbms = function() {
+      conn <- pool::poolCheckout(self$getConnection())
+      on.exit(pool::poolReturn(conn))
+      DatabaseConnector::dbms(conn)
+    },
+
     #' Close Connection
     #' @description
     #' Overrides ConnectionHandler Call
@@ -71,13 +79,25 @@ PooledConnectionHandler <- R6::R6Class(
     #' @param sql                                   sql query string
     #' @param snakeCaseToCamelCase                  (Optional) Boolean. return the results columns in camel case (default)
     queryFunction = function(sql, snakeCaseToCamelCase = self$snakeCaseToCamelCase) {
-      data <- DatabaseConnector::dbGetQuery(self$getConnection(), sql)
+      conn <- pool::poolCheckout(self$getConnection())
+      on.exit(pool::poolReturn(conn))
+      data <- DatabaseConnector::dbGetQuery(conn, sql, translate = FALSE)
       if (snakeCaseToCamelCase) {
         colnames(data) <- SqlRender::snakeCaseToCamelCase(colnames(data))
       } else {
         colnames(data) <- toupper(colnames(data))
       }
       return(data)
+    },
+
+    #' query Function
+    #' @description
+    #' Overrides ConnectionHandler Call. Does not translate or render sql.
+    #' @param sql                                   sql query string
+    executeFunction = function(sql) {
+      conn <- pool::poolCheckout(self$getConnection())
+      on.exit(pool::poolReturn(conn))
+      DatabaseConnector::dbExecute(conn, sql, translate = FALSE)
     }
   )
 )
