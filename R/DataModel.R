@@ -368,6 +368,7 @@ uploadResults <- function(connectionDetails = NULL,
       env <- new.env()
       env$schema <- schema
       env$tableName <- paste0(tablePrefix, tableName)
+      env$specTableName <- tableName
       env$primaryKey <- primaryKey
       if (purgeSiteDataBeforeUploading &&
         "database_id" %in% primaryKey) {
@@ -378,7 +379,7 @@ uploadResults <- function(connectionDetails = NULL,
           sql = sql,
           primary_key = primaryKey,
           schema = schema,
-          table_name = tableName
+          table_name = env$tableName
         )
         primaryKeyValuesInDb <-
           DatabaseConnector::querySql(connection, sql)
@@ -395,19 +396,19 @@ uploadResults <- function(connectionDetails = NULL,
 
         chunk <- checkAndFixColumnNames(
           table = chunk,
-          tableName = env$tableName,
+          tableName = env$specTableName,
           zipFileName = zipFileName,
           specifications = specifications
         )
         chunk <- checkAndFixDataTypes(
           table = chunk,
-          tableName = env$tableName,
+          tableName = env$specTableName,
           zipFileName = zipFileName,
           specifications = specifications
         )
         chunk <- checkAndFixDuplicateRows(
           table = chunk,
-          tableName = env$tableName,
+          tableName = env$specTableName,
           zipFileName = zipFileName,
           specifications = specifications
         )
@@ -415,7 +416,7 @@ uploadResults <- function(connectionDetails = NULL,
         # Primary key fields cannot be NULL, so for some tables convert NAs to empty or zero:
         toEmpty <- specifications %>%
           dplyr::filter(
-            tableName == env$tableName &
+            tableName == env$specTableName &
               tolower(emptyIsNa) != "yes" &
               grepl("varchar", dataType)
           ) %>%
@@ -428,7 +429,7 @@ uploadResults <- function(connectionDetails = NULL,
 
         tozero <- specifications %>%
           dplyr::filter(
-            tableName == env$tableName &
+            tableName == env$specTableName &
               tolower(emptyIsNa) != "yes" &
               dataType %in% c("int", "bigint", "float")
           ) %>%
