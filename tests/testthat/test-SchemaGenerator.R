@@ -13,6 +13,7 @@ test_that("Schema gen from file", {
 
   schemaDetails <- readr::read_csv("settings/testSchemaDef.csv", show_col_types = FALSE)
   checkmate::expect_string(schema)
+
   DatabaseConnector::renderTranslateExecuteSql(connection, schema, database_schema = "main")
 
   for (table in schemaDetails$tableName |> unique()) {

@@ -16,7 +16,7 @@
 
 .writeFieldDefinition <- function(field) {
   field <- as.list(field)
-  str <- paste("\t", field$columnName, toupper(field$dataType))
+  str <- paste("\t", field$fieldName, toupper(field$dataType))
 
   if (field$primaryKey == "yes") {
     str <- paste(str, "NOT NULL")
