@@ -241,7 +241,7 @@ createResultsDataModel <-
     if (is.null(connection)) {
       if (!is.null(connectionDetails)) {
         connection <- DatabaseConnector::connect(connectionDetails)
-        on.exit(DatabaseConnector::disconnect(connection))
+        on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
       } else {
         stop("No connection or connectionDetails provided.")
       }
@@ -318,7 +318,7 @@ uploadResults <- function(connectionDetails = NULL,
                           specifications) {
   start <- Sys.time()
   connection <- DatabaseConnector::connect(connectionDetails)
-  on.exit(DatabaseConnector::disconnect(connection))
+  on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
 
   unzipFolder <- tempfile("unzipTempFolder", tmpdir = tempFolder)
   dir.create(path = unzipFolder, recursive = TRUE)
