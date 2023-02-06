@@ -357,7 +357,7 @@ uploadResults <- function(connectionDetails = NULL,
       deleteAllRowsForDatabaseId(
         connection = connection,
         schema = schema,
-        tableName = tableName,
+        tableName = paste0(tablePrefix, tableName),
         databaseId = databaseId,
         idIsInt = type %in% c("int", "bigint")
       )
@@ -367,7 +367,7 @@ uploadResults <- function(connectionDetails = NULL,
     if (csvFileName %in% list.files(unzipFolder)) {
       env <- new.env()
       env$schema <- schema
-      env$tableName <- tableName
+      env$tableName <- paste0(tablePrefix, tableName)
       env$primaryKey <- primaryKey
       if (purgeSiteDataBeforeUploading &&
         "database_id" %in% primaryKey) {
@@ -505,7 +505,7 @@ uploadResults <- function(connectionDetails = NULL,
     }
   }
 
-  invisible(lapply(paste0(tablePrefix, unique(specifications$tableName)), uploadTable))
+  invisible(lapply(unique(specifications$tableName), uploadTable))
   delta <- Sys.time() - start
   writeLines(paste("Uploading data took", signif(delta, 3), attr(delta, "units")))
 }
