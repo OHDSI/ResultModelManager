@@ -145,7 +145,7 @@ checkAndFixDataTypes <-
           )
 
           dateFunc <- as.Date
-          if (is.numeric(table[,i] %>% dplyr::pull()))
+          if (is.numeric(table[,i]))
             dateFunc <- as.Date.POSIXct
 
           table <- dplyr::mutate_at(table, i, dateFunc)
