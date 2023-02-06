@@ -8,8 +8,7 @@ generateSqlSchema(csvFilepath, sqlOutputPath = NULL, overwrite = FALSE)
 }
 \arguments{
 \item{csvFilepath}{Path to schema file. Csv file must have the columns:
-"table_name", "colum_name", "data_type", "is_required", "primary_key"
-Note -}
+"tableName", "columnName", "dataType", "optional", "primaryKey"}
 
 \item{sqlOutputPath}{File to write sql to.}
 

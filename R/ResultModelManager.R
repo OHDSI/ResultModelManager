@@ -19,4 +19,5 @@
 
 #' @import DatabaseConnector
 #' @import R6
+#' @importFrom dplyr %>%
 NULL
