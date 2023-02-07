@@ -307,6 +307,8 @@ naToZero <- function(x) {
 #'                       has sufficient space if the default system temp space is too limited.
 #' @param specifications   A tibble data frame object with specifications.
 #'
+#' @param cdmSourceFile  File contained within zip that references databaseId field (used for purging data)
+#'
 #' @export
 uploadResults <- function(connectionDetails = NULL,
                           schema,
@@ -314,6 +316,7 @@ uploadResults <- function(connectionDetails = NULL,
                           tablePrefix = "",
                           forceOverWriteOfSpecifications = FALSE,
                           purgeSiteDataBeforeUploading = TRUE,
+                          cdmSourceFile = "cdm_source_info.csv",
                           tempFolder = tempdir(),
                           specifications) {
   start <- Sys.time()
@@ -329,7 +332,7 @@ uploadResults <- function(connectionDetails = NULL,
 
   if (purgeSiteDataBeforeUploading) {
     database <-
-      readr::read_csv(file = file.path(unzipFolder, "database.csv"),
+      readr::read_csv(file = file.path(unzipFolder, cdmSourceFile),
                       col_types = readr::cols())
     colnames(database) <-
       SqlRender::snakeCaseToCamelCase(colnames(database))
