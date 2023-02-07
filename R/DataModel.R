@@ -504,6 +504,9 @@ uploadResults <- function(connectionDetails = NULL,
         progress = FALSE
       )
     }
+    else {
+      warning(paste(tableName, "not found in results zip file"))
+    }
   }
 
   invisible(lapply(unique(specifications$tableName), uploadTable))
