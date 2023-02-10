@@ -10,7 +10,7 @@ test_that("Bad model format", {
 
   junkSpec <- data.frame(
     tableName = "foo",
-    fieldName = c("databaseId", "charField", "dateField"),
+    columnName = c("databaseId", "charField", "dateField"),
     dataType = c("bigint", "varchar", "date"),
     isRequired = "Yes",
     primaryKey = "Yes",

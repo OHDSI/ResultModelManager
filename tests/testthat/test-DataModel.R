@@ -73,7 +73,7 @@ test_that("results are uploaded", {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
 
     if ("database_id" %in% primaryKey) {
@@ -102,7 +102,7 @@ test_that("appending results rows using primary keys works", {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
 
     # append new data into table
@@ -161,7 +161,7 @@ test_that("deleting results rows using data primary key works", {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
 
     # delete rows from tables with primary key: database_id, analysis3_id
@@ -200,7 +200,7 @@ test_that("deleting results rows by database id works", {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
 
     if ("database_id" %in% primaryKey) {

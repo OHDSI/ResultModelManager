@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.writeFieldDefinition <- function(field) {
-  field <- as.list(field)
-  str <- paste("\t", field$fieldName, toupper(field$dataType))
+.writeColumnDefinition <- function(column) {
+  column <- as.list(column)
+  str <- paste("\t", column$columnName, toupper(column$dataType))
 
-  if (field$primaryKey == "yes") {
+  if (column$primaryKey == "yes") {
     str <- paste(str, "NOT NULL")
   }
 
@@ -47,31 +47,32 @@ generateSqlSchema <- function(csvFilepath,
 
   checkmate::assertFileExists(csvFilepath)
   schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
-  requiredFields <- c("tableName", "fieldName", "dataType", "optional", "primaryKey")
+  names(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(names(schemaDefinition))
+  requiredFields <- c("tableName", "columnName", "dataType", "primaryKey")
   checkmate::assertNames(colnames(schemaDefinition), must.include = requiredFields)
 
   tableSqlStr <- "
 CREATE TABLE @database_schema.@table_prefix@table_name (
-  @table_fields
+  @table_columns
 );
 "
   fullScript <- ""
   defs <- "{DEFAULT @table_prefix = ''}\n"
 
   for (table in unique(schemaDefinition$tableName)) {
-    tableFields <- schemaDefinition[schemaDefinition$tableName == table, ]
-    fieldDefinitions <- apply(tableFields, 1, .writeFieldDefinition)
+    tableColumns <- schemaDefinition[schemaDefinition$tableName == table, ]
+    columnDefinitions <- apply(tableColumns, 1, .writeColumnDefinition)
 
-    primaryKeyFields <- tableFields[tableFields$primaryKey == "yes", ]
+    primaryKeyFields <- tableColumns[tableColumns$primaryKey == "yes", ]
     if (nrow(primaryKeyFields)) {
-      pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$fieldName, collapse = ","), ")")
-      fieldDefinitions <- c(fieldDefinitions, pkeyField)
+      pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$columnName, collapse = ","), ")")
+      columnDefinitions <- c(columnDefinitions, pkeyField)
     }
 
-    fieldDefinitions <- paste(fieldDefinitions, collapse = ",\n")
+    columnDefinitions <- paste(columnDefinitions, collapse = ",\n")
     tableString <- SqlRender::render(tableSqlStr,
       table_name = paste0("@", table),
-      table_fields = fieldDefinitions
+      table_columns = columnDefinitions
     )
 
     tableDefStr <- paste0("{DEFAULT @", table, " = ", table, "}\n")
@@ -80,7 +81,7 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
     fullScript <- paste(fullScript, tableString)
   }
 
-  # Get fields for each table
+  # Get columns for each table
   lines <- paste(defs, fullScript)
   if (!is.null(sqlOutputPath)) {
     writeLines(lines, sqlOutputPath)

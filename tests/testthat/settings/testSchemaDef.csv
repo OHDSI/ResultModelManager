@@ -1,4 +1,4 @@
-tableName,fieldName,dataType,optional,primaryKey,minCellCount,description,emptyIsNa
+table_name,column_name,data_type,optional,primary_key,min_cell_count,description,empty_is_na
 cohort_definition,cohort_definition_id,bigint,no,yes,no,cohort definition id,Yes
 cohort_definition,concept_id,bigint,no,no,no,covariate id,Yes
 cohort_definition,cohort_name,varchar,no,no,no,cohort definition name,Yes
