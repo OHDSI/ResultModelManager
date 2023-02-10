@@ -297,12 +297,17 @@ formatDouble <- function(x) {
 #'
 #' Set the POSTGRES_PATH environmental variable to the path to the folder containing the psql executable to enable
 #' bulk upload (recommended).
-#'
+#' @param connection          An object of type \code{connection} as created using the
+#'                            \code{\link[DatabaseConnector]{connect}} function in the
+#'                            DatabaseConnector package. Can be left NULL if \code{connectionDetails}
+#'                            is provided, in which case a new connection will be opened at the start
+#'                            of the function, and closed when the function finishes.
 #' @param connectionDetails   An object of type \code{connectionDetails} as created using the
 #'                            \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 #'                            DatabaseConnector package.
 #' @param schema         The schema on the postgres server where the tables have been created.
-#' @param zipFileName    The name of the zip file.
+#' @param resultsFolder  The path to the folder containing the results to upload.
+#'                       See \code{unzipResults} for more information.
 #' @param tablePrefix    String to prefix table names with - default is empty string
 #' @param forceOverWriteOfSpecifications  If TRUE, specifications of the phenotypes, cohort definitions, and analysis
 #'                       will be overwritten if they already exist on the database. Only use this if these specifications

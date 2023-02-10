@@ -5,24 +5,34 @@
 \title{Upload results to the database server.}
 \usage{
 uploadResults(
+  connection = NULL,
   connectionDetails = NULL,
   schema,
-  zipFileName,
+  resultsFolder,
   tablePrefix = "",
   forceOverWriteOfSpecifications = FALSE,
   purgeSiteDataBeforeUploading = TRUE,
+  cdmSourceFile = "cdm_source_info.csv",
+  runCheckAndFixCommands = FALSE,
   tempFolder = tempdir(),
   specifications
 )
 }
 \arguments{
+\item{connection}{An object of type \code{connection} as created using the
+\code{\link[DatabaseConnector]{connect}} function in the
+DatabaseConnector package. Can be left NULL if \code{connectionDetails}
+is provided, in which case a new connection will be opened at the start
+of the function, and closed when the function finishes.}
+
 \item{connectionDetails}{An object of type \code{connectionDetails} as created using the
 \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 DatabaseConnector package.}
 
 \item{schema}{The schema on the postgres server where the tables have been created.}
 
-\item{zipFileName}{The name of the zip file.}
+\item{resultsFolder}{The path to the folder containing the results to upload.
+See \code{unzipResults} for more information.}
 
 \item{tablePrefix}{String to prefix table names with - default is empty string}
 
@@ -33,6 +43,13 @@ have changed since the last upload.}
 \item{purgeSiteDataBeforeUploading}{If TRUE, before inserting data for a specific databaseId all the data for
 that site will be dropped. This assumes the input zip file contains the full data for that
 data site.}
+
+\item{cdmSourceFile}{File contained within zip that references databaseId field (used for purging data)}
+
+\item{runCheckAndFixCommands}{If TRUE, the upload code will attempt to fix column names, data types and
+duplicate rows. This parameter is kept for legacy reasons - it is strongly recommended
+that you correct errors in your results where those results are assembled instead of
+relying on this option to try and fix it during upload.}
 
 \item{tempFolder}{A folder on the local file system where the zip files are extracted to. Will be cleaned
 up when the function is finished. Can be used to specify a temp folder on a drive that
