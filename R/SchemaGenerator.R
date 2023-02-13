@@ -48,8 +48,7 @@ generateSqlSchema <- function(csvFilepath,
   checkmate::assertFileExists(csvFilepath)
   schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
   names(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(names(schemaDefinition))
-  requiredFields <- c("tableName", "columnName", "dataType", "primaryKey")
-  checkmate::assertNames(colnames(schemaDefinition), must.include = requiredFields)
+  assertSpecificationColumns(colnames(schemaDefinition))
 
   tableSqlStr <- "
 CREATE TABLE @database_schema.@table_prefix@table_name (

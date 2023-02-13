@@ -35,15 +35,15 @@ checkAndFixColumnNames <-
     observeredNames <- tolower(colnames(table)[order(colnames(table))])
 
     tableSpecs <- specifications %>%
-      dplyr::filter(tableName == !!tableName)
+      dplyr::filter(.data$tableName == !!tableName)
 
     optionalNames <- tableSpecs %>%
-      dplyr::filter(tolower(optional) == "yes") %>%
+      dplyr::filter(tolower(.data$optional) == "yes") %>%
       dplyr::select("columnName")
 
     expectedNames <- tableSpecs %>%
       dplyr::select("columnName") %>%
-      dplyr::anti_join(dplyr::filter(optionalNames, !columnName %in% observeredNames),
+      dplyr::anti_join(dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
                        by = "columnName") %>%
       dplyr::arrange("columnName") %>%
       dplyr::pull()
@@ -173,8 +173,8 @@ checkAndFixDuplicateRows <-
            resultsFolder,
            specifications) {
     primaryKeys <- specifications %>%
-      dplyr::filter(tableName == !!tableName &
-                      tolower(primaryKey) == "yes") %>%
+      dplyr::filter(.data$tableName == !!tableName &
+                      tolower(.data$primaryKey) == "yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
@@ -212,8 +212,8 @@ appendNewRows <-
            specifications) {
     if (nrow(data) > 0) {
       primaryKeys <- specifications %>%
-        dplyr::filter(tableName == !!tableName &
-                        tolower(primaryKey) == "yes") %>%
+        dplyr::filter(.data$tableName == !!tableName &
+                        tolower(.data$primaryKey) == "yes") %>%
         dplyr::select("columnName") %>%
         dplyr::pull()
       newData <- newData %>%
@@ -319,11 +319,10 @@ formatDouble <- function(x) {
 #'                       duplicate rows. This parameter is kept for legacy reasons - it is strongly recommended
 #'                       that you correct errors in your results where those results are assembled instead of
 #'                       relying on this option to try and fix it during upload.
-#' @param specifications   A tibble data frame object with specifications.
-#'
 #' @param cdmSourceFile  File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
 #'                       specify a relative path for the cdmSourceFile and the function will assume it resides in the resultsFolder.
 #'                       Alternatively, you can provide a path outside of the resultsFolder for this file.
+#' @param specifications A tibble data frame object with specifications.
 #'
 #' @export
 uploadResults <- function(connection = NULL,
@@ -348,6 +347,9 @@ uploadResults <- function(connection = NULL,
   if (connection@dbms == "sqlite" & schema != "main") {
     stop("Invalid schema for sqlite, use schema = 'main'")
   }
+
+  # Check specifications for required columns
+  assertSpecificationColumns(colnames(specifications))
 
   start <- Sys.time()
 
@@ -381,8 +383,8 @@ uploadResults <- function(connection = NULL,
       rlang::inform(paste0("Uploading file: ", csvFileName, " to table: ", tableName))
 
       primaryKey <- specifications %>%
-        dplyr::filter(tableName == !!tableName &
-                        tolower(primaryKey) == "yes") %>%
+        dplyr::filter(.data$tableName == !!tableName &
+                        tolower(.data$primaryKey) == "yes") %>%
         dplyr::select("columnName") %>%
         dplyr::pull()
 
@@ -398,8 +400,8 @@ uploadResults <- function(connection = NULL,
         "database_id" %in% primaryKey) {
 
         type <- specifications %>%
-          dplyr::filter(tableName == !!tableName &
-                          columnName == "database_id") %>%
+          dplyr::filter(.data$tableName == !!tableName &
+                          .data$columnName == "database_id") %>%
           dplyr::select("dataType") %>%
           dplyr::pull()
 
@@ -467,8 +469,8 @@ uploadResults <- function(connection = NULL,
           toEmpty <- specifications %>%
             dplyr::filter(
               tableName == env$specTableName &
-                tolower(emptyIsNa) != "yes" &
-                grepl("varchar", dataType)
+                tolower(.data$emptyIsNa) != "yes" &
+                grepl("varchar", .data$dataType)
             ) %>%
             dplyr::select("columnName") %>%
             dplyr::pull()
@@ -480,8 +482,8 @@ uploadResults <- function(connection = NULL,
           toZero <- specifications %>%
             dplyr::filter(
               tableName == env$specTableName &
-                tolower(emptyIsNa) != "yes" &
-                dataType %in% c("int", "bigint", "float")
+                tolower(.data$emptyIsNa) != "yes" &
+                .data$dataType %in% c("int", "bigint", "float")
             ) %>%
             dplyr::select("columnName") %>%
             dplyr::pull()
@@ -495,7 +497,7 @@ uploadResults <- function(connection = NULL,
         toDate <- specifications %>%
           dplyr::filter(
             tableName == env$tableName &
-              tolower(dataType) == "date"
+              tolower(.data$dataType) == "date"
           ) %>%
           dplyr::select("columnName") %>%
           dplyr::pull()
@@ -518,7 +520,7 @@ uploadResults <- function(connection = NULL,
 
         toDouble <- specifications %>%
           dplyr::filter(
-            tableName == env$tableName &
+            .data$tableName == env$tableName &
               tolower(.data$dataType) %in% c("decimal", "numeric", "float")
           ) %>%
           dplyr::select("columnName") %>%
@@ -739,5 +741,32 @@ unzipResults <- function(zipFile,
   }
   rlang::inform(paste0("Unzipping ", basename(zipFile), " to ", resultsFolder))
   zip::unzip(zipFile, exdir = resultsFolder)
-  checkmate::assert_file_exists(file.path(resultsFolder, "resultsDataModelSpecification.csv"))
+}
+
+#' Custom checkmate assertion for ensuring the specification columns are properly
+#' specified
+#'
+#' @description
+#' This function is used to provide a more informative message when ensuring
+#' that the columns in the results data model specification are properly specified.
+#' This function is then bootstrapped upon package initialization (code in
+#' ResultModelManager.R) to allow for it to work with the other checkmate
+#' assertions as described in: https://mllg.github.io/checkmate/articles/checkmate.html.
+#' The assertion function is called assertSpecificationColumns.
+#'
+#' @param columnNames The name of the columns found in the results data model specification
+#'
+#' @return
+#' Returns TRUE if all required columns are found otherwise it returns an error
+#' @noRd
+#' @keywords internal
+checkSpecificationColumns <- function(columnNames) {
+  requiredFields <- c("tableName", "columnName", "dataType", "primaryKey")
+  res <- all(requiredFields %in% columnNames)
+  if (!isTRUE(res)) {
+    errorMessage <- paste0("The results data model specification requires the following columns: ", paste(shQuote(requiredFields), collapse = ", "), ". The following columns were found: ", paste(shQuote(columnNames), collapse = ", "))
+    return(errorMessage)
+  } else {
+    return(TRUE)
+  }
 }
