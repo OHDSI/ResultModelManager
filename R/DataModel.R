@@ -20,7 +20,7 @@
 #'
 #' @param table             Data table
 #' @param tableName         Database table name
-#' @param zipFileName       Name zip file
+#' @param resultsFolder     The results folder location
 #' @param specifications    Specifications data table
 #'
 #' @return
@@ -30,7 +30,7 @@
 checkAndFixColumnNames <-
   function(table,
            tableName,
-           zipFileName,
+           resultsFolder,
            specifications) {
     observeredNames <- tolower(colnames(table)[order(colnames(table))])
 
@@ -51,9 +51,9 @@ checkAndFixColumnNames <-
     if (!(all(expectedNames %in% observeredNames))) {
       stop(
         sprintf(
-          "Column names of table %s in zip file %s do not match specifications.\n- Observed columns: %s\n- Expected columns: %s",
+          "Column names of table %s in results folder %s do not match specifications.\n- Observed columns: %s\n- Expected columns: %s",
           tableName,
-          zipFileName,
+          resultsFolder,
           paste(observeredNames, collapse = ", "),
           paste(expectedNames, collapse = ", ")
         )
@@ -68,7 +68,7 @@ checkAndFixColumnNames <-
 #'
 #' @param table             Data table
 #' @param tableName         Database table name
-#' @param zipFileName       Name zip file
+#' @param resultsFolder     The results folder location
 #' @param specifications    Specifications data table
 #'
 #' @return
@@ -78,7 +78,7 @@ checkAndFixColumnNames <-
 checkAndFixDataTypes <-
   function(table,
            tableName,
-           zipFileName,
+           resultsFolder,
            specifications) {
     tableSpecs <- specifications %>%
       dplyr::filter(tableName == !!tableName)
@@ -93,10 +93,10 @@ checkAndFixDataTypes <-
         if (observedTypes[i] != "numeric" && observedTypes[i] != "double") {
           ParallelLogger::logDebug(
             sprintf(
-              "Column %s in table %s in zip file %s is of type %s, but was expecting %s. Attempting to convert.",
+              "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
               columnName,
               tableName,
-              zipFileName,
+              resultsFolder,
               observedTypes[i],
               expectedType
             )
@@ -107,10 +107,10 @@ checkAndFixDataTypes <-
         if (observedTypes[i] != "integer") {
           ParallelLogger::logDebug(
             sprintf(
-              "Column %s in table %s in zip file %s is of type %s, but was expecting %s. Attempting to convert.",
+              "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
               columnName,
               tableName,
-              zipFileName,
+              resultsFolder,
               observedTypes[i],
               expectedType
             )
@@ -121,10 +121,10 @@ checkAndFixDataTypes <-
         if (observedTypes[i] != "character") {
           ParallelLogger::logDebug(
             sprintf(
-              "Column %s in table %s in zip file %s is of type %s, but was expecting %s. Attempting to convert.",
+              "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
               columnName,
               tableName,
-              zipFileName,
+              resultsFolder,
               observedTypes[i],
               expectedType
             )
@@ -135,10 +135,10 @@ checkAndFixDataTypes <-
         if (observedTypes[i] != "Date") {
           ParallelLogger::logDebug(
             sprintf(
-              "Column %s in table %s in zip file %s is of type %s, but was expecting %s. Attempting to convert.",
+              "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
               columnName,
               tableName,
-              zipFileName,
+              resultsFolder,
               observedTypes[i],
               expectedType
             )
@@ -160,7 +160,7 @@ checkAndFixDataTypes <-
 #'
 #' @param table             Data table
 #' @param tableName         Database table name
-#' @param zipFileName       Name zip file
+#' @param resultsFolder     The results folder location
 #' @param specifications    Specifications data table
 #'
 #' @return
@@ -170,7 +170,7 @@ checkAndFixDataTypes <-
 checkAndFixDuplicateRows <-
   function(table,
            tableName,
-           zipFileName,
+           resultsFolder,
            specifications) {
     primaryKeys <- specifications %>%
       dplyr::filter(tableName == !!tableName &
@@ -183,7 +183,7 @@ checkAndFixDuplicateRows <-
         sprintf(
           "Table %s in zip file %s has duplicate rows. Removing %s records.",
           tableName,
-          zipFileName,
+          resultsFolder,
           sum(duplicatedRows)
         )
       )
@@ -313,18 +313,17 @@ formatDouble <- function(x) {
 #'                       will be overwritten if they already exist on the database. Only use this if these specifications
 #'                       have changed since the last upload.
 #' @param purgeSiteDataBeforeUploading If TRUE, before inserting data for a specific databaseId all the data for
-#'                       that site will be dropped. This assumes the input zip file contains the full data for that
+#'                       that site will be dropped. This assumes the results folder contains the full data for that
 #'                       data site.
 #' @param runCheckAndFixCommands If TRUE, the upload code will attempt to fix column names, data types and
 #'                       duplicate rows. This parameter is kept for legacy reasons - it is strongly recommended
 #'                       that you correct errors in your results where those results are assembled instead of
 #'                       relying on this option to try and fix it during upload.
-#' @param tempFolder     A folder on the local file system where the zip files are extracted to. Will be cleaned
-#'                       up when the function is finished. Can be used to specify a temp folder on a drive that
-#'                       has sufficient space if the default system temp space is too limited.
 #' @param specifications   A tibble data frame object with specifications.
 #'
-#' @param cdmSourceFile  File contained within zip that references databaseId field (used for purging data)
+#' @param cdmSourceFile  File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
+#'                       specify a relative path for the cdmSourceFile and the function will assume it resides in the resultsFolder.
+#'                       Alternatively, you can provide a path outside of the resultsFolder for this file.
 #'
 #' @export
 uploadResults <- function(connection = NULL,
@@ -336,7 +335,6 @@ uploadResults <- function(connection = NULL,
                           purgeSiteDataBeforeUploading = TRUE,
                           cdmSourceFile = "cdm_source_info.csv",
                           runCheckAndFixCommands = FALSE,
-                          tempFolder = tempdir(),
                           specifications) {
   if (is.null(connection)) {
     if (!is.null(connectionDetails)) {
@@ -353,17 +351,29 @@ uploadResults <- function(connection = NULL,
 
   start <- Sys.time()
 
-  # TODO: Seems specific to CD? What if the cdmSourceFile does not exist?
-  # I think the logic for obtaining the databaseId should be in the uploadTable
-  # function.
-  # if (purgeSiteDataBeforeUploading) {
-  #   database <-
-  #     readr::read_csv(file = file.path(unzipFolder, cdmSourceFile),
-  #                     col_types = readr::cols())
-  #   colnames(database) <-
-  #     SqlRender::snakeCaseToCamelCase(colnames(database))
-  #   databaseId <- database$databaseId
-  # }
+  # Retrieve the databaseId from the cdmSourceFile if the file exists
+  # and we're purging site data before uploading. First check to see if the
+  # cdmSourceFile is a relative path and set it to the current resultsFolder
+  if (!(grepl(pattern == "/", x = cdmSourceFile) || grepl(pattern = "\\\\", x = cdmSourceFile))) {
+    cdmSourceFile = file.path(resultsFolder, cdmSourceFile)
+  }
+  if (purgeSiteDataBeforeUploading) {
+    if (file.exists(cdmSourceFile)) {
+      database <-
+        readr::read_csv(file = cdmSourceFile,
+                        col_types = readr::cols())
+      colnames(database) <-
+        SqlRender::snakeCaseToCamelCase(colnames(database))
+      databaseId <- database$databaseId
+    } else {
+      stop(
+        sprintf(
+          "cdmSourceFile %s not found. This file is required when purgeSiteDataBeforeUploading == TRUE",
+          cdmSourceFile
+        )
+      )
+    }
+  }
 
   uploadTable <- function(tableName) {
     csvFileName <- paste0(tableName, ".csv")
@@ -386,11 +396,23 @@ uploadResults <- function(connection = NULL,
       env$primaryKey <- primaryKey
       if (purgeSiteDataBeforeUploading &&
         "database_id" %in% primaryKey) {
+
         # Get the databaseId by reading the 1st row of data
-        results <- readr::read_csv(
-          file = file.path(resultsFolder, csvFileName),
-          n_max = 1,
-          show_col_types = FALSE)
+        # if one was not found in the cdmSourceFile
+        if (is.null(databaseId)) {
+          # TODO: The databaseId may be missing if there are
+          # no results in the current file and then purging will
+          # not happen properly. There may be a better way to obtain
+          # the databaseId, potentially think of making this a
+          # parameter of the upload function.
+          results <- readr::read_csv(
+            file = file.path(resultsFolder, csvFileName),
+            n_max = 1,
+            show_col_types = FALSE)
+          if (nrow(results) == 1) {
+            databaseId <- results$database_id[1]
+          }
+        }
 
         type <- specifications %>%
           dplyr::filter(tableName == !!tableName &
@@ -398,13 +420,7 @@ uploadResults <- function(connection = NULL,
           dplyr::select("dataType") %>%
           dplyr::pull()
 
-        # TODO: The databaseId may be missing if there are
-        # no results in the current file and then purging will
-        # not happen properly. There may be a better way to obtain
-        # the databaseId, potentially think of making this a
-        # parameter of the upload function.
-        if (nrow(results) == 1) {
-          databaseId <- results$database_id[1]
+        if (!is.null(databaseId)) {
           # Remove the existing data for the databaseId
           deleteAllRowsForDatabaseId(
             connection = connection,
@@ -449,19 +465,19 @@ uploadResults <- function(connection = NULL,
           chunk <- checkAndFixColumnNames(
             table = chunk,
             tableName = env$specTableName,
-            zipFileName = zipFileName,
+            resultsFolder = resultsFolder,
             specifications = specifications
           )
           chunk <- checkAndFixDataTypes(
             table = chunk,
             tableName = env$specTableName,
-            zipFileName = zipFileName,
+            resultsFolder = resultsFolder,
             specifications = specifications
           )
           chunk <- checkAndFixDuplicateRows(
             table = chunk,
             tableName = env$specTableName,
-            zipFileName = zipFileName,
+            resultsFolder = resultsFolder,
             specifications = specifications
           )
 
@@ -495,36 +511,36 @@ uploadResults <- function(connection = NULL,
 
         # Ensure dates are formatted properly
         toDate <- specifications %>%
-          filter(
-            .data$tableName == env$tableName &
-              tolower(.data$dataType) == "date"
+          dplyr::filter(
+            tableName == env$tableName &
+              tolower(dataType) == "date"
           ) %>%
-          select(.data$columnName) %>%
-          pull()
+          dplyr::select("columnName") %>%
+          dplyr::pull()
         if (length(toDate) > 0) {
           chunk <- chunk %>%
             dplyr::mutate_at(toDate, lubridate::as_date)
         }
 
         toTimestamp <- specifications %>%
-          filter(
-            .data$tableName == env$tableName &
+          dplyr::filter(
+            tableName == env$tableName &
               grepl("timestamp", tolower(.data$dataType))
           ) %>%
-          select(.data$columnName) %>%
-          pull()
+          dplyr::select("columnName") %>%
+          dplyr::pull()
         if (length(toTimestamp) > 0) {
           chunk <- chunk %>%
             dplyr::mutate_at(toTimestamp, lubridate::as_datetime)
         }
 
         toDouble <- specifications %>%
-          filter(
-            .data$tableName == env$tableName &
+          dplyr::filter(
+            tableName == env$tableName &
               tolower(.data$dataType) %in% c("decimal", "numeric", "float")
           ) %>%
-          select(.data$columnName) %>%
-          pull()
+          dplyr::select("columnName") %>%
+          dplyr::pull()
         if (length(toDouble) > 0) {
           chunk <- chunk %>%
             dplyr::mutate_at(toDouble, formatDouble)

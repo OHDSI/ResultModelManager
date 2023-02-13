@@ -60,13 +60,20 @@ test_that("results are uploaded", {
     file.path("testdata", "testzip2.zip")
   listOfZipFilesToUpload <- c(pathToZip1, pathToZip2)
 
+  tempDir <- tempfile()
+
   for (i in seq_len(length(listOfZipFilesToUpload))) {
+    unzipResults(zipFile = listOfZipFilesToUpload[[i]],
+                 resultsFolder = tempDir)
+
     uploadResults(
       connectionDetails = testDatabaseConnectionDetails,
       schema = testSchema,
-      zipFileName = listOfZipFilesToUpload[[i]],
+      resultsFolder = tempDir,
       specifications = specifications
     )
+
+    unlink(x = tempDir, recursive = TRUE, force = TRUE)
   }
 
   for (tableName in unique(specifications$tableName)) {

@@ -12,6 +12,7 @@ test_that("Schema gen from file", {
   checkmate::expect_file_exists(tfile)
 
   schemaDetails <- readr::read_csv("settings/testSchemaDef.csv", show_col_types = FALSE)
+  colnames(schemaDetails) <- SqlRender::snakeCaseToCamelCase(colnames(schemaDetails))
   checkmate::expect_string(schema)
 
   DatabaseConnector::renderTranslateExecuteSql(connection, schema, database_schema = "main")

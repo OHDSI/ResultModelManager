@@ -18,7 +18,7 @@
   column <- as.list(column)
   str <- paste("\t", column$columnName, toupper(column$dataType))
 
-  if (column$primaryKey == "yes") {
+  if (tolower(column$primaryKey) == "yes") {
     str <- paste(str, "NOT NULL")
   }
 
