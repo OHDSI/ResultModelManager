@@ -4,6 +4,7 @@ getResultsDataModelSpecifications <- function() {
   pathToCsv <- file.path("settings", "resultsDataModelSpecification.csv")
   resultsDataModelSpecifications <-
     readr::read_csv(file = pathToCsv, col_types = readr::cols())
+  colnames(resultsDataModelSpecifications) <- SqlRender::snakeCaseToCamelCase(colnames(resultsDataModelSpecifications))
   return(resultsDataModelSpecifications)
 }
 
