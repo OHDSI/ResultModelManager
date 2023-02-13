@@ -20,4 +20,8 @@
 #' @import DatabaseConnector
 #' @import R6
 #' @importFrom dplyr %>%
+#' @importFrom rlang .data
 NULL
+
+# Add custom assertions
+assertSpecificationColumns <- checkmate::makeAssertionFunction(checkSpecificationColumns)

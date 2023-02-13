@@ -5,24 +5,33 @@
 \title{Upload results to the database server.}
 \usage{
 uploadResults(
+  connection = NULL,
   connectionDetails = NULL,
   schema,
-  zipFileName,
+  resultsFolder,
   tablePrefix = "",
   forceOverWriteOfSpecifications = FALSE,
   purgeSiteDataBeforeUploading = TRUE,
-  tempFolder = tempdir(),
+  cdmSourceFile = "cdm_source_info.csv",
+  runCheckAndFixCommands = FALSE,
   specifications
 )
 }
 \arguments{
+\item{connection}{An object of type \code{connection} as created using the
+\code{\link[DatabaseConnector]{connect}} function in the
+DatabaseConnector package. Can be left NULL if \code{connectionDetails}
+is provided, in which case a new connection will be opened at the start
+of the function, and closed when the function finishes.}
+
 \item{connectionDetails}{An object of type \code{connectionDetails} as created using the
 \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 DatabaseConnector package.}
 
 \item{schema}{The schema on the postgres server where the tables have been created.}
 
-\item{zipFileName}{The name of the zip file.}
+\item{resultsFolder}{The path to the folder containing the results to upload.
+See \code{unzipResults} for more information.}
 
 \item{tablePrefix}{String to prefix table names with - default is empty string}
 
@@ -31,12 +40,17 @@ will be overwritten if they already exist on the database. Only use this if thes
 have changed since the last upload.}
 
 \item{purgeSiteDataBeforeUploading}{If TRUE, before inserting data for a specific databaseId all the data for
-that site will be dropped. This assumes the input zip file contains the full data for that
+that site will be dropped. This assumes the results folder contains the full data for that
 data site.}
 
-\item{tempFolder}{A folder on the local file system where the zip files are extracted to. Will be cleaned
-up when the function is finished. Can be used to specify a temp folder on a drive that
-has sufficient space if the default system temp space is too limited.}
+\item{cdmSourceFile}{File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
+specify a relative path for the cdmSourceFile and the function will assume it resides in the resultsFolder.
+Alternatively, you can provide a path outside of the resultsFolder for this file.}
+
+\item{runCheckAndFixCommands}{If TRUE, the upload code will attempt to fix column names, data types and
+duplicate rows. This parameter is kept for legacy reasons - it is strongly recommended
+that you correct errors in your results where those results are assembled instead of
+relying on this option to try and fix it during upload.}
 
 \item{specifications}{A tibble data frame object with specifications.}
 }

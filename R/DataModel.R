@@ -20,7 +20,7 @@
 #'
 #' @param table             Data table
 #' @param tableName         Database table name
-#' @param zipFileName       Name zip file
+#' @param resultsFolder     The results folder location
 #' @param specifications    Specifications data table
 #'
 #' @return
@@ -30,30 +30,30 @@
 checkAndFixColumnNames <-
   function(table,
            tableName,
-           zipFileName,
+           resultsFolder,
            specifications) {
     observeredNames <- tolower(colnames(table)[order(colnames(table))])
 
     tableSpecs <- specifications %>%
-      dplyr::filter(tableName == !!tableName)
+      dplyr::filter(.data$tableName == !!tableName)
 
     optionalNames <- tableSpecs %>%
-      dplyr::filter(tolower(optional) == "yes") %>%
-      dplyr::select("fieldName")
+      dplyr::filter(tolower(.data$optional) == "yes") %>%
+      dplyr::select("columnName")
 
     expectedNames <- tableSpecs %>%
-      dplyr::select("fieldName") %>%
-      dplyr::anti_join(dplyr::filter(optionalNames, !fieldName %in% observeredNames),
-                       by = "fieldName") %>%
-      dplyr::arrange("fieldName") %>%
+      dplyr::select("columnName") %>%
+      dplyr::anti_join(dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
+                       by = "columnName") %>%
+      dplyr::arrange("columnName") %>%
       dplyr::pull()
 
     if (!(all(expectedNames %in% observeredNames))) {
       stop(
         sprintf(
-          "Column names of table %s in zip file %s do not match specifications.\n- Observed columns: %s\n- Expected columns: %s",
+          "Column names of table %s in results folder %s do not match specifications.\n- Observed columns: %s\n- Expected columns: %s",
           tableName,
-          zipFileName,
+          resultsFolder,
           paste(observeredNames, collapse = ", "),
           paste(expectedNames, collapse = ", ")
         )
@@ -68,7 +68,7 @@ checkAndFixColumnNames <-
 #'
 #' @param table             Data table
 #' @param tableName         Database table name
-#' @param zipFileName       Name zip file
+#' @param resultsFolder     The results folder location
 #' @param specifications    Specifications data table
 #'
 #' @return
@@ -78,25 +78,25 @@ checkAndFixColumnNames <-
 checkAndFixDataTypes <-
   function(table,
            tableName,
-           zipFileName,
+           resultsFolder,
            specifications) {
     tableSpecs <- specifications %>%
       dplyr::filter(tableName == !!tableName)
 
     observedTypes <- sapply(table, class)
     for (i in seq_len(length(observedTypes))) {
-      fieldName <- names(observedTypes)[i]
+      columnName <- names(observedTypes)[i]
       expectedType <-
-        gsub("\\(.*\\)", "", tolower(tableSpecs$dataType[tableSpecs$fieldName == fieldName]))
+        gsub("\\(.*\\)", "", tolower(tableSpecs$dataType[tableSpecs$columnName == columnName]))
 
       if (expectedType == "bigint" || expectedType == "float") {
         if (observedTypes[i] != "numeric" && observedTypes[i] != "double") {
           ParallelLogger::logDebug(
             sprintf(
-              "Field %s in table %s in zip file %s is of type %s, but was expecting %s. Attempting to convert.",
-              fieldName,
+              "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
+              columnName,
               tableName,
-              zipFileName,
+              resultsFolder,
               observedTypes[i],
               expectedType
             )
@@ -107,10 +107,10 @@ checkAndFixDataTypes <-
         if (observedTypes[i] != "integer") {
           ParallelLogger::logDebug(
             sprintf(
-              "Field %s in table %s in zip file %s is of type %s, but was expecting %s. Attempting to convert.",
-              fieldName,
+              "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
+              columnName,
               tableName,
-              zipFileName,
+              resultsFolder,
               observedTypes[i],
               expectedType
             )
@@ -121,10 +121,10 @@ checkAndFixDataTypes <-
         if (observedTypes[i] != "character") {
           ParallelLogger::logDebug(
             sprintf(
-              "Field %s in table %s in zip file %s is of type %s, but was expecting %s. Attempting to convert.",
-              fieldName,
+              "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
+              columnName,
               tableName,
-              zipFileName,
+              resultsFolder,
               observedTypes[i],
               expectedType
             )
@@ -135,10 +135,10 @@ checkAndFixDataTypes <-
         if (observedTypes[i] != "Date") {
           ParallelLogger::logDebug(
             sprintf(
-              "Field %s in table %s in zip file %s is of type %s, but was expecting %s. Attempting to convert.",
-              fieldName,
+              "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
+              columnName,
               tableName,
-              zipFileName,
+              resultsFolder,
               observedTypes[i],
               expectedType
             )
@@ -160,7 +160,7 @@ checkAndFixDataTypes <-
 #'
 #' @param table             Data table
 #' @param tableName         Database table name
-#' @param zipFileName       Name zip file
+#' @param resultsFolder     The results folder location
 #' @param specifications    Specifications data table
 #'
 #' @return
@@ -170,12 +170,12 @@ checkAndFixDataTypes <-
 checkAndFixDuplicateRows <-
   function(table,
            tableName,
-           zipFileName,
+           resultsFolder,
            specifications) {
     primaryKeys <- specifications %>%
-      dplyr::filter(tableName == !!tableName &
-                      tolower(primaryKey) == "yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::filter(.data$tableName == !!tableName &
+                      tolower(.data$primaryKey) == "yes") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
     if (any(duplicatedRows)) {
@@ -183,7 +183,7 @@ checkAndFixDuplicateRows <-
         sprintf(
           "Table %s in zip file %s has duplicate rows. Removing %s records.",
           tableName,
-          zipFileName,
+          resultsFolder,
           sum(duplicatedRows)
         )
       )
@@ -212,9 +212,9 @@ appendNewRows <-
            specifications) {
     if (nrow(data) > 0) {
       primaryKeys <- specifications %>%
-        dplyr::filter(tableName == !!tableName &
-                        tolower(primaryKey) == "yes") %>%
-        dplyr::select("fieldName") %>%
+        dplyr::filter(.data$tableName == !!tableName &
+                        tolower(.data$primaryKey) == "yes") %>%
+        dplyr::select("columnName") %>%
         dplyr::pull()
       newData <- newData %>%
         dplyr::anti_join(data, by = primaryKeys)
@@ -281,6 +281,14 @@ naToZero <- function(x) {
   return(x)
 }
 
+# Aims to handle infinite values by replacing
+# as NaN
+formatDouble <- function(x) {
+  val <- as.character(x)
+  val[tolower(val) == 'inf' | tolower(val) == '-inf'] <- 'NaN'
+  val <- as.numeric(val)
+  return(val)
+}
 
 #' Upload results to the database server.
 #'
@@ -289,85 +297,100 @@ naToZero <- function(x) {
 #'
 #' Set the POSTGRES_PATH environmental variable to the path to the folder containing the psql executable to enable
 #' bulk upload (recommended).
-#'
+#' @param connection          An object of type \code{connection} as created using the
+#'                            \code{\link[DatabaseConnector]{connect}} function in the
+#'                            DatabaseConnector package. Can be left NULL if \code{connectionDetails}
+#'                            is provided, in which case a new connection will be opened at the start
+#'                            of the function, and closed when the function finishes.
 #' @param connectionDetails   An object of type \code{connectionDetails} as created using the
 #'                            \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 #'                            DatabaseConnector package.
 #' @param schema         The schema on the postgres server where the tables have been created.
-#' @param zipFileName    The name of the zip file.
+#' @param resultsFolder  The path to the folder containing the results to upload.
+#'                       See \code{unzipResults} for more information.
 #' @param tablePrefix    String to prefix table names with - default is empty string
 #' @param forceOverWriteOfSpecifications  If TRUE, specifications of the phenotypes, cohort definitions, and analysis
 #'                       will be overwritten if they already exist on the database. Only use this if these specifications
 #'                       have changed since the last upload.
 #' @param purgeSiteDataBeforeUploading If TRUE, before inserting data for a specific databaseId all the data for
-#'                       that site will be dropped. This assumes the input zip file contains the full data for that
+#'                       that site will be dropped. This assumes the results folder contains the full data for that
 #'                       data site.
-#' @param tempFolder     A folder on the local file system where the zip files are extracted to. Will be cleaned
-#'                       up when the function is finished. Can be used to specify a temp folder on a drive that
-#'                       has sufficient space if the default system temp space is too limited.
-#' @param specifications   A tibble data frame object with specifications.
-#'
-#' @param cdmSourceFile  File contained within zip that references databaseId field (used for purging data)
+#' @param runCheckAndFixCommands If TRUE, the upload code will attempt to fix column names, data types and
+#'                       duplicate rows. This parameter is kept for legacy reasons - it is strongly recommended
+#'                       that you correct errors in your results where those results are assembled instead of
+#'                       relying on this option to try and fix it during upload.
+#' @param cdmSourceFile  File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
+#'                       specify a relative path for the cdmSourceFile and the function will assume it resides in the resultsFolder.
+#'                       Alternatively, you can provide a path outside of the resultsFolder for this file.
+#' @param specifications A tibble data frame object with specifications.
 #'
 #' @export
-uploadResults <- function(connectionDetails = NULL,
+uploadResults <- function(connection = NULL,
+                          connectionDetails = NULL,
                           schema,
-                          zipFileName,
+                          resultsFolder,
                           tablePrefix = "",
                           forceOverWriteOfSpecifications = FALSE,
                           purgeSiteDataBeforeUploading = TRUE,
                           cdmSourceFile = "cdm_source_info.csv",
-                          tempFolder = tempdir(),
+                          runCheckAndFixCommands = FALSE,
                           specifications) {
+  if (is.null(connection)) {
+    if (!is.null(connectionDetails)) {
+      connection <- DatabaseConnector::connect(connectionDetails)
+      on.exit(DatabaseConnector::disconnect(connection))
+    } else {
+      stop("No connection or connectionDetails provided.")
+    }
+  }
+
+  if (connection@dbms == "sqlite" & schema != "main") {
+    stop("Invalid schema for sqlite, use schema = 'main'")
+  }
+
+  # Check specifications for required columns
+  assertSpecificationColumns(colnames(specifications))
+
   start <- Sys.time()
-  connection <- DatabaseConnector::connect(connectionDetails)
-  on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
 
-  unzipFolder <- tempfile("unzipTempFolder", tmpdir = tempFolder)
-  dir.create(path = unzipFolder, recursive = TRUE)
-  on.exit(unlink(unzipFolder, recursive = TRUE), add = TRUE)
-
-  ParallelLogger::logInfo("Unzipping ", zipFileName)
-  zip::unzip(zipFileName, exdir = unzipFolder)
-
+  # Retrieve the databaseId from the cdmSourceFile if the file exists
+  # and we're purging site data before uploading. First check to see if the
+  # cdmSourceFile is a relative path and set it to the current resultsFolder
   if (purgeSiteDataBeforeUploading) {
-    database <-
-      readr::read_csv(file = file.path(unzipFolder, cdmSourceFile),
-                      col_types = readr::cols())
-    colnames(database) <-
-      SqlRender::snakeCaseToCamelCase(colnames(database))
-    databaseId <- database$databaseId
+    if (!(grepl(pattern = "/", x = cdmSourceFile) || grepl(pattern = "\\\\", x = cdmSourceFile))) {
+      cdmSourceFile = file.path(resultsFolder, cdmSourceFile)
+    }
+    if (file.exists(cdmSourceFile)) {
+      database <-
+        readr::read_csv(file = cdmSourceFile,
+                        col_types = readr::cols())
+      colnames(database) <-
+        SqlRender::snakeCaseToCamelCase(colnames(database))
+      databaseId <- database$databaseId
+    } else {
+      stop(
+        sprintf(
+          "cdmSourceFile %s not found. This file location must be specified when purgeSiteDataBeforeUploading == TRUE",
+          cdmSourceFile
+        )
+      )
+    }
   }
 
   uploadTable <- function(tableName) {
-    ParallelLogger::logInfo("Uploading table ", tableName)
+    csvFileName <- paste0(tableName, ".csv")
+    if (csvFileName %in% list.files(resultsFolder)) {
+      rlang::inform(paste0("Uploading file: ", csvFileName, " to table: ", tableName))
 
-    primaryKey <- specifications %>%
-      dplyr::filter(tableName == !!tableName &
-                      tolower(primaryKey) == "yes") %>%
-      dplyr::select("fieldName") %>%
-      dplyr::pull()
-
-    if (purgeSiteDataBeforeUploading &&
-      "database_id" %in% primaryKey) {
-
-      type <- specifications %>%
-        dplyr::filter(tableName == !!tableName &
-                        fieldName == "database_id") %>%
-        dplyr::select("dataType") %>%
+      primaryKey <- specifications %>%
+        dplyr::filter(.data$tableName == !!tableName &
+                        tolower(.data$primaryKey) == "yes") %>%
+        dplyr::select("columnName") %>%
         dplyr::pull()
 
-      deleteAllRowsForDatabaseId(
-        connection = connection,
-        schema = schema,
-        tableName = paste0(tablePrefix, tableName),
-        databaseId = databaseId,
-        idIsInt = type %in% c("int", "bigint")
-      )
-    }
-
-    csvFileName <- paste0(tableName, ".csv")
-    if (csvFileName %in% list.files(unzipFolder)) {
+      # Create an environment variable to hold
+      # the information about the target table for
+      # uploading the data
       env <- new.env()
       env$schema <- schema
       env$tableName <- paste0(tablePrefix, tableName)
@@ -375,8 +398,29 @@ uploadResults <- function(connectionDetails = NULL,
       env$primaryKey <- primaryKey
       if (purgeSiteDataBeforeUploading &&
         "database_id" %in% primaryKey) {
+
+        type <- specifications %>%
+          dplyr::filter(.data$tableName == !!tableName &
+                          .data$columnName == "database_id") %>%
+          dplyr::select("dataType") %>%
+          dplyr::pull()
+
+        # Remove the existing data for the databaseId
+        deleteAllRowsForDatabaseId(
+          connection = connection,
+          schema = schema,
+          tableName = paste0(tablePrefix, tableName),
+          databaseId = databaseId,
+          idIsInt = type %in% c("int", "bigint")
+        )
+
+        # Set primaryKeyValuesInDb to NULL
+        # to indicate that the primary key
+        # value need not be checked since we've
+        # purged the database data ahead of loading
+        # results from the file
         env$primaryKeyValuesInDb <- NULL
-      } else {
+      } else if (length(primaryKey) > 0) {
         sql <- "SELECT DISTINCT @primary_key FROM @schema.@table_name;"
         sql <- SqlRender::render(
           sql = sql,
@@ -391,57 +435,101 @@ uploadResults <- function(connectionDetails = NULL,
         env$primaryKeyValuesInDb <- primaryKeyValuesInDb
       }
 
+
       uploadChunk <- function(chunk, pos) {
         ParallelLogger::logInfo("- Preparing to upload rows ",
                                 pos,
                                 " through ",
                                 pos + nrow(chunk) - 1)
 
-        chunk <- checkAndFixColumnNames(
-          table = chunk,
-          tableName = env$specTableName,
-          zipFileName = zipFileName,
-          specifications = specifications
-        )
-        chunk <- checkAndFixDataTypes(
-          table = chunk,
-          tableName = env$specTableName,
-          zipFileName = zipFileName,
-          specifications = specifications
-        )
-        chunk <- checkAndFixDuplicateRows(
-          table = chunk,
-          tableName = env$specTableName,
-          zipFileName = zipFileName,
-          specifications = specifications
-        )
+        # Ensure all column names are in lowercase
+        colnames(chunk) <- tolower(colnames(chunk))
 
-        # Primary key fields cannot be NULL, so for some tables convert NAs to empty or zero:
-        toEmpty <- specifications %>%
-          dplyr::filter(
-            tableName == env$specTableName &
-              tolower(emptyIsNa) != "yes" &
-              grepl("varchar", dataType)
-          ) %>%
-          dplyr::select("fieldName") %>%
-          dplyr::pull()
-        if (length(toEmpty) > 0) {
-          chunk <- chunk %>%
-            dplyr::mutate_at(toEmpty, naToEmpty)
+        if (runCheckAndFixCommands) {
+          chunk <- checkAndFixColumnNames(
+            table = chunk,
+            tableName = env$specTableName,
+            resultsFolder = resultsFolder,
+            specifications = specifications
+          )
+          chunk <- checkAndFixDataTypes(
+            table = chunk,
+            tableName = env$specTableName,
+            resultsFolder = resultsFolder,
+            specifications = specifications
+          )
+          chunk <- checkAndFixDuplicateRows(
+            table = chunk,
+            tableName = env$specTableName,
+            resultsFolder = resultsFolder,
+            specifications = specifications
+          )
+
+          # Primary key fields cannot be NULL, so for some tables convert NAs to empty or zero:
+          toEmpty <- specifications %>%
+            dplyr::filter(
+              tableName == env$specTableName &
+                tolower(.data$emptyIsNa) != "yes" &
+                grepl("varchar", .data$dataType)
+            ) %>%
+            dplyr::select("columnName") %>%
+            dplyr::pull()
+          if (length(toEmpty) > 0) {
+            chunk <- chunk %>%
+              dplyr::mutate_at(toEmpty, naToEmpty)
+          }
+
+          toZero <- specifications %>%
+            dplyr::filter(
+              tableName == env$specTableName &
+                tolower(.data$emptyIsNa) != "yes" &
+                .data$dataType %in% c("int", "bigint", "float")
+            ) %>%
+            dplyr::select("columnName") %>%
+            dplyr::pull()
+          if (length(toZero) > 0) {
+            chunk <- chunk %>%
+              dplyr::mutate_at(toZero, naToZero)
+          }
         }
 
-        tozero <- specifications %>%
+        # Ensure dates are formatted properly
+        toDate <- specifications %>%
           dplyr::filter(
-            tableName == env$specTableName &
-              tolower(emptyIsNa) != "yes" &
-              dataType %in% c("int", "bigint", "float")
+            tableName == env$tableName &
+              tolower(.data$dataType) == "date"
           ) %>%
-          dplyr::select("fieldName") %>%
+          dplyr::select("columnName") %>%
           dplyr::pull()
-        if (length(tozero) > 0) {
+        if (length(toDate) > 0) {
           chunk <- chunk %>%
-            dplyr::mutate_at(tozero, naToZero)
+            dplyr::mutate_at(toDate, lubridate::as_date)
         }
+
+        toTimestamp <- specifications %>%
+          dplyr::filter(
+            tableName == env$tableName &
+              grepl("timestamp", tolower(.data$dataType))
+          ) %>%
+          dplyr::select("columnName") %>%
+          dplyr::pull()
+        if (length(toTimestamp) > 0) {
+          chunk <- chunk %>%
+            dplyr::mutate_at(toTimestamp, lubridate::as_datetime)
+        }
+
+        toDouble <- specifications %>%
+          dplyr::filter(
+            .data$tableName == env$tableName &
+              tolower(.data$dataType) %in% c("decimal", "numeric", "float")
+          ) %>%
+          dplyr::select("columnName") %>%
+          dplyr::pull()
+        if (length(toDouble) > 0) {
+          chunk <- chunk %>%
+            dplyr::mutate_at(toDouble, formatDouble)
+        }
+
 
         # Check if inserting data would violate primary key constraints:
         if (!is.null(env$primaryKeyValuesInDb)) {
@@ -485,21 +573,26 @@ uploadResults <- function(connectionDetails = NULL,
         if (nrow(chunk) == 0) {
           ParallelLogger::logInfo("- No data left to insert")
         } else {
-          DatabaseConnector::insertTable(
-            connection = connection,
-            tableName = env$tableName,
-            databaseSchema = env$schema,
-            data = chunk,
-            dropTableIfExists = FALSE,
-            createTable = FALSE,
-            tempTable = FALSE,
-            progressBar = TRUE
-          )
+          insertTableStatus <- tryCatch(expr = {
+            DatabaseConnector::insertTable(
+              connection = connection,
+              tableName = env$tableName,
+              databaseSchema = env$schema,
+              data = chunk,
+              dropTableIfExists = FALSE,
+              createTable = FALSE,
+              tempTable = FALSE,
+              progressBar = TRUE
+            )
+          }, error = function(e) e)
+          if (inherits(insertTableStatus, "error")) {
+            stop(insertTableStatus$message)
+          }
         }
       }
 
       readr::read_csv_chunked(
-        file = file.path(unzipFolder, csvFileName),
+        file = file.path(resultsFolder, csvFileName),
         callback = uploadChunk,
         chunk_size = 1e7,
         col_types = readr::cols(),
@@ -508,7 +601,7 @@ uploadResults <- function(connectionDetails = NULL,
       )
     }
     else {
-      warning(paste(tableName, "not found in results zip file"))
+      warning(paste(csvFileName, "not found"))
     }
   }
 
@@ -625,3 +718,55 @@ deleteAllRowsForDatabaseId <-
                                     reportOverallTime = FALSE)
     }
   }
+
+#' Unzips a results.zip file and enforces standards required by
+#' \code{uploadResults}
+#'
+#' @description
+#' This function will unzip the zipFile to the resultsFolder and assert
+#' that the file resultsDataModelSpecification.csv exists in the resultsFolder
+#' to ensure that it will work with \code{uploadResults}
+#'
+#' @param zipFile   The location of the .zip file that holds the results to upload
+#'
+#' @param resultsFolder The folder to use when unzipping the .zip file. If this folder
+#'                    does not exist, this function will attempt to create the folder.
+#'
+#' @export
+unzipResults <- function(zipFile,
+                         resultsFolder) {
+  checkmate::assert_file_exists(zipFile)
+  if (!dir.exists(resultsFolder)) {
+    dir.create(path = resultsFolder, recursive = TRUE)
+  }
+  rlang::inform(paste0("Unzipping ", basename(zipFile), " to ", resultsFolder))
+  zip::unzip(zipFile, exdir = resultsFolder)
+}
+
+#' Custom checkmate assertion for ensuring the specification columns are properly
+#' specified
+#'
+#' @description
+#' This function is used to provide a more informative message when ensuring
+#' that the columns in the results data model specification are properly specified.
+#' This function is then bootstrapped upon package initialization (code in
+#' ResultModelManager.R) to allow for it to work with the other checkmate
+#' assertions as described in: https://mllg.github.io/checkmate/articles/checkmate.html.
+#' The assertion function is called assertSpecificationColumns.
+#'
+#' @param columnNames The name of the columns found in the results data model specification
+#'
+#' @return
+#' Returns TRUE if all required columns are found otherwise it returns an error
+#' @noRd
+#' @keywords internal
+checkSpecificationColumns <- function(columnNames) {
+  requiredFields <- c("tableName", "columnName", "dataType", "primaryKey")
+  res <- all(requiredFields %in% columnNames)
+  if (!isTRUE(res)) {
+    errorMessage <- paste0("The results data model specification requires the following columns: ", paste(shQuote(requiredFields), collapse = ", "), ". The following columns were found: ", paste(shQuote(columnNames), collapse = ", "))
+    return(errorMessage)
+  } else {
+    return(TRUE)
+  }
+}

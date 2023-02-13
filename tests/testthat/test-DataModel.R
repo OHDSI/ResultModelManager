@@ -4,6 +4,7 @@ getResultsDataModelSpecifications <- function() {
   pathToCsv <- file.path("settings", "resultsDataModelSpecification.csv")
   resultsDataModelSpecifications <-
     readr::read_csv(file = pathToCsv, col_types = readr::cols())
+  colnames(resultsDataModelSpecifications) <- SqlRender::snakeCaseToCamelCase(colnames(resultsDataModelSpecifications))
   return(resultsDataModelSpecifications)
 }
 
@@ -60,20 +61,28 @@ test_that("results are uploaded", {
     file.path("testdata", "testzip2.zip")
   listOfZipFilesToUpload <- c(pathToZip1, pathToZip2)
 
+  tempDir <- tempfile()
+
   for (i in seq_len(length(listOfZipFilesToUpload))) {
+    unzipResults(zipFile = listOfZipFilesToUpload[[i]],
+                 resultsFolder = tempDir)
+
     uploadResults(
       connectionDetails = testDatabaseConnectionDetails,
       schema = testSchema,
-      zipFileName = listOfZipFilesToUpload[[i]],
-      specifications = specifications
+      resultsFolder = tempDir,
+      specifications = specifications,
+      purgeSiteDataBeforeUploading = FALSE
     )
+
+    unlink(x = tempDir, recursive = TRUE, force = TRUE)
   }
 
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
 
     if ("database_id" %in% primaryKey) {
@@ -102,7 +111,7 @@ test_that("appending results rows using primary keys works", {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
 
     # append new data into table
@@ -161,7 +170,7 @@ test_that("deleting results rows using data primary key works", {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
 
     # delete rows from tables with primary key: database_id, analysis3_id
@@ -200,7 +209,7 @@ test_that("deleting results rows by database id works", {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
                       primaryKey == "Yes") %>%
-      dplyr::select("fieldName") %>%
+      dplyr::select("columnName") %>%
       dplyr::pull()
 
     if ("database_id" %in% primaryKey) {
