@@ -71,7 +71,8 @@ test_that("results are uploaded", {
       connectionDetails = testDatabaseConnectionDetails,
       schema = testSchema,
       resultsFolder = tempDir,
-      specifications = specifications
+      specifications = specifications,
+      purgeSiteDataBeforeUploading = FALSE
     )
 
     unlink(x = tempDir, recursive = TRUE, force = TRUE)
