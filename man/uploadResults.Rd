@@ -14,7 +14,6 @@ uploadResults(
   purgeSiteDataBeforeUploading = TRUE,
   cdmSourceFile = "cdm_source_info.csv",
   runCheckAndFixCommands = FALSE,
-  tempFolder = tempdir(),
   specifications
 )
 }

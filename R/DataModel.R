@@ -397,39 +397,21 @@ uploadResults <- function(connection = NULL,
       if (purgeSiteDataBeforeUploading &&
         "database_id" %in% primaryKey) {
 
-        # Get the databaseId by reading the 1st row of data
-        # if one was not found in the cdmSourceFile
-        if (is.null(databaseId)) {
-          # TODO: The databaseId may be missing if there are
-          # no results in the current file and then purging will
-          # not happen properly. There may be a better way to obtain
-          # the databaseId, potentially think of making this a
-          # parameter of the upload function.
-          results <- readr::read_csv(
-            file = file.path(resultsFolder, csvFileName),
-            n_max = 1,
-            show_col_types = FALSE)
-          if (nrow(results) == 1) {
-            databaseId <- results$database_id[1]
-          }
-        }
-
         type <- specifications %>%
           dplyr::filter(tableName == !!tableName &
                           columnName == "database_id") %>%
           dplyr::select("dataType") %>%
           dplyr::pull()
 
-        if (!is.null(databaseId)) {
-          # Remove the existing data for the databaseId
-          deleteAllRowsForDatabaseId(
-            connection = connection,
-            schema = schema,
-            tableName = paste0(tablePrefix, tableName),
-            databaseId = databaseId,
-            idIsInt = type %in% c("int", "bigint")
-          )
-        }
+        # Remove the existing data for the databaseId
+        deleteAllRowsForDatabaseId(
+          connection = connection,
+          schema = schema,
+          tableName = paste0(tablePrefix, tableName),
+          databaseId = databaseId,
+          idIsInt = type %in% c("int", "bigint")
+        )
+
         # Set primaryKeyValuesInDb to NULL
         # to indicate that the primary key
         # value need not be checked since we've
