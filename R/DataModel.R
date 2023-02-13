@@ -354,10 +354,10 @@ uploadResults <- function(connection = NULL,
   # Retrieve the databaseId from the cdmSourceFile if the file exists
   # and we're purging site data before uploading. First check to see if the
   # cdmSourceFile is a relative path and set it to the current resultsFolder
-  if (!(grepl(pattern == "/", x = cdmSourceFile) || grepl(pattern = "\\\\", x = cdmSourceFile))) {
-    cdmSourceFile = file.path(resultsFolder, cdmSourceFile)
-  }
   if (purgeSiteDataBeforeUploading) {
+    if (!(grepl(pattern = "/", x = cdmSourceFile) || grepl(pattern = "\\\\", x = cdmSourceFile))) {
+      cdmSourceFile = file.path(resultsFolder, cdmSourceFile)
+    }
     if (file.exists(cdmSourceFile)) {
       database <-
         readr::read_csv(file = cdmSourceFile,
@@ -368,7 +368,7 @@ uploadResults <- function(connection = NULL,
     } else {
       stop(
         sprintf(
-          "cdmSourceFile %s not found. This file is required when purgeSiteDataBeforeUploading == TRUE",
+          "cdmSourceFile %s not found. This file location must be specified when purgeSiteDataBeforeUploading == TRUE",
           cdmSourceFile
         )
       )
