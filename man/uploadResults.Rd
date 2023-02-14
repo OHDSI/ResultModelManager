@@ -14,6 +14,7 @@ uploadResults(
   purgeSiteDataBeforeUploading = TRUE,
   cdmSourceFile = "cdm_source_info.csv",
   runCheckAndFixCommands = FALSE,
+  warnOnMissingTable = TRUE,
   specifications
 )
 }
@@ -51,6 +52,8 @@ Alternatively, you can provide a path outside of the resultsFolder for this file
 duplicate rows. This parameter is kept for legacy reasons - it is strongly recommended
 that you correct errors in your results where those results are assembled instead of
 relying on this option to try and fix it during upload.}
+
+\item{warnOnMissingTable}{Boolean, print a warning if a table file is missing.}
 
 \item{specifications}{A tibble data frame object with specifications.}
 }

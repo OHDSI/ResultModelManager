@@ -323,6 +323,7 @@ formatDouble <- function(x) {
 #'                       specify a relative path for the cdmSourceFile and the function will assume it resides in the resultsFolder.
 #'                       Alternatively, you can provide a path outside of the resultsFolder for this file.
 #' @param specifications A tibble data frame object with specifications.
+#' @param warnOnMissingTable Boolean, print a warning if a table file is missing.
 #'
 #' @export
 uploadResults <- function(connection = NULL,
@@ -334,6 +335,7 @@ uploadResults <- function(connection = NULL,
                           purgeSiteDataBeforeUploading = TRUE,
                           cdmSourceFile = "cdm_source_info.csv",
                           runCheckAndFixCommands = FALSE,
+                          warnOnMissingTable = TRUE,
                           specifications) {
   if (is.null(connection)) {
     if (!is.null(connectionDetails)) {
@@ -344,7 +346,7 @@ uploadResults <- function(connection = NULL,
     }
   }
 
-  if (connection@dbms == "sqlite" & schema != "main") {
+  if (DatabaseConnector::dbms(connection) == "sqlite" & schema != "main") {
     stop("Invalid schema for sqlite, use schema = 'main'")
   }
 
@@ -600,7 +602,7 @@ uploadResults <- function(connection = NULL,
         progress = FALSE
       )
     }
-    else {
+    else if (warnOnMissingTable) {
       warning(paste(csvFileName, "not found"))
     }
   }

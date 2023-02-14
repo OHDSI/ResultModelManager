@@ -30,7 +30,9 @@
 #' Take a csv schema definition and create a basic sql script with it.
 #'
 #' @param csvFilepath                   Path to schema file. Csv file must have the columns:
-#'                                      "tableName", "columnName", "dataType", "optional", "primaryKey"
+#'                                      "table_name", "column_name", "data_type", "is_required", "primary_key"
+#' @param schemaDefinition              A schemaDefintiion data.frame` with the columns:
+#'                                         tableName, columnName, dataType, isRequired, primaryKey
 #' @param sqlOutputPath                 File to write sql to.
 #' @param overwrite                     Boolean - overwrite existing file?
 #' @export
@@ -38,16 +40,22 @@
 #' @importFrom readr read_csv
 #' @return
 #'  string containing the sql for the table
-generateSqlSchema <- function(csvFilepath,
+generateSqlSchema <- function(csvFilepath = NULL,
+                              schemaDefinition = NULL,
                               sqlOutputPath = NULL,
                               overwrite = FALSE) {
-  if (!is.null(sqlOutputPath) && (file.exists(sqlOutputPath) & !overwrite)) {
-    stop("Output file ", sqlOutputPath, "already exists. Set overwrite = TRUE to continue")
-  }
 
-  checkmate::assertFileExists(csvFilepath)
-  schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
-  names(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(names(schemaDefinition))
+  if (all(is.null(c(csvFilepath, schemaDefinition)))) {
+    stop("Must spcify a csv file or schema definition")
+  } else if (is.null(schemaDefinition)) {
+    if (!is.null(sqlOutputPath) && (file.exists(sqlOutputPath) & !overwrite)) {
+      stop("Output file ", sqlOutputPath, "already exists. Set overwrite = TRUE to continue")
+    }
+
+    checkmate::assertFileExists(csvFilepath)
+    schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
+    names(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(names(schemaDefinition))
+  }
   assertSpecificationColumns(colnames(schemaDefinition))
 
   tableSqlStr <- "
