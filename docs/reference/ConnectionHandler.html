@@ -18,7 +18,7 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -37,6 +37,9 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
     </li>
     <li>
       <a href="../articles/PackageDesign.html">Package Design</a>
+    </li>
+    <li>
+      <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -94,7 +97,11 @@ executeSql</p>
 
 
 <dt><code>isActive</code></dt>
-<dd><p>Is connection active or not</p></dd>
+<dd><p>Is connection active or not#'</p></dd>
+
+
+<dt><code>snakeCaseToCamelCase</code></dt>
+<dd><p>(Optional) Boolean. return the results columns in camel case (default)</p></dd>
 
 
 </dl><p></p></div>
@@ -106,6 +113,8 @@ executeSql</p>
 <h3 id="public-methods">Public methods<a class="anchor" aria-label="anchor" href="#public-methods"></a></h3>
 
 <ul><li><p><a href="#method-ConnectionHandler-new"><code>ConnectionHandler$new()</code></a></p></li>
+<li><p><a href="#method-ConnectionHandler-dbms"><code>ConnectionHandler$dbms()</code></a></p></li>
+<li><p><a href="#method-ConnectionHandler-tbl"><code>ConnectionHandler$tbl()</code></a></p></li>
 <li><p><a href="#method-ConnectionHandler-renderTranslateSql"><code>ConnectionHandler$renderTranslateSql()</code></a></p></li>
 <li><p><a href="#method-ConnectionHandler-initConnection"><code>ConnectionHandler$initConnection()</code></a></p></li>
 <li><p><a href="#method-ConnectionHandler-getConnection"><code>ConnectionHandler$getConnection()</code></a></p></li>
@@ -122,7 +131,11 @@ executeSql</p>
 
 <div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/ConnectionHandler.html">ConnectionHandler</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">connectionDetails</span>, loadConnection <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/ConnectionHandler.html">ConnectionHandler</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>  <span class="va">connectionDetails</span>,</span>
+<span>  loadConnection <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  snakeCaseToCamelCase <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -132,7 +145,41 @@ executeSql</p>
 
 
 <dt><code>loadConnection</code></dt>
-<dd><p>Boolean option to load connection right away
+<dd><p>Boolean option to load connection right away</p></dd>
+
+
+<dt><code>snakeCaseToCamelCase</code></dt>
+<dd><p>(Optional) Boolean. return the results columns in camel case (default)
+get dbms</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-ConnectionHandler-dbms"></a><div class="section">
+<h3 id="method-dbms-">Method <code>dbms()</code><a class="anchor" aria-label="anchor" href="#method-dbms-"></a></h3>
+<p>Get the dbms type of the connection
+get table</p><div class="section">
+<h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">dbms</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
+</div><p></p><hr><a id="method-ConnectionHandler-tbl"></a><div class="section">
+<h3 id="method-tbl-">Method <code>tbl()</code><a class="anchor" aria-label="anchor" href="#method-tbl-"></a></h3>
+<p>get a dplyr table object (i.e. lazy loaded)</p><div class="section">
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">tbl</span><span class="op">(</span><span class="va">table</span>, databaseSchema <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>table</code></dt>
+<dd><p>table name</p></dd>
+
+
+<dt><code>databaseSchema</code></dt>
+<dd><p>databaseSchema to which table belongs
 Render Translate Sql.</p></dd>
 
 
@@ -142,12 +189,12 @@ Render Translate Sql.</p></dd>
 </div><p></p><hr><a id="method-ConnectionHandler-renderTranslateSql"></a><div class="section">
 <h3 id="method-rendertranslatesql-">Method <code>renderTranslateSql()</code><a class="anchor" aria-label="anchor" href="#method-rendertranslatesql-"></a></h3>
 <p>Masked call to SqlRender</p><div class="section">
-<h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">renderTranslateSql</span><span class="op">(</span><span class="va">sql</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>Sql query string</p></dd>
 
@@ -164,7 +211,7 @@ initConnection</p></dd>
 <h3 id="method-initconnection-">Method <code>initConnection()</code><a class="anchor" aria-label="anchor" href="#method-initconnection-"></a></h3>
 <p>Load connection
 Get Connection</p><div class="section">
-<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">initConnection</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -173,7 +220,7 @@ Get Connection</p><div class="section">
 <h3 id="method-getconnection-">Method <code><a href="https://rdrr.io/r/base/showConnections.html" class="external-link">getConnection()</a></code><a class="anchor" aria-label="anchor" href="#method-getconnection-"></a></h3>
 <p>Returns connection for use with standard DatabaseConnector calls.
 Connects automatically if it isn't yet loaded</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">getConnection</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -182,7 +229,7 @@ Connects automatically if it isn't yet loaded</p><div class="section">
 <h3 id="method-closeconnection-">Method <code>closeConnection()</code><a class="anchor" aria-label="anchor" href="#method-closeconnection-"></a></h3>
 <p>Closes connection (if active)
 close Connection</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">closeConnection</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -191,7 +238,7 @@ close Connection</p><div class="section">
 <h3 id="method-finalize-">Method <code>finalize()</code><a class="anchor" aria-label="anchor" href="#method-finalize-"></a></h3>
 <p>Closes connection (if active)
 db Is Valid</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">finalize</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -199,7 +246,7 @@ db Is Valid</p><div class="section">
 </div><p></p><hr><a id="method-ConnectionHandler-dbIsValid"></a><div class="section">
 <h3 id="method-dbisvalid-">Method <code>dbIsValid()</code><a class="anchor" aria-label="anchor" href="#method-dbisvalid-"></a></h3>
 <p>Masks call to DBI::dbIsValid. Returns False if connection is NULL</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">dbIsValid</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -210,17 +257,17 @@ db Is Valid</p><div class="section">
 <p>If environment variable LIMIT_ROW_COUNT is set Returned rows are limited to this value (no default)
 Limit row count is intended for web applications that may cause a denial of service if they consume too many
 resources.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">queryDb</span><span class="op">(</span></span>
 <span>  <span class="va">sql</span>,</span>
-<span>  snakeCaseToCamelCase <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  snakeCaseToCamelCase <span class="op">=</span> <span class="va">self</span><span class="op">$</span><span class="va">snakeCaseToCamelCase</span>,</span>
 <span>  overrideRowLimit <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>sql query string</p></dd>
 
@@ -244,12 +291,12 @@ You may wish to ignore it.</p></dd>
 </div><p></p><hr><a id="method-ConnectionHandler-executeSql"></a><div class="section">
 <h3 id="method-executesql-">Method <code>executeSql()</code><a class="anchor" aria-label="anchor" href="#method-executesql-"></a></h3>
 <p>execute set of database queries</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">executeSql</span><span class="op">(</span><span class="va">sql</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>sql query string</p></dd>
 
@@ -266,12 +313,15 @@ query Function</p></dd>
 <h3 id="method-queryfunction-">Method <code>queryFunction()</code><a class="anchor" aria-label="anchor" href="#method-queryfunction-"></a></h3>
 <p>queryFunction that can be overriden with subclasses (e.g. use different base function or intercept query)
 Does not translate or render sql.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">queryFunction</span><span class="op">(</span><span class="va">sql</span>, snakeCaseToCamelCase <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">queryFunction</span><span class="op">(</span></span>
+<span>  <span class="va">sql</span>,</span>
+<span>  snakeCaseToCamelCase <span class="op">=</span> <span class="va">self</span><span class="op">$</span><span class="va">snakeCaseToCamelCase</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>sql query string</p></dd>
 
@@ -288,12 +338,12 @@ execute Function</p></dd>
 <h3 id="method-executefunction-">Method <code>executeFunction()</code><a class="anchor" aria-label="anchor" href="#method-executefunction-"></a></h3>
 <p>exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
 Does not translate or render sql.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">executeFunction</span><span class="op">(</span><span class="va">sql</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>sql query string</p></dd>
 
@@ -304,12 +354,12 @@ Does not translate or render sql.</p><div class="section">
 </div><p></p><hr><a id="method-ConnectionHandler-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
+<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">ConnectionHandler</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -329,7 +379,7 @@ Does not translate or render sql.</p><div class="section">
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by James Gilbert.</p>
+  <p></p><p>Developed by Jamie Gilbert.</p>
 </div>
 
 <div class="pkgdown">

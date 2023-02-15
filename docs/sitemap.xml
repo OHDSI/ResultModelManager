@@ -13,6 +13,9 @@
     <loc>/articles/PackageDesign.html</loc>
   </url>
   <url>
+    <loc>/articles/UploadFunctionality.html</loc>
+  </url>
+  <url>
     <loc>/articles/UsingConnectionHandlers.html</loc>
   </url>
   <url>
@@ -49,6 +52,24 @@
     <loc>/reference/ResultModelManager-package.html</loc>
   </url>
   <url>
+    <loc>/reference/createResultsDataModel.html</loc>
+  </url>
+  <url>
+    <loc>/reference/deleteAllRowsForDatabaseId.html</loc>
+  </url>
+  <url>
+    <loc>/reference/deleteAllRowsForPrimaryKey.html</loc>
+  </url>
+  <url>
+    <loc>/reference/generateSqlSchema.html</loc>
+  </url>
+  <url>
     <loc>/reference/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/unzipResults.html</loc>
+  </url>
+  <url>
+    <loc>/reference/uploadResults.html</loc>
   </url>
 </urlset>

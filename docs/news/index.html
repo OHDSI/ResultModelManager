@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -36,6 +36,9 @@
     </li>
     <li>
       <a href="../articles/PackageDesign.html">Package Design</a>
+    </li>
+    <li>
+      <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -61,7 +64,27 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.1" id="resultmodelmanager-001">ResultModelManager 0.0.1<a class="anchor" aria-label="anchor" href="#resultmodelmanager-001"></a></h2>
+<h2 class="page-header" data-toc-text="0.3.0" id="resultmodelmanager-030">ResultModelManager 0.3.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-030"></a></h2>
+<p>Changes:</p>
+<ol style="list-style-type: decimal"><li><p>Added support for validating results model schema data.frames</p></li>
+<li><p>Added function to generate sql for creating schemas from specification data frames</p></li>
+<li><p>Added unzip folder function</p></li>
+<li><p>Added robust upload function for directories of csv files conforming to model specifications</p></li>
+<li><p>Added vignette to describe creating results schemas and uploading data sets</p></li>
+</ol></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.2.0" id="resultmodelmanager-020">ResultModelManager 0.2.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-020"></a></h2>
+<p>Changes:</p>
+<ol style="list-style-type: decimal"><li><p>Fixed support for newer versions of DatabaseConnector that have altered interface - this will mean this package now depends on DatabaseConnector version 6.0.0 and above. However, <code>queryDb</code> compatibility means that no code that uses these classes will need to be altered.</p></li>
+<li><p>Added support for <code>ConnectionHandler</code> to load tables with <code>dbplyr/dplyr</code> <code>tbl</code> interface (i.e. lazy loading). This means that <code>dplyr</code> style queries should be supported natively in Pooled and non-pooled connections.</p></li>
+</ol></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.1" id="resultmodelmanager-011">ResultModelManager 0.1.1<a class="anchor" aria-label="anchor" href="#resultmodelmanager-011"></a></h2>
+<p>Changes: 1. Added snakeCaseToCamelCase parameter to public in connectionHandlers so it can be defined once if required</p>
+<ol start="2" style="list-style-type: decimal"><li>Added schema generator function that creates sql from csv files with table defs</li>
+</ol></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.0" id="resultmodelmanager-010">ResultModelManager 0.1.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-010"></a></h2>
 <p>Initial version</p>
 </div>
   </div>
@@ -74,7 +97,7 @@
 
 
       <footer><div class="copyright">
-  <p></p><p>Developed by James Gilbert.</p>
+  <p></p><p>Developed by Jamie Gilbert.</p>
 </div>
 
 <div class="pkgdown">

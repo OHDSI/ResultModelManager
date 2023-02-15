@@ -1,4 +1,4 @@
-# Copyright 2022 Observational Health Data Sciences and Informatics
+# Copyright 2023 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -39,8 +39,14 @@ rmarkdown::render("vignettes/PackageDesign.Rmd",
                                           toc = TRUE,
                                           number_sections = TRUE))
 
-rmarkdown::render("vignettes/UsingConnectionHandlers.pdf",
-                  output_file = "../inst/doc/PackageDesign.pdf",
+rmarkdown::render("vignettes/UsingConnectionHandlers.Rmd",
+                  output_file = "../inst/doc/UsingConnectionHandlers.pdf",
+                  rmarkdown::pdf_document(latex_engine = "pdflatex",
+                                          toc = TRUE,
+                                          number_sections = TRUE))
+
+rmarkdown::render("vignettes/UploadFunctionality.Rmd",
+                  output_file = "../inst/doc/UploadFunctionality.pdf",
                   rmarkdown::pdf_document(latex_engine = "pdflatex",
                                           toc = TRUE,
                                           number_sections = TRUE))

@@ -4,12 +4,19 @@
 \alias{generateSqlSchema}
 \title{Schema generator}
 \usage{
-generateSqlSchema(csvFilepath, sqlOutputPath = NULL, overwrite = FALSE)
+generateSqlSchema(
+  csvFilepath = NULL,
+  schemaDefinition = NULL,
+  sqlOutputPath = NULL,
+  overwrite = FALSE
+)
 }
 \arguments{
 \item{csvFilepath}{Path to schema file. Csv file must have the columns:
-"table_name", "colum_name", "data_type", "is_required", "primary_key"
-Note -}
+"table_name", "column_name", "data_type", "is_required", "primary_key"}
+
+\item{schemaDefinition}{A schemaDefintiion data.frame` with the columns:
+tableName, columnName, dataType, isRequired, primaryKey}
 
 \item{sqlOutputPath}{File to write sql to.}
 
