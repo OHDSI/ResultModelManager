@@ -15,8 +15,10 @@ Useful for long running applications that serve multiple concurrent requests.
 \itemize{
 \item \href{#method-PooledConnectionHandler-new}{\code{PooledConnectionHandler$new()}}
 \item \href{#method-PooledConnectionHandler-initConnection}{\code{PooledConnectionHandler$initConnection()}}
+\item \href{#method-PooledConnectionHandler-dbms}{\code{PooledConnectionHandler$dbms()}}
 \item \href{#method-PooledConnectionHandler-closeConnection}{\code{PooledConnectionHandler$closeConnection()}}
 \item \href{#method-PooledConnectionHandler-queryFunction}{\code{PooledConnectionHandler$queryFunction()}}
+\item \href{#method-PooledConnectionHandler-executeFunction}{\code{PooledConnectionHandler$executeFunction()}}
 \item \href{#method-PooledConnectionHandler-clone}{\code{PooledConnectionHandler$clone()}}
 }
 }
@@ -24,8 +26,6 @@ Useful for long running applications that serve multiple concurrent requests.
 <details><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbIsValid"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbIsValid'><code>ResultModelManager::ConnectionHandler$dbIsValid()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbms"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbms'><code>ResultModelManager::ConnectionHandler$dbms()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeFunction"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-executeFunction'><code>ResultModelManager::ConnectionHandler$executeFunction()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-executeSql'><code>ResultModelManager::ConnectionHandler$executeSql()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="finalize"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-finalize'><code>ResultModelManager::ConnectionHandler$finalize()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="getConnection"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-getConnection'><code>ResultModelManager::ConnectionHandler$getConnection()</code></a></span></li>
@@ -57,9 +57,20 @@ initialize pooled db connection}
 \if{latex}{\out{\hypertarget{method-PooledConnectionHandler-initConnection}{}}}
 \subsection{Method \code{initConnection()}}{
 Overrides ConnectionHandler Call
-Close Connection
+get dbms
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$initConnection()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PooledConnectionHandler-dbms"></a>}}
+\if{latex}{\out{\hypertarget{method-PooledConnectionHandler-dbms}{}}}
+\subsection{Method \code{dbms()}}{
+Get the dbms type of the connection
+Close Connection
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$dbms()}\if{html}{\out{</div>}}
 }
 
 }
@@ -91,7 +102,25 @@ Overrides ConnectionHandler Call. Does not translate or render sql.
 \describe{
 \item{\code{sql}}{sql query string}
 
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
+query Function}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PooledConnectionHandler-executeFunction"></a>}}
+\if{latex}{\out{\hypertarget{method-PooledConnectionHandler-executeFunction}{}}}
+\subsection{Method \code{executeFunction()}}{
+Overrides ConnectionHandler Call. Does not translate or render sql.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$executeFunction(sql)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{sql}}{sql query string}
 }
 \if{html}{\out{</div>}}
 }

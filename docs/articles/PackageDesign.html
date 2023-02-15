@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -54,6 +54,9 @@
     </li>
     <li>
       <a href="../articles/PackageDesign.html">Package Design</a>
+    </li>
+    <li>
+      <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -85,7 +88,7 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2022-09-09</h4>
+            <h4 data-toc-skip class="date">2023-02-14</h4>
       
       
       <div class="hidden name"><code>PackageDesign.Rmd</code></div>
@@ -264,10 +267,10 @@ not been completed</li>
 <h4 id="example-implementation-for-package">Example implementation for package<a class="anchor" aria-label="anchor" href="#example-implementation-for-package"></a>
 </h4>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#' @inheritParams ResultsModelManager::DatabaseMigrationManager - this will probably need to be a factory</span></span>
-<span><span class="co">#' @export</span></span>
+<code class="sourceCode R"><span><span class="co">#' @inheritParams ResultModelManager::DatabaseMigrationManager - this will probably need to be a factory</span></span>
+<span><span class="co">#' @export`</span></span>
 <span><span class="va">getMigrationManager</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">migrationsPath</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"sql"</span>, <span class="st">"sql_server"</span>, <span class="st">"migrations"</span>, package <span class="op">=</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/packageName.html" class="external-link">packageName</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
-<span>   <span class="va">migrationManager</span> <span class="op">&lt;-</span> <span class="fu">ResultsModelManager</span><span class="fu">::</span><span class="va">DatabaseMigrationManager</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>migrationsPath <span class="op">=</span> <span class="va">migrationsPath</span>, <span class="va">...</span><span class="op">)</span></span>
+<span>   <span class="va">migrationManager</span> <span class="op">&lt;-</span> <span class="fu">ResultModelManager</span><span class="fu">::</span><span class="va">DatabaseMigrationManager</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>migrationsPath <span class="op">=</span> <span class="va">migrationsPath</span>, <span class="va">...</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>It should also be possible to load the manager from a directory
 structure outside of a package. However, this may have limitations when
@@ -415,7 +418,7 @@ CDMs!</li>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by James Gilbert.</p>
+<p>Developed by Jamie Gilbert.</p>
 </div>
 
 <div class="pkgdown">
