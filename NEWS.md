@@ -1,3 +1,17 @@
+# ResultModelManager 0.3.0
+Changes:
+
+1. Added support for validating results model schema data.frames
+
+2. Added function to generate sql for creating schemas from specification data frames
+
+3. Added unzip folder function
+
+4. Added robust upload function for directories of csv files conforming to model specifications
+
+5. Added vignette to describe creating results schemas and uploading data sets
+
+
 # ResultModelManager 0.2.0
 Changes:
 

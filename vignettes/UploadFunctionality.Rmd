@@ -106,7 +106,7 @@ ResultModelManager::uploadResults(connectionDetails,
                                   purgeSiteDataBeforeUploading = FALSE,
                                   specifications = getResultsDataModelSpec())
 ```
-This will extract the zip file and upload results using `DatabaseConnetor`.
+This will extract the zip file and upload results using `DatabaseConnector`.
 For most platforms some form of bulk loading is supported, the setup for this is contained in the documentation for
 `DatabaseConnector`, it is strongly advised that you set up and use this functionality for any platforms where you will
 store large data sets.

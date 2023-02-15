@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.0.0.9000</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -54,6 +54,9 @@
     </li>
     <li>
       <a href="../articles/PackageDesign.html">Package Design</a>
+    </li>
+    <li>
+      <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -85,7 +88,7 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2022-09-09</h4>
+            <h4 data-toc-skip class="date">2023-02-14</h4>
       
       
       <div class="hidden name"><code>UsingConnectionHandlers.Rmd</code></div>
@@ -127,7 +130,7 @@ similar to above:</p>
 <code class="sourceCode R"><span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span><span class="st">"sqlite"</span>, server <span class="op">=</span> <span class="st">"MyDb.sqlite"</span><span class="op">)</span></span>
 <span><span class="va">connectionHandler</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/PooledConnectionHandler.html">PooledConnectionHandler</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">connectionDetails</span><span class="op">)</span></span></code></pre></div>
 <p>These classes should behave identically in terms of queries as they
-implement a common set of functions. See the <code><a href="https://rdrr.io/pkg/pool/man/dbPool.html" class="external-link">pool::dbPool</a></code>
+implement a common set of functions. See the <code><a href="http://rstudio.github.io/pool/reference/dbPool.html" class="external-link">pool::dbPool</a></code>
 class for information regarding pooled connections.</p>
 </div>
 <div class="section level3">
@@ -162,7 +165,7 @@ respectively.</p>
 
       <footer><div class="copyright">
   <p></p>
-<p>Developed by James Gilbert.</p>
+<p>Developed by Jamie Gilbert.</p>
 </div>
 
 <div class="pkgdown">

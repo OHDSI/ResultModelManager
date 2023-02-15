@@ -7,6 +7,7 @@ test_that("results utility functions work", {
 
 test_that("Bad model format", {
   data <- data.frame(databaseId = 1, foo = c(22))
+  expect_character(checkSpecificationColumns(data))
 
   junkSpec <- data.frame(
     tableName = "foo",
@@ -19,7 +20,7 @@ test_that("Bad model format", {
   )
   expect_error(checkAndFixColumnNames(data, "foo", "foo.zip", junkSpec))
 
-  data <- data.frame(databaseId = c("1.0", "1.0") , charField = c(22, 22), dateField = c("2022/12/21", "2022/12/21"))
+  data <- data.frame(databaseId = c("1.0", "1.0"), charField = c(22, 22), dateField = c("2022/12/21", "2022/12/21"))
   data <- checkAndFixDataTypes(data, "foo", "foo.zip", junkSpec)
   expect_warning(data <- checkAndFixDuplicateRows(data, "foo", "foo.zip", junkSpec))
   expect_true(nrow(data) == 1)

@@ -1,4 +1,4 @@
-# Copyright 2022 Observational Health Data Sciences and Informatics
+# Copyright 2023 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -44,7 +44,6 @@ generateSqlSchema <- function(csvFilepath = NULL,
                               schemaDefinition = NULL,
                               sqlOutputPath = NULL,
                               overwrite = FALSE) {
-
   if (all(is.null(c(csvFilepath, schemaDefinition)))) {
     stop("Must spcify a csv file or schema definition")
   } else if (is.null(schemaDefinition)) {

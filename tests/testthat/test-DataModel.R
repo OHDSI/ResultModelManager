@@ -1,4 +1,3 @@
-
 # get test results data model specifications data from the csv file in this package
 getResultsDataModelSpecifications <- function() {
   pathToCsv <- file.path("settings", "resultsDataModelSpecification.csv")
@@ -17,9 +16,11 @@ getResultsDataModelCreationSql <- function() {
 
 test_that("results tables are created", {
   skip_if_results_db_not_available()
-  createResultsDataModel(connectionDetails = testDatabaseConnectionDetails,
-                         schema = testSchema,
-                         sql = getResultsDataModelCreationSql())
+  createResultsDataModel(
+    connectionDetails = testDatabaseConnectionDetails,
+    schema = testSchema,
+    sql = getResultsDataModelCreationSql()
+  )
 
   specifications <- getResultsDataModelSpecifications()
 
@@ -64,24 +65,40 @@ test_that("results are uploaded", {
   tempDir <- tempfile()
 
   for (i in seq_len(length(listOfZipFilesToUpload))) {
-    unzipResults(zipFile = listOfZipFilesToUpload[[i]],
-                 resultsFolder = tempDir)
+    unzipResults(
+      zipFile = listOfZipFilesToUpload[[i]],
+      resultsFolder = tempDir
+    )
 
     uploadResults(
       connectionDetails = testDatabaseConnectionDetails,
       schema = testSchema,
+      databaseIdentifierFile = "database.csv",
       resultsFolder = tempDir,
       specifications = specifications,
-      purgeSiteDataBeforeUploading = FALSE
+      purgeSiteDataBeforeUploading = FALSE,
+      runCheckAndFixCommands = TRUE,
+      warnOnMissingTable = FALSE
     )
-
+    # Repeat to purge data
+    uploadResults(
+      connectionDetails = testDatabaseConnectionDetails,
+      schema = testSchema,
+      databaseIdentifierFile = "database.csv",
+      resultsFolder = tempDir,
+      specifications = specifications,
+      purgeSiteDataBeforeUploading = i != 2,
+      runCheckAndFixCommands = TRUE,
+      forceOverWriteOfSpecifications = i == 2,
+      warnOnMissingTable = FALSE
+    )
     unlink(x = tempDir, recursive = TRUE, force = TRUE)
   }
 
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
+        primaryKey == "Yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -107,10 +124,9 @@ test_that("appending results rows using primary keys works", {
   specifications <- getResultsDataModelSpecifications()
 
   for (tableName in unique(specifications$tableName)) {
-
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
+        primaryKey == "Yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -144,22 +160,19 @@ test_that("appending results rows using primary keys works", {
 
       # verify that the duplicate row was not appended (only the single existing row remains)
       rowCount <- mergedData %>%
-        dplyr::filter(analysis3_id == '6542456') %>%
+        dplyr::filter(analysis3_id == "6542456") %>%
         dplyr::count() %>%
         dplyr::pull()
       expect_true(rowCount == 1)
 
       # verify that the two new rows were appended
       rowCount <- mergedData %>%
-        dplyr::filter(analysis3_id == '3453111') %>%
+        dplyr::filter(analysis3_id == "3453111") %>%
         dplyr::count() %>%
         dplyr::pull()
       expect_true(rowCount == 2)
-
     }
-
   }
-
 })
 
 test_that("deleting results rows using data primary key works", {
@@ -169,7 +182,7 @@ test_that("deleting results rows using data primary key works", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
+        primaryKey == "Yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -180,8 +193,10 @@ test_that("deleting results rows using data primary key works", {
         connection = testDatabaseConnection,
         schema = testSchema,
         tableName = tableName,
-        keyValues = dplyr::tibble(database_id = "test1", analysis3_id =
-          "6542456")
+        keyValues = dplyr::tibble(
+          database_id = "test1", analysis3_id =
+            "6542456"
+        )
       )
 
       sql <-
@@ -198,7 +213,6 @@ test_that("deleting results rows using data primary key works", {
       expect_true(databaseIdCount == 0)
     }
   }
-
 })
 
 test_that("deleting results rows by database id works", {
@@ -208,7 +222,7 @@ test_that("deleting results rows by database id works", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
+        primaryKey == "Yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -234,5 +248,4 @@ test_that("deleting results rows by database id works", {
       expect_true(databaseIdCount == 0)
     }
   }
-
 })

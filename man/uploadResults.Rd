@@ -12,7 +12,7 @@ uploadResults(
   tablePrefix = "",
   forceOverWriteOfSpecifications = FALSE,
   purgeSiteDataBeforeUploading = TRUE,
-  cdmSourceFile = "cdm_source_info.csv",
+  databaseIdentifierFile = "cdm_source_info.csv",
   runCheckAndFixCommands = FALSE,
   warnOnMissingTable = TRUE,
   specifications
@@ -44,7 +44,7 @@ have changed since the last upload.}
 that site will be dropped. This assumes the results folder contains the full data for that
 data site.}
 
-\item{cdmSourceFile}{File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
+\item{databaseIdentifierFile}{File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
 specify a relative path for the cdmSourceFile and the function will assume it resides in the resultsFolder.
 Alternatively, you can provide a path outside of the resultsFolder for this file.}
 

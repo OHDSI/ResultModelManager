@@ -37,5 +37,5 @@ CREATE TABLE test_table_3 (
 			valid_start_date DATE NOT NULL,
 			concept_name VARCHAR(255) NOT NULL,
 			p_10_value FLOAT NOT NULL,
-			PRIMARY KEY(database_id,analysis3_id, concept_id)
+			PRIMARY KEY(database_id,analysis3_id)
 );

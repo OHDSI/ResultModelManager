@@ -1,4 +1,4 @@
-# Copyright 2022 Observational Health Data Sciences and Informatics
+# Copyright 2023 Observational Health Data Sciences and Informatics
 #
 # This file is part of CemConnector
 #
@@ -63,8 +63,9 @@ ConnectionHandler <- R6::R6Class(
     tbl = function(table, databaseSchema = NULL) {
       checkmate::assertString(table)
       checkmate::assertString(databaseSchema, null.ok = TRUE)
-      if (!is.null(databaseSchema))
+      if (!is.null(databaseSchema)) {
         table <- paste0(databaseSchema, ".", table)
+      }
 
       dplyr::tbl(self$getConnection(), table)
     },

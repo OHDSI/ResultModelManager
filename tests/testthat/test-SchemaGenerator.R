@@ -8,7 +8,7 @@ test_that("Schema gen from file", {
     DatabaseConnector::disconnect(connection)
   })
 
-  schema <- generateSqlSchema("settings/testSchemaDef.csv", tfile)
+  schema <- generateSqlSchema(csvFilepath = "settings/testSchemaDef.csv", sqlOutputPath = tfile)
   checkmate::expect_file_exists(tfile)
 
   schemaDetails <- readr::read_csv("settings/testSchemaDef.csv", show_col_types = FALSE)
@@ -19,7 +19,8 @@ test_that("Schema gen from file", {
 
   for (table in schemaDetails$tableName |> unique()) {
     res <- DatabaseConnector::renderTranslateQuerySql(connection,
-                                                      "SELECT * FROM @table_name",
-                                                      table_name = table)
+      "SELECT * FROM @table_name",
+      table_name = table
+    )
   }
 })

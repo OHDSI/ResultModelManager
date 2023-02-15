@@ -1,4 +1,4 @@
-# Copyright 2021 Observational Health Data Sciences and Informatics
+# Copyright 2023 Observational Health Data Sciences and Informatics
 #
 # This file is part of OHdsiSharing
 #
@@ -44,7 +44,8 @@ checkAndFixColumnNames <-
     expectedNames <- tableSpecs %>%
       dplyr::select("columnName") %>%
       dplyr::anti_join(dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
-                       by = "columnName") %>%
+        by = "columnName"
+      ) %>%
       dplyr::arrange("columnName") %>%
       dplyr::pull()
 
@@ -145,8 +146,9 @@ checkAndFixDataTypes <-
           )
 
           dateFunc <- as.Date
-          if (is.numeric(table[,i]))
+          if (is.numeric(table[, i])) {
             dateFunc <- as.Date.POSIXct
+          }
 
           table <- dplyr::mutate_at(table, i, dateFunc)
         }
@@ -174,7 +176,7 @@ checkAndFixDuplicateRows <-
            specifications) {
     primaryKeys <- specifications %>%
       dplyr::filter(.data$tableName == !!tableName &
-                      tolower(.data$primaryKey) == "yes") %>%
+        tolower(.data$primaryKey) == "yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
@@ -187,7 +189,7 @@ checkAndFixDuplicateRows <-
           sum(duplicatedRows)
         )
       )
-      return(table[!duplicatedRows,])
+      return(table[!duplicatedRows, ])
     } else {
       return(table)
     }
@@ -213,7 +215,7 @@ appendNewRows <-
     if (nrow(data) > 0) {
       primaryKeys <- specifications %>%
         dplyr::filter(.data$tableName == !!tableName &
-                        tolower(.data$primaryKey) == "yes") %>%
+          tolower(.data$primaryKey) == "yes") %>%
         dplyr::select("columnName") %>%
         dplyr::pull()
       newData <- newData %>%
@@ -285,7 +287,7 @@ naToZero <- function(x) {
 # as NaN
 formatDouble <- function(x) {
   val <- as.character(x)
-  val[tolower(val) == 'inf' | tolower(val) == '-inf'] <- 'NaN'
+  val[tolower(val) == "inf" | tolower(val) == "-inf"] <- "NaN"
   val <- as.numeric(val)
   return(val)
 }
@@ -319,7 +321,7 @@ formatDouble <- function(x) {
 #'                       duplicate rows. This parameter is kept for legacy reasons - it is strongly recommended
 #'                       that you correct errors in your results where those results are assembled instead of
 #'                       relying on this option to try and fix it during upload.
-#' @param cdmSourceFile  File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
+#' @param databaseIdentifierFile  File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
 #'                       specify a relative path for the cdmSourceFile and the function will assume it resides in the resultsFolder.
 #'                       Alternatively, you can provide a path outside of the resultsFolder for this file.
 #' @param specifications A tibble data frame object with specifications.
@@ -333,7 +335,7 @@ uploadResults <- function(connection = NULL,
                           tablePrefix = "",
                           forceOverWriteOfSpecifications = FALSE,
                           purgeSiteDataBeforeUploading = TRUE,
-                          cdmSourceFile = "cdm_source_info.csv",
+                          databaseIdentifierFile = "cdm_source_info.csv",
                           runCheckAndFixCommands = FALSE,
                           warnOnMissingTable = TRUE,
                           specifications) {
@@ -359,21 +361,23 @@ uploadResults <- function(connection = NULL,
   # and we're purging site data before uploading. First check to see if the
   # cdmSourceFile is a relative path and set it to the current resultsFolder
   if (purgeSiteDataBeforeUploading) {
-    if (!(grepl(pattern = "/", x = cdmSourceFile) || grepl(pattern = "\\\\", x = cdmSourceFile))) {
-      cdmSourceFile = file.path(resultsFolder, cdmSourceFile)
+    if (!(grepl(pattern = "/", x = databaseIdentifierFile) || grepl(pattern = "\\\\", x = databaseIdentifierFile))) {
+      databaseIdentifierFile <- file.path(resultsFolder, databaseIdentifierFile)
     }
-    if (file.exists(cdmSourceFile)) {
+    if (file.exists(databaseIdentifierFile)) {
       database <-
-        readr::read_csv(file = cdmSourceFile,
-                        col_types = readr::cols())
+        readr::read_csv(
+          file = databaseIdentifierFile,
+          col_types = readr::cols()
+        )
       colnames(database) <-
         SqlRender::snakeCaseToCamelCase(colnames(database))
       databaseId <- database$databaseId
     } else {
       stop(
         sprintf(
-          "cdmSourceFile %s not found. This file location must be specified when purgeSiteDataBeforeUploading == TRUE",
-          cdmSourceFile
+          "databaseIdentifierFile %s not found. This file location must be specified when purgeSiteDataBeforeUploading == TRUE",
+          databaseIdentifierFile
         )
       )
     }
@@ -386,7 +390,7 @@ uploadResults <- function(connection = NULL,
 
       primaryKey <- specifications %>%
         dplyr::filter(.data$tableName == !!tableName &
-                        tolower(.data$primaryKey) == "yes") %>%
+          tolower(.data$primaryKey) == "yes") %>%
         dplyr::select("columnName") %>%
         dplyr::pull()
 
@@ -398,15 +402,13 @@ uploadResults <- function(connection = NULL,
       env$tableName <- paste0(tablePrefix, tableName)
       env$specTableName <- tableName
       env$primaryKey <- primaryKey
-      if (purgeSiteDataBeforeUploading &&
-        "database_id" %in% primaryKey) {
-
+      env$purgeSiteDataBeforeUploading <- purgeSiteDataBeforeUploading
+      if (purgeSiteDataBeforeUploading && "database_id" %in% primaryKey) {
         type <- specifications %>%
           dplyr::filter(.data$tableName == !!tableName &
-                          .data$columnName == "database_id") %>%
+            .data$columnName == "database_id") %>%
           dplyr::select("dataType") %>%
           dplyr::pull()
-
         # Remove the existing data for the databaseId
         deleteAllRowsForDatabaseId(
           connection = connection,
@@ -439,10 +441,12 @@ uploadResults <- function(connection = NULL,
 
 
       uploadChunk <- function(chunk, pos) {
-        ParallelLogger::logInfo("- Preparing to upload rows ",
-                                pos,
-                                " through ",
-                                pos + nrow(chunk) - 1)
+        ParallelLogger::logInfo(
+          "- Preparing to upload rows ",
+          pos,
+          " through ",
+          pos + nrow(chunk) - 1
+        )
 
         # Ensure all column names are in lowercase
         colnames(chunk) <- tolower(colnames(chunk))
@@ -538,8 +542,10 @@ uploadResults <- function(connection = NULL,
           primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
           duplicates <-
             dplyr::inner_join(env$primaryKeyValuesInDb,
-                              primaryKeyValuesInChunk,
-                              by = env$primaryKey)
+              primaryKeyValuesInChunk,
+              by = env$primaryKey
+            )
+
           if (nrow(duplicates) != 0) {
             if ("database_id" %in% env$primaryKey ||
               forceOverWriteOfSpecifications) {
@@ -555,7 +561,6 @@ uploadResults <- function(connection = NULL,
                 tableName = env$tableName,
                 keyValues = duplicates
               )
-
             } else {
               ParallelLogger::logInfo(
                 "- Found ",
@@ -569,7 +574,7 @@ uploadResults <- function(connection = NULL,
             # Remove duplicates we already dealt with:
             env$primaryKeyValuesInDb <-
               env$primaryKeyValuesInDb %>%
-                dplyr::anti_join(duplicates, by = env$primaryKey)
+              dplyr::anti_join(duplicates, by = env$primaryKey)
           }
         }
         if (nrow(chunk) == 0) {
@@ -601,8 +606,7 @@ uploadResults <- function(connection = NULL,
         guess_max = 1e6,
         progress = FALSE
       )
-    }
-    else if (warnOnMissingTable) {
+    } else if (warnOnMissingTable) {
       warning(paste(csvFileName, "not found"))
     }
   }
@@ -626,7 +630,6 @@ uploadResults <- function(connection = NULL,
 #' @export
 deleteAllRowsForPrimaryKey <-
   function(connection, schema, tableName, keyValues) {
-
     createSqlStatement <- function(i) {
       sql <- paste0(
         "DELETE FROM ",
@@ -635,7 +638,7 @@ deleteAllRowsForPrimaryKey <-
         tableName,
         "\nWHERE ",
         paste(paste0(
-          colnames(keyValues), " = '", keyValues[i,], "'"
+          colnames(keyValues), " = '", keyValues[i, ], "'"
         ), collapse = " AND "),
         ";"
       )
@@ -676,7 +679,6 @@ deleteAllRowsForDatabaseId <-
            tableName,
            databaseId,
            idIsInt = TRUE) {
-
     if (idIsInt) {
       sql <-
         "SELECT COUNT(*) FROM @schema.@table_name WHERE database_id = @database_id;"
@@ -715,9 +717,10 @@ deleteAllRowsForDatabaseId <-
         database_id = databaseId
       )
       DatabaseConnector::executeSql(connection,
-                                    sql,
-                                    progressBar = FALSE,
-                                    reportOverallTime = FALSE)
+        sql,
+        progressBar = FALSE,
+        reportOverallTime = FALSE
+      )
     }
   }
 
