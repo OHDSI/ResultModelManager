@@ -15,7 +15,7 @@ withr::defer(
 )
 
 connectionDetails <- DatabaseConnector::createConnectionDetails("sqlite",
-  server = readLines(".SQLITE_PATH")
+  server = readLines(.varFile)
 )
 connection <- DatabaseConnector::connect(connectionDetails)
 DatabaseConnector::disconnect(connection)

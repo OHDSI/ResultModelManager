@@ -246,7 +246,7 @@ formatDouble <- function(x) {
 #' Upload results to the database server.
 #'
 #' @description
-#' Requires the results data model tables have been created using the \code{\link{createResultsDataModel}} function.
+#' Requires the results data model tables have been created using following the specifications, @seealso \code{\link{generateSqlSchema}} function.
 #'
 #' Set the POSTGRES_PATH environmental variable to the path to the folder containing the psql executable to enable
 #' bulk upload (recommended).
