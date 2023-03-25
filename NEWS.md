@@ -1,3 +1,8 @@
+# ResultModelManager 0.3.1
+Changes:
+
+1. removed spuriously added `createResultsDataModel` function
+
 # ResultModelManager 0.3.0
 Changes:
 
