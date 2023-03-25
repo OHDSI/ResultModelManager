@@ -224,55 +224,6 @@ appendNewRows <-
     return(dplyr::bind_rows(data, newData))
   }
 
-#' Create the results data model tables on a database server.
-#'
-#' @details
-#' Only PostgreSQL servers are supported.
-#'
-#' @param connection            DatabaseConnector connection instance or null
-#' @param connectionDetails     DatabaseConnector connectionDetails instance or null
-#' @param schema                The schema on the postgres server where the tables will be created.
-#' @param sql                   The postgres sql with the results data model DDL.
-#'
-#' @export
-createResultsDataModel <-
-  function(connection = NULL,
-           connectionDetails = NULL,
-           schema,
-           sql) {
-    if (is.null(connection)) {
-      if (!is.null(connectionDetails)) {
-        connection <- DatabaseConnector::connect(connectionDetails)
-        on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
-      } else {
-        stop("No connection or connectionDetails provided.")
-      }
-    }
-    schemas <- unlist(
-      DatabaseConnector::querySql(
-        connection,
-        "SELECT schema_name FROM information_schema.schemata;",
-        snakeCaseToCamelCase = TRUE
-      )[, 1]
-    )
-    if (!tolower(schema) %in% tolower(schemas)) {
-      stop(
-        "Schema '",
-        schema,
-        "' not found on database. Only found these schemas: '",
-        paste(schemas, collapse = "', '"),
-        "'"
-      )
-    }
-    DatabaseConnector::executeSql(
-      connection,
-      sprintf("SET search_path TO %s;", schema),
-      progressBar = FALSE,
-      reportOverallTime = FALSE
-    )
-    DatabaseConnector::executeSql(connection, sql)
-  }
-
 naToEmpty <- function(x) {
   x[is.na(x)] <- ""
   return(x)
