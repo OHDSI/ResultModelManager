@@ -14,6 +14,19 @@ cohortNamespace <- QueryNamespace$new(connectionHandler = connectionHandler,
                                       result_schema = "main",
                                       tablePrefix = "cd_")
 
+test_that("Errors", {
+  qn <- QueryNamespace$new(tableSpecification = tableSpecification,
+                           result_schema = "main",
+                           tablePrefix = "cd_")
+
+  expect_error(qn$getConnectionHandler())
+  qn$addReplacementVariable("foo", "fii")
+  expect_error(qn$addReplacementVariable("foo", "fii2"))
+
+  expect_list(qn$getVars())
+})
+
+
 test_that("test tablePrefix parameter", {
   expect_equal(cohortNamespace$tablePrefix, "cd_")
 })
