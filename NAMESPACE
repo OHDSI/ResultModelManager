@@ -3,6 +3,7 @@
 export(ConnectionHandler)
 export(DataMigrationManager)
 export(PooledConnectionHandler)
+export(QueryNamespace)
 export(deleteAllRowsForDatabaseId)
 export(deleteAllRowsForPrimaryKey)
 export(generateSqlSchema)

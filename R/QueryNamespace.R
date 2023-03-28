@@ -45,8 +45,7 @@ QueryNamespace <- R6::R6Class(
     connectionHandler = NULL
   ),
   public = list(
-    snakeCaseToCamelCase = TRUE,
-
+    #' @field tablePrefix tablePrefix to use
     tablePrefix = "",
     #' @description
     #' initialize class
@@ -54,6 +53,7 @@ QueryNamespace <- R6::R6Class(
     #' @param connectionHandler  ConnectionHandler instance @seealso[ConnectionHandler]
     #' @param tableSpecification tableSpecification data.frame
     #' @param tablePrefix constant string to prefix all tables with
+    #' @param ... additional replacement variables e.g. database_schema, vocabulary_schema etc
     initialize = function(connectionHandler = NULL, tableSpecification = NULL, tablePrefix = "", ...) {
       checkmate::assertString(tablePrefix)
       self$tablePrefix <- tablePrefix
@@ -75,6 +75,9 @@ QueryNamespace <- R6::R6Class(
       }
     },
 
+    #' Set Connection Handler
+    #' @description set connection handler object for object
+    #' @param connectionHandler ConnectionHandler instance
     setConnectionHandler = function(connectionHandler) {
       checkmate::assertR6(connectionHandler, "ConnectionHandler")
       private$connectionHandler <- connectionHandler
@@ -93,7 +96,7 @@ QueryNamespace <- R6::R6Class(
     #' add a variable to automatically be replaced in query strings (e.g. @database_schema.@table_name becomes 'database_schema.table_1')
     #' @param key variable name string (without @) to be replaced, eg. "table_name"
     #' @param value atomic value for replacement
-    #' @param replace if a variable of the same key is found, overrite it
+    #' @param replace if a variable of the same key is found, overwrite it
     addReplacementVariable = function(key, value, replace = FALSE) {
       checkmate::assertString(key, min.chars = 1)
       checkmate::assertAtomic(value)
@@ -103,10 +106,11 @@ QueryNamespace <- R6::R6Class(
       private$replacementVars$set(key, value)
     },
 
+    #' add table specification
     #' @description
     #' add a variable to automatically be replaced in query strings (e.g. @database_schema.@table_name becomes
     #' 'database_schema.table_1')
-    #' @param tableSpecification
+    #' @param tableSpecification table specification data.frame conforming to column names tableName, columnName, dataType and primaryKey
     #' @param useTablePrefix prefix the results with the tablePrefix (TRUE)
     #' @param tablePrefix prefix string - defaults to class variable set during initialization
     #' @param replace replace existing variables of the same name
@@ -141,7 +145,7 @@ QueryNamespace <- R6::R6Class(
       do.call(SqlRender::render, params)
     },
 
-    #' querySql
+    #' query Sql
     #' @description
     #' Call to
     #' @param sql query string
@@ -152,7 +156,7 @@ QueryNamespace <- R6::R6Class(
       ch$queryDb(sql)
     },
 
-    #' executeSql
+    #' execute Sql
     #' @description
     #' Call to execute sql within namespaced queries
     #' @param sql query string
