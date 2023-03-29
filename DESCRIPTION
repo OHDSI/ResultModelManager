@@ -23,7 +23,8 @@ Imports:
   zip,
   dplyr,
   rlang,
-  lubridate
+  lubridate,
+  fastmap
 Suggests:
   testthat (>= 3.0.0),
   RSQLite,

@@ -3,6 +3,9 @@ Changes:
 
 1. removed spuriously added `createResultsDataModel` function
 
+2. added QueryNamespace class that allows users to define a table specification and then complete queries without
+always having to specify table names
+
 # ResultModelManager 0.3.0
 Changes:
 
