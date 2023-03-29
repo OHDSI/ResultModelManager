@@ -1,23 +1,29 @@
 
 connectionHandler <- ConnectionHandler$new(connectionDetails = connectionDetails)
 
-tableSpecification <- data.frame(tableName = "cohort",
-                                 columnName = c("cohort_definition_id", "cohort_name", "json", "sql"),
-                                 primaryKey = c("yes", "no", "no", "no"),
-                                 dataType = c("int", "varchar", "varchar", "varchar"))
+tableSpecification <- data.frame(
+  tableName = "cohort",
+  columnName = c("cohort_definition_id", "cohort_name", "json", "sql"),
+  primaryKey = c("yes", "no", "no", "no"),
+  dataType = c("int", "varchar", "varchar", "varchar")
+)
 
 schemaSql <- generateSqlSchema(schemaDefinition = tableSpecification)
 connectionHandler$executeSql(schemaSql, table_prefix = "cd_", database_schema = "main")
 
-cohortNamespace <- QueryNamespace$new(connectionHandler = connectionHandler,
-                                      tableSpecification = tableSpecification,
-                                      result_schema = "main",
-                                      tablePrefix = "cd_")
+cohortNamespace <- QueryNamespace$new(
+  connectionHandler = connectionHandler,
+  tableSpecification = tableSpecification,
+  result_schema = "main",
+  tablePrefix = "cd_"
+)
 
 test_that("Errors", {
-  qn <- QueryNamespace$new(tableSpecification = tableSpecification,
-                           result_schema = "main",
-                           tablePrefix = "cd_")
+  qn <- QueryNamespace$new(
+    tableSpecification = tableSpecification,
+    result_schema = "main",
+    tablePrefix = "cd_"
+  )
 
   expect_error(qn$getConnectionHandler())
   qn$addReplacementVariable("foo", "fii")
@@ -34,9 +40,11 @@ test_that("test tablePrefix parameter", {
 test_that("test setConnectionHandler and getConnectionHandler functions", {
   checkmate::expect_r6(cohortNamespace$getConnectionHandler(), "ConnectionHandler")
 
-  cohortNamespace2 <- QueryNamespace$new(tableSpecification = tableSpecification,
-                                         result_schema = "main",
-                                         tablePrefix = "cd_")
+  cohortNamespace2 <- QueryNamespace$new(
+    tableSpecification = tableSpecification,
+    result_schema = "main",
+    tablePrefix = "cd_"
+  )
 
   cohortNamespace2$setConnectionHandler(connectionHandler)
   expect_equal(cohortNamespace2$getConnectionHandler(), connectionHandler)

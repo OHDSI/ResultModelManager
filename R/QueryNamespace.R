@@ -26,29 +26,35 @@
 #' library(ResultModelManager)
 #' connectionHandler <- ConnectionHandler$new(connectionDetails = )
 #'
-#' tableSpecification <- data.frame(tableName = "cohort",
-#'                                  columnName = c("cohort_definition_id",
-#'                                                 "cohort_name",
-#'                                                 "json",
-#'                                                  "sql"),
-#'                                  primaryKey = c(TRUE, FALSE, FALSE, FALSE),
-#'                                  dataType = c("int", "varchar", "varchar", "varchar"))
+#' tableSpecification <- data.frame(
+#'   tableName = "cohort",
+#'   columnName = c(
+#'     "cohort_definition_id",
+#'     "cohort_name",
+#'     "json",
+#'     "sql"
+#'   ),
+#'   primaryKey = c(TRUE, FALSE, FALSE, FALSE),
+#'   dataType = c("int", "varchar", "varchar", "varchar")
+#' )
 #'
-#' cohortNamespace <- QueryNamespace$new(connnectionHandler = connnectionHandler,
-#'                                       tableSpecification = tableSpecification,
-#'                                       result_schema = "main",
-#'                                       tablePrefix = "cd_")
+#' cohortNamespace <- QueryNamespace$new(
+#'   connnectionHandler = connnectionHandler,
+#'   tableSpecification = tableSpecification,
+#'   result_schema = "main",
+#'   tablePrefix = "cd_"
+#' )
 #' sql <- "SELECT * FROM @result_schema.@cohort WHERE cohort_id = @cohort_id"
 #' # Returns : "SELECT * FROM main.cd_cohort WHERE cohort_id = @cohort_id"
 #' print(cohortNamespace$render(sql))
 #' # Returns query result
 #' result <- cohortNamespace$querySql(sql, cohort_id = 1)
-#'}
+#' }
 #' @importFrom fastmap fastmap
 QueryNamespace <- R6::R6Class(
   classname = "QueryNamespace",
   private = list(
-    replacementVars =  NULL,
+    replacementVars = NULL,
     tableSpecifications = list(),
     connectionHandler = NULL
   ),
@@ -94,8 +100,9 @@ QueryNamespace <- R6::R6Class(
     #' Get connection handler
     #' @description get connection handler obeject or throw error if not set
     getConnectionHandler = function() {
-      if (is.null(private$connectionHandler))
+      if (is.null(private$connectionHandler)) {
         stop("ConnectionHandler not set")
+      }
 
       return(private$connectionHandler)
     },
@@ -108,8 +115,9 @@ QueryNamespace <- R6::R6Class(
     addReplacementVariable = function(key, value, replace = FALSE) {
       checkmate::assertString(key, min.chars = 1)
       checkmate::assertAtomic(value)
-      if (!replace && !is.null(private$replacementVars$get(key)))
+      if (!replace && !is.null(private$replacementVars$get(key))) {
         stop(paste("Key", key, "already found in namespace"))
+      }
 
       private$replacementVars$set(key, value)
     },
@@ -122,13 +130,14 @@ QueryNamespace <- R6::R6Class(
     #' @param useTablePrefix prefix the results with the tablePrefix (TRUE)
     #' @param tablePrefix prefix string - defaults to class variable set during initialization
     #' @param replace replace existing variables of the same name
-    addTableSpecification  = function(tableSpecification, useTablePrefix = TRUE, tablePrefix = self$tablePrefix, replace = TRUE) {
+    addTableSpecification = function(tableSpecification, useTablePrefix = TRUE, tablePrefix = self$tablePrefix, replace = TRUE) {
       checkmate::assertString(tablePrefix)
       assertSpecificationColumns(colnames(tableSpecification))
       for (tableName in tableSpecification$tableName %>% unique()) {
         replacementVar <- tableName
-        if (useTablePrefix)
+        if (useTablePrefix) {
           replacementVar <- paste0(tablePrefix, replacementVar)
+        }
 
         self$addReplacementVariable(tableName, replacementVar, replace = replace)
       }
