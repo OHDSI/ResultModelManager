@@ -48,3 +48,6 @@ renv.lock
 .Rprofile
 *errorReportSql.txt
 /sql
+/*.log
+/tests/testthat/testthat-problems.rds
+/errorReportSql.txt
