@@ -37,6 +37,7 @@
 #' # Returns query result
 #' result <- cohortNamespace$querySql(sql, cohort_id = 1)
 #'
+#' @importFrom fastmap fastmap
 QueryNamespace <- R6::R6Class(
   classname = "QueryNamespace",
   private = list(
