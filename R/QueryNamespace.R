@@ -22,11 +22,15 @@
 #' table names in a consistent manner that is striaghtforward to maintain over time.
 #'
 #' @examples
+#' \dontrun{
 #' library(ResultModelManager)
-#' connectionHandler <- ConnectionHandler$new(connectionDetails = Eunomia::getEunomiaConnectionDetails())
+#' connectionHandler <- ConnectionHandler$new(connectionDetails = )
 #'
 #' tableSpecification <- data.frame(tableName = "cohort",
-#'                                  columnName = c("cohort_definition_id", "cohort_name", "json", "sql"),
+#'                                  columnName = c("cohort_definition_id",
+#'                                                 "cohort_name",
+#'                                                 "json",
+#'                                                  "sql"),
 #'                                  primaryKey = c(TRUE, FALSE, FALSE, FALSE),
 #'                                  dataType = c("int", "varchar", "varchar", "varchar"))
 #'
@@ -39,7 +43,7 @@
 #' print(cohortNamespace$render(sql))
 #' # Returns query result
 #' result <- cohortNamespace$querySql(sql, cohort_id = 1)
-#'
+#'}
 #' @importFrom fastmap fastmap
 QueryNamespace <- R6::R6Class(
   classname = "QueryNamespace",

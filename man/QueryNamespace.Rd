@@ -9,8 +9,9 @@ any tables specified within a list of pre-determined tables. This allows the enc
 table names in a consistent manner that is striaghtforward to maintain over time.
 }
 \examples{
+\dontrun{
 library(ResultModelManager)
-connectionHandler <- ConnectionHandler$new(connectionDetails = Eunomia::getEunomiaConnectionDetails())
+connectionHandler <- ConnectionHandler$new(connectionDetails = )
 
 tableSpecification <- data.frame(tableName = "cohort",
                                  columnName = c("cohort_definition_id", "cohort_name", "json", "sql"),
@@ -26,7 +27,7 @@ sql <- "SELECT * FROM @result_schema.@cohort WHERE cohort_id = @cohort_id"
 print(cohortNamespace$render(sql))
 # Returns query result
 result <- cohortNamespace$querySql(sql, cohort_id = 1)
-
+}
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
