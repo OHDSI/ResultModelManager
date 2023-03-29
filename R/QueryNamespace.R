@@ -26,11 +26,14 @@
 #' connectionHandler <- ConnectionHandler$new(connectionDetails = Eunomia::getEunomiaConnectionDetails())
 #'
 #' tableSpecification <- data.frame(tableName = "cohort",
-#'                                  columnName = c("cohort_definition_id", "cohort_name", "json", "sql")
+#'                                  columnName = c("cohort_definition_id", "cohort_name", "json", "sql"),
 #'                                  primaryKey = c(TRUE, FALSE, FALSE, FALSE),
 #'                                  dataType = c("int", "varchar", "varchar", "varchar"))
 #'
-#' cohortNamespace <- QueryNamespace$new(connnectionHandler = connnectionHandler, tableSpecification = tableSpecification, result_schema = "main", tablePrefix = "cd_")
+#' cohortNamespace <- QueryNamespace$new(connnectionHandler = connnectionHandler,
+#'                                       tableSpecification = tableSpecification,
+#'                                       result_schema = "main",
+#'                                       tablePrefix = "cd_")
 #' sql <- "SELECT * FROM @result_schema.@cohort WHERE cohort_id = @cohort_id"
 #' # Returns : "SELECT * FROM main.cd_cohort WHERE cohort_id = @cohort_id"
 #' print(cohortNamespace$render(sql))
