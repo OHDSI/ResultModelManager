@@ -65,14 +65,13 @@ The package should create results csv files that correspond to these fields in t
 ## Creating a results database schema
 First we should load our specification
 ```{r,eval=FALSE}
-library(ResultModelManager)
-specification <- loadResultsDataModelSpecifications("resultsDataModelSpecification")
+specification <- ResultModelManager::loadResultsDataModelSpecifications("resultsDataModelSpecification")
 ```
 
 We can then create our schema from this sql:
 
 ```{r}
-sql <- generateSqlSchema(schemaDefinition = specification)
+sql <- ResultModelManager::generateSqlSchema(schemaDefinition = specification)
 ```
 Viewing the sql we can see that we should add a `database_schema` parameter when executing the sql and `table_prefix` if
 we need it.
@@ -83,10 +82,10 @@ We can then easily use this to create a schema using a `QueryNamespace`:
 ```{r}
 connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sqlite",
                                                                 server = tempfile())
-qns <- createQueryNamespace(connectionDetails = connectionDetails,
-                            tableSpecification = specification,
-                            tablePrefix = "my_study_",
-                            database_schema = "main")
+qns <- ResultModelManager::createQueryNamespace(connectionDetails = connectionDetails,
+                                                tableSpecification = specification,
+                                                tablePrefix = "my_study_",
+                                                database_schema = "main")
 
 # note - the table prefix and schema parameters are not neeeded when we do this
 qns$executeSql(sql)
@@ -118,11 +117,11 @@ Using the above example, a results folder should have the following files:
 
 We can now use the results spec to upload these files (and validate that they conform to the specification):
 ```{r,eval=FALSE}
-uploadResults(connectionDetails,
-              schema = "main",
-              resultsFolder = "results",
-              tablePrefix = "my_study_",
-              specifications = specification)
+ResultModelManager::uploadResults(connectionDetails,
+                                  schema = "main",
+                                  resultsFolder = "results",
+                                  tablePrefix = "my_study_",
+                                  specifications = specification)
 ```
 
 With the results uploaded we can now write queries inside the namespace:
