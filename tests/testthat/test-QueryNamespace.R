@@ -1,4 +1,3 @@
-
 connectionHandler <- ConnectionHandler$new(connectionDetails = connectionDetails)
 
 tableSpecification <- data.frame(
@@ -65,4 +64,59 @@ test_that("test querySql function", {
 test_that("test executeSql function", {
   result <- cohortNamespace$executeSql("SELECT * FROM @result_schema.@cohort WHERE cohort_definition_id = @cohort_id", cohort_id = 1)
   expect_type(result, "NULL")
+})
+
+test_that("create helper function works", {
+  expect_error(createQueryNamespace())
+
+  qns <- createQueryNamespace(connectionDetails = connectionDetails,
+                              usePooledConnection = FALSE,
+                              tableSpecification = loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.csv"),
+                              resultModelSpecificationPath = NULL,
+                              tablePrefix = "",
+                              snakeCaseToCamelCase = TRUE,
+                              databaseSchema = "main")
+
+  vars <- qns$getVars()
+  expect_true("databaseSchema" %in% names(vars))
+
+  qns <- createQueryNamespace(connectionDetails = connectionDetails,
+                              usePooledConnection = TRUE,
+                              tableSpecification = NULL,
+                              resultModelSpecificationPath = c("settings/resultsDataModelSpecification.csv",
+                                                               "settings/testSchemaDef.csv"),
+                              tablePrefix = "",
+                              snakeCaseToCamelCase = TRUE,
+                              databaseSchema = "main")
+
+  vars <- qns$getVars()
+
+
+  expect_true("cohort_counts" %in% names(vars))
+  expect_true("cohort_definition" %in% names(vars))
+  expect_true("cdm_source_info" %in% names(vars))
+  expect_true("cosine_similarity" %in% names(vars))
+  expect_true("covariate_definition" %in% names(vars))
+  expect_true("covariate_mean" %in% names(vars))
+  expect_true("test_table_1" %in% names(vars))
+
+  expect_error(
+    createQueryNamespace(connectionDetails = connectionDetails,
+                         usePooledConnection = TRUE,
+                         tableSpecification = NULL,
+                         resultModelSpecificationPath = c("fileDoesNotExist"),
+                         tablePrefix = "",
+                         snakeCaseToCamelCase = TRUE,
+                         databaseSchema = "main")
+  )
+
+  expect_error(
+     createQueryNamespace(connectionDetails = NULL,
+                          usePooledConnection = FALSE,
+                          tableSpecification = NULL,
+                          resultModelSpecificationPath = c("settings/resultsDataModelSpecification.csv"),
+                          tablePrefix = "",
+                          snakeCaseToCamelCase = TRUE,
+                          databaseSchema = "main")
+  )
 })

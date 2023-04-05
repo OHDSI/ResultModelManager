@@ -248,6 +248,8 @@ formatDouble <- function(x) {
 #' @description
 #' Requires the results data model tables have been created using following the specifications, @seealso \code{\link{generateSqlSchema}} function.
 #'
+#' Results files should be in the snake_case format for table headers and not camelCase
+#'
 #' Set the POSTGRES_PATH environmental variable to the path to the folder containing the psql executable to enable
 #' bulk upload (recommended).
 #' @param connection          An object of type \code{connection} as created using the
@@ -725,4 +727,19 @@ checkSpecificationColumns <- function(columnNames) {
   } else {
     return(TRUE)
   }
+}
+
+
+#' Get specifications from a given file path
+#' @param filePath path to a valid csv file
+#' @return
+#' A tibble data frame object with specifications
+#'
+#' @export
+loadResultsDataModelSpecifications <- function(filePath) {
+  checkmate::assertFileExists(filePath)
+  spec <- readr::read_csv(file = filePath, col_types = readr::cols())
+  colnames(spec) <- SqlRender::snakeCaseToCamelCase(colnames(spec))
+  assertSpecificationColumns(colnames(spec))
+  return(spec)
 }

@@ -3,8 +3,13 @@ Changes:
 
 1. removed spuriously added `createResultsDataModel` function
 
-2. added QueryNamespace class that allows users to define a table specification and then complete queries without
+2. added `QueryNamespace`  R6 class that allows users to define a table specification and then complete queries without
 always having to specify table names
+
+3. Added `createQueryNamespace` helper function to allow a variety of convenient ways to create query namespaces
+
+4. Added `loadResultsDataModelSpecifications` that loads results specs from a csv file and checks that the columns are
+correct
 
 # ResultModelManager 0.3.0
 Changes:
