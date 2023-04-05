@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
       </span>
     </div>
 
@@ -35,6 +35,9 @@
       <a href="../articles/CreatingMigrations.html">Creating Migrations</a>
     </li>
     <li>
+      <a href="../articles/ExampleProject.html">Example package results spec</a>
+    </li>
+    <li>
       <a href="../articles/PackageDesign.html">Package Design</a>
     </li>
     <li>
@@ -42,6 +45,9 @@
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
+    </li>
+    <li>
+      <a href="../articles/UsingQueryNamespaces.html">Using Query Namespaces</a>
     </li>
   </ul></li>
 <li>
@@ -64,10 +70,13 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.3.1" id="resultmodelmanager-031">ResultModelManager 0.3.1<a class="anchor" aria-label="anchor" href="#resultmodelmanager-031"></a></h2>
+<h2 class="page-header" data-toc-text="0.4.0" id="resultmodelmanager-040">ResultModelManager 0.4.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-040"></a></h2>
 <p>Changes:</p>
 <ol style="list-style-type: decimal"><li><p>removed spuriously added <code>createResultsDataModel</code> function</p></li>
-<li><p>added QueryNamespace class that allows users to define a table specification and then complete queries without always having to specify table names</p></li>
+<li><p>added <code>QueryNamespace</code> R6 class that allows users to define a table specification and then complete queries without always having to specify table names</p></li>
+<li><p>Added <code>createQueryNamespace</code> helper function to allow a variety of convenient ways to create query namespaces</p></li>
+<li><p>Added <code>loadResultsDataModelSpecifications</code> that loads results specs from a csv file and checks that the columns are correct</p></li>
+<li><p>Added some vignettes on usage of package features</p></li>
 </ol></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.3.0" id="resultmodelmanager-030">ResultModelManager 0.3.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-030"></a></h2>
