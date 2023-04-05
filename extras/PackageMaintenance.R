@@ -51,5 +51,17 @@ rmarkdown::render("vignettes/UploadFunctionality.Rmd",
                                           toc = TRUE,
                                           number_sections = TRUE))
 
+rmarkdown::render("vignettes/ExampleProject.rmd",
+                  output_file = "../inst/doc/ExampleProject.pdf",
+                  rmarkdown::pdf_document(latex_engine = "pdflatex",
+                                          toc = TRUE,
+                                          number_sections = TRUE))
+
+
+rmarkdown::render("vignettes/UsingQueryNamespaces.Rmd",
+                  output_file = "../inst/doc/UsingQueryNamespaces.pdf",
+                  rmarkdown::pdf_document(latex_engine = "pdflatex",
+                                          toc = TRUE,
+                                          number_sections = TRUE))
 pkgdown::build_site()
 OhdsiRTools::fixHadesLogo()

@@ -99,8 +99,8 @@ QueryNamespace <- R6::R6Class(
       invisible(NULL)
     },
 
-        #' Get connection handler
-        #' @description get connection handler obeject or throw error if not set
+    #' Get connection handler
+    #' @description get connection handler obeject or throw error if not set
     getConnectionHandler = function() {
       if (is.null(private$connectionHandler)) {
         stop("ConnectionHandler not set")
@@ -188,9 +188,9 @@ QueryNamespace <- R6::R6Class(
       ch$executeSql(sql)
     },
 
-        #' get vars
-        #' @description
-        #' returns full list of variables that will be replaced
+    #' get vars
+    #' @description
+    #' returns full list of variables that will be replaced
     getVars = function() {
       return(private$replacementVars$as_list())
     }
@@ -205,11 +205,15 @@ QueryNamespace <- R6::R6Class(
 #' Allows construction with various options not handled by QueryNamespace$new
 #'
 #' Note - currently not supported is having multiple table prefixes for multiple table namespaces
-#'
-#' @inheritParams QueryNamespace
-#' @inheritParams ConnectionHandler
+#' @inheritParams uploadResults
 #' @param resultModelSpecificationPath (optional) csv file or files for tableSpecifications - must conform to table spec
 #'                                     format.
+#' @param usePooledConnection          Use Pooled database connection instead of standard DatabaseConnector single
+#'                                     connection.
+#' @param connectionHandler            ResultModelManager ConnectionHandler or PooledConnectionHandler instance
+#' @param tableSpecification           Table specfication data.frame
+#' @param snakeCaseToCamelCase         convert snakecase results to camelCase field names (TRUE by default)
+#' @param ...                          Elipsis - use for any additional string keys to replace
 createQueryNamespace <- function(connectionDetails = NULL,
                                  connectionHandler = NULL,
                                  usePooledConnection = FALSE,
@@ -218,42 +222,47 @@ createQueryNamespace <- function(connectionDetails = NULL,
                                  tablePrefix = "",
                                  snakeCaseToCamelCase = TRUE,
                                  ...) {
-
   checkmate::assertClass(connectionDetails, "ConnectionDetails", null.ok = TRUE)
   checkmate::assertClass(connectionHandler, "ConnectionHandler", null.ok = TRUE)
   checkmate::assertLogical(usePooledConnection)
   checkmate::assertDataFrame(tableSpecification, null.ok = TRUE)
   checkmate::assertString(tablePrefix)
 
-  if (!is.null(tableSpecification))
+  if (!is.null(tableSpecification)) {
     assertSpecificationColumns(colnames(tableSpecification))
+  }
 
-  if (is.null(connectionDetails) && is.null(connectionHandler))
+  if (is.null(connectionDetails) && is.null(connectionHandler)) {
     stop("Must provide ConnectionDetails or ConnectionHandler instance")
+  }
 
   if (!is.null(resultModelSpecificationPath)) {
-    if (is.null(tableSpecification))
+    if (is.null(tableSpecification)) {
       tableSpecification <- data.frame()
+    }
 
     # Create a merged specification from all spec files provided.
-    tableSpecification <- lapply(resultModelSpecificationPath,
-                                 loadResultsDataModelSpecifications) %>%
+    tableSpecification <- lapply(
+      resultModelSpecificationPath,
+      loadResultsDataModelSpecifications
+    ) %>%
       dplyr::bind_rows(tableSpecification)
-
   }
 
   if (!is.null(connectionDetails)) {
-    if (usePooledConnection)
+    if (usePooledConnection) {
       connectionHandler <- PooledConnectionHandler$new(connectionDetails)
-    else
+    } else {
       connectionHandler <- ConnectionHandler$new(connectionDetails)
+    }
   }
   connectionHandler$snakeCaseToCamelCase <- snakeCaseToCamelCase
 
   qns <- QueryNamespace$new(connectionHandler,
-                            tableSpecification = tableSpecification,
-                            tablePrefix = tablePrefix,
-                            ...)
+    tableSpecification = tableSpecification,
+    tablePrefix = tablePrefix,
+    ...
+  )
 
   return(qns)
 }

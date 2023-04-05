@@ -1,4 +1,4 @@
-# ResultModelManager 0.3.1
+# ResultModelManager 0.4.0
 Changes:
 
 1. removed spuriously added `createResultsDataModel` function
@@ -10,6 +10,8 @@ always having to specify table names
 
 4. Added `loadResultsDataModelSpecifications` that loads results specs from a csv file and checks that the columns are
 correct
+
+5. Added some vignettes on usage of package features
 
 # ResultModelManager 0.3.0
 Changes:
