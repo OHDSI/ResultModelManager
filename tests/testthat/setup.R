@@ -1,7 +1,7 @@
 library(testthat)
 
 sqliteFile <- tempfile(fileext = "sqlite")
-.varFile <- ".SQLITE_PATH"
+.varFile <- paste0(".SQLITE_PATH", Sys.getpid())
 unlink(.varFile)
 
 writeLines(sqliteFile, .varFile)
@@ -15,11 +15,12 @@ withr::defer(
 )
 
 connectionDetails <- DatabaseConnector::createConnectionDetails("sqlite",
-  server = readLines(".SQLITE_PATH")
+  server = readLines(.varFile)
 )
 connection <- DatabaseConnector::connect(connectionDetails)
 DatabaseConnector::disconnect(connection)
 options(rstudio.connectionObserver.errorsSuppressed = TRUE)
+options(connectionObserver = NULL)
 
 
 if (dir.exists(Sys.getenv("DATABASECONNECTOR_JAR_FOLDER"))) {
@@ -39,7 +40,7 @@ if (dir.exists(Sys.getenv("DATABASECONNECTOR_JAR_FOLDER"))) {
 
 
 if (Sys.getenv("CDM5_POSTGRESQL_SERVER") != "") {
-  testSchema <- paste0("rmm", gsub("[: -]", "", Sys.time(), perl = TRUE), sample(1:100, 1))
+  testSchema <- paste0("rmm", Sys.getpid(), gsub("[: -]", "", Sys.time(), perl = TRUE), sample(1:100, 1))
   testDatabaseConnectionDetails <- getTestConnectionDetails()
   testDatabaseConnection <- DatabaseConnector::connect(testDatabaseConnectionDetails)
 

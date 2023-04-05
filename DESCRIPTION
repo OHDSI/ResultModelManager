@@ -1,6 +1,6 @@
 Package: ResultModelManager
 Title: Result Model Manager (RMM) for OHDSI packages
-Version: 0.3.0
+Version: 0.4.0
 Authors@R:
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
 Description: Database data model management utilities for OHDSI packages.
@@ -23,7 +23,8 @@ Imports:
   zip,
   dplyr,
   rlang,
-  lubridate
+  lubridate,
+  fastmap
 Suggests:
   testthat (>= 3.0.0),
   RSQLite,

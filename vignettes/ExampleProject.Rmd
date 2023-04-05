@@ -1,0 +1,139 @@
+---
+title: "Example package results spec"
+author: "James P. Gilbert"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    number_sections: yes
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{ExamplePackage}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r,echo=FALSE}
+specification <- data.frame(
+  tableName = c("covariate_definition", "covariate_definition", "covariate_result", "covariate_result", "covariate_result"),
+  columnName = c("covariate_id", "covariate_name", "cohort_definition_id", "covariate_id", "covariate_mean"),
+  dataType = c("int", "varchar", "int", "bigint", "numeric"),
+  isRequired = c("Yes", "Yes", "Yes", "Yes", "Yes"),
+  primaryKey = c("Yes", "No", "Yes", "Yes", "No"),
+  optional = c("No", "No", "No", "No", "No"),
+  emptyIsNa = c("No", "No", "No", "No", "No")
+)
+```
+
+# Introduction
+This guide intends to server as an example of using RMM to build and maintain a package that produces results in an
+end to end manner.
+The aspects this package will cover are as follows:
+
+* Creating a basic package results specification
+* Using this specification to create a database schema and instantiating it in an SQLite database
+* Creating a database migration for this project
+
+# Setup R for data export
+
+## Project setup
+
+First we will create an R package called `SimpleFeatureExtractor` a toy example that pulls a set of aggregate features
+for specified cohorts from an OMOP CDM and exports the result set to a relational database for further analysis.
+
+In this example we will export a single csv file that contains the following:
+
+| table_name           | column_name           | data_type | is_required | primary_key | optional | empty_is_na |
+|----------------------|-----------------------|-----------|-------------|-------------|----------|-------------|
+| covariate_definition | covariate_id          | int       | Yes         | Yes         | No       | No          |
+| covariate_definition | covariate_name        | varchar   | Yes         | No          | No       | No          |
+| covariate_result     | cohort_definition_id  | int       | Yes         | Yes         | No       | No          |
+| covariate_result     | covariate_id          | bigint    | Yes         | Yes         | No       | No          |
+| covariate_result     | covariate_mean        | numeric   | Yes         | No          | No       | No          |
+
+
+Results exported from this package are covariate prevalances related to a cohorts and given a covariate_id, these are
+related to names in a second table.
+This table should be saved to the `inst` folder of your R pacakge.
+Preferably, this file should be called `resultsDataModelSpecification.csv`
+
+The package should create results csv files that correspond to these fields in terms of type and name.
+
+
+
+## Creating a results database schema
+First we should load our specification
+```{r,eval=FALSE}
+library(ResultModelManager)
+specification <- loadResultsDataModelSpecifications("resultsDataModelSpecification")
+```
+
+We can then create our schema from this sql:
+
+```{r}
+sql <- generateSqlSchema(schemaDefinition = specification)
+```
+Viewing the sql we can see that we should add a `database_schema` parameter when executing the sql and `table_prefix` if
+we need it.
+```{r}
+writeLines(sql)
+```
+We can then easily use this to create a schema using a `QueryNamespace`:
+```{r}
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sqlite",
+                                                                server = tempfile())
+qns <- createQueryNamespace(connectionDetails = connectionDetails,
+                            tableSpecification = specification,
+                            tablePrefix = "my_study_",
+                            database_schema = "main")
+
+# note - the table prefix and schema parameters are not neeeded when we do this
+qns$executeSql(sql)
+```
+Alternatively, we can just use `DatabaseConnector` functions directly.
+```{r,eval=FALSE}
+
+
+connection <- DatabaseConnector::connect(connectionDetails)
+DatabaseConnector::renderTranslateExecuteSql(connection,
+                                             sql,
+                                             table_prefix = "my_study_",
+                                             database_schema = "main")
+
+
+```
+## Uploading results
+
+Now we have a schema we can upload results to it using the functionality exposed in this package.
+Using the above example, a results folder should have the following files:
+
+`results/:`
+
+| File Name                 | Description                 |
+|---------------------------|-----------------------------|
+| covariate_definition.csv  | Covariate Definition File    |
+| covariate_result.csv      | Covariate Result File        |
+
+
+We can now use the results spec to upload these files (and validate that they conform to the specification):
+```{r,eval=FALSE}
+uploadResults(connectionDetails,
+              schema = "main",
+              resultsFolder = "results",
+              tablePrefix = "my_study_",
+              specifications = specification)
+```
+
+With the results uploaded we can now write queries inside the namespace:
+
+```{r}
+qns$queryDb("SELECT * FROM @database_schema.@covariate_definition")
+
+```
+
+```{r}
+qns$queryDb("SELECT * FROM @database_schema.@covariate_result WHERE cohort_definition_id = @cohort_id",
+            cohort_id = 5)
+
+```

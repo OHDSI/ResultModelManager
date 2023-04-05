@@ -58,7 +58,9 @@ relying on this option to try and fix it during upload.}
 \item{specifications}{A tibble data frame object with specifications.}
 }
 \description{
-Requires the results data model tables have been created using the \code{\link{createResultsDataModel}} function.
+Requires the results data model tables have been created using following the specifications, @seealso \code{\link{generateSqlSchema}} function.
+
+Results files should be in the snake_case format for table headers and not camelCase
 
 Set the POSTGRES_PATH environmental variable to the path to the folder containing the psql executable to enable
 bulk upload (recommended).

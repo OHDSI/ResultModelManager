@@ -224,55 +224,6 @@ appendNewRows <-
     return(dplyr::bind_rows(data, newData))
   }
 
-#' Create the results data model tables on a database server.
-#'
-#' @details
-#' Only PostgreSQL servers are supported.
-#'
-#' @param connection            DatabaseConnector connection instance or null
-#' @param connectionDetails     DatabaseConnector connectionDetails instance or null
-#' @param schema                The schema on the postgres server where the tables will be created.
-#' @param sql                   The postgres sql with the results data model DDL.
-#'
-#' @export
-createResultsDataModel <-
-  function(connection = NULL,
-           connectionDetails = NULL,
-           schema,
-           sql) {
-    if (is.null(connection)) {
-      if (!is.null(connectionDetails)) {
-        connection <- DatabaseConnector::connect(connectionDetails)
-        on.exit(DatabaseConnector::disconnect(connection), add = TRUE)
-      } else {
-        stop("No connection or connectionDetails provided.")
-      }
-    }
-    schemas <- unlist(
-      DatabaseConnector::querySql(
-        connection,
-        "SELECT schema_name FROM information_schema.schemata;",
-        snakeCaseToCamelCase = TRUE
-      )[, 1]
-    )
-    if (!tolower(schema) %in% tolower(schemas)) {
-      stop(
-        "Schema '",
-        schema,
-        "' not found on database. Only found these schemas: '",
-        paste(schemas, collapse = "', '"),
-        "'"
-      )
-    }
-    DatabaseConnector::executeSql(
-      connection,
-      sprintf("SET search_path TO %s;", schema),
-      progressBar = FALSE,
-      reportOverallTime = FALSE
-    )
-    DatabaseConnector::executeSql(connection, sql)
-  }
-
 naToEmpty <- function(x) {
   x[is.na(x)] <- ""
   return(x)
@@ -295,7 +246,9 @@ formatDouble <- function(x) {
 #' Upload results to the database server.
 #'
 #' @description
-#' Requires the results data model tables have been created using the \code{\link{createResultsDataModel}} function.
+#' Requires the results data model tables have been created using following the specifications, @seealso \code{\link{generateSqlSchema}} function.
+#'
+#' Results files should be in the snake_case format for table headers and not camelCase
 #'
 #' Set the POSTGRES_PATH environmental variable to the path to the folder containing the psql executable to enable
 #' bulk upload (recommended).
@@ -774,4 +727,19 @@ checkSpecificationColumns <- function(columnNames) {
   } else {
     return(TRUE)
   }
+}
+
+
+#' Get specifications from a given file path
+#' @param filePath path to a valid csv file
+#' @return
+#' A tibble data frame object with specifications
+#'
+#' @export
+loadResultsDataModelSpecifications <- function(filePath) {
+  checkmate::assertFileExists(filePath)
+  spec <- readr::read_csv(file = filePath, col_types = readr::cols())
+  colnames(spec) <- SqlRender::snakeCaseToCamelCase(colnames(spec))
+  assertSpecificationColumns(colnames(spec))
+  return(spec)
 }
