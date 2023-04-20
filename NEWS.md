@@ -1,3 +1,8 @@
+# ResultModelManager 0.4.1
+Bug fixes:
+
+1.  `generateSqlSchema` No longer requires primary key field to be lower case in results spec files, is now case-insensitive
+
 # ResultModelManager 0.4.0
 Changes:
 

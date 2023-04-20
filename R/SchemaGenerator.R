@@ -69,7 +69,7 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
     tableColumns <- schemaDefinition[schemaDefinition$tableName == table, ]
     columnDefinitions <- apply(tableColumns, 1, .writeColumnDefinition)
 
-    primaryKeyFields <- tableColumns[tableColumns$primaryKey == "yes", ]
+    primaryKeyFields <- tableColumns[tolower(tableColumns$primaryKey) == "yes", ]
     if (nrow(primaryKeyFields)) {
       pkeyField <- paste0("\tPRIMARY KEY(", paste(primaryKeyFields$columnName, collapse = ","), ")")
       columnDefinitions <- c(columnDefinitions, pkeyField)
