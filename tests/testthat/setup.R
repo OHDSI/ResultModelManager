@@ -14,7 +14,8 @@ withr::defer(
   testthat::teardown_env()
 )
 
-connectionDetails <- DatabaseConnector::createConnectionDetails("sqlite",
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+  dbms = "sqlite",
   server = readLines(.varFile)
 )
 connection <- DatabaseConnector::connect(connectionDetails)

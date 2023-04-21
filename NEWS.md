@@ -1,4 +1,8 @@
 # ResultModelManager 0.4.1
+Changes:
+1. Added utility function `grantTablePermissions` to make it easier to grant select, delete, insert and update
+permissions for users on results database setups
+
 Bug fixes:
 
 1.  `generateSqlSchema` No longer requires primary key field to be lower case in results spec files, is now case-insensitive
