@@ -28,6 +28,7 @@
 #' @param permissions      permissions to generate must be one of SELECT, INSERT, DELETE or UPDATE
 #' @param databaseSchema   database schema to run this on
 #' @param user   database user to grant permissions to
+#' @param connection   DatabaseConnector connection instance
 #' @inheritParams createQueryNamespace
 #' @export
 grantTablePermissions <- function(connectionDetails = NULL,

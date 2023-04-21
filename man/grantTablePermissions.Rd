@@ -6,6 +6,7 @@
 \usage{
 grantTablePermissions(
   connectionDetails = NULL,
+  connection = NULL,
   tableSpecification,
   databaseSchema,
   tablePrefix = "",
@@ -18,16 +19,22 @@ grantTablePermissions(
 \code{\link[DatabaseConnector]{createConnectionDetails}} function in the
 DatabaseConnector package.}
 
+\item{connection}{DatabaseConnector connection instance}
+
 \item{tableSpecification}{data.frame conforming to table spec (must contain tableName field)}
 
 \item{databaseSchema}{database schema to run this on}
 
 \item{tablePrefix}{String to prefix table names with - default is empty string}
 
-\item{permissions}{permissions to generate must be one of SELECT, INSERT, DELETE}
+\item{permissions}{permissions to generate must be one of SELECT, INSERT, DELETE or UPDATE}
 
 \item{user}{database user to grant permissions to}
 }
 \description{
-Grant a given permission for all tables on a given schema
+Grant a given permission for all tables on a given tableSpecification
+
+Very useful if you're hosting studies on data.ohdsi.org or other postgresql instances
+
+NOTE: only tested on postgresql, users' of other platforms may have Sql translation issues
 }
