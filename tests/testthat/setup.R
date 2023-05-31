@@ -41,7 +41,7 @@ if (dir.exists(Sys.getenv("DATABASECONNECTOR_JAR_FOLDER"))) {
 
 
 if (Sys.getenv("CDM5_POSTGRESQL_SERVER") != "") {
-  testSchema <- paste0("rmm", Sys.getpid(), gsub("[: -]", "", Sys.time(), perl = TRUE), sample(1:100, 1))
+  testSchema <- paste0("rmm", Sys.getpid(), gsub("[: -]", "", format(Sys.time(), "%s"), perl = TRUE), sample(1:100, 1))
   testDatabaseConnectionDetails <- getTestConnectionDetails()
   testDatabaseConnection <- DatabaseConnector::connect(testDatabaseConnectionDetails)
 
