@@ -252,6 +252,21 @@ formatDouble <- function(x) {
   invisible(NULL)
 }
 
+
+.removeDataUserCheck <- function(inp = readline(prompt = "Warning - this will delete all data in this model, would you like to proceed? [y/N] ")) {
+  userInput <- tolower(inp)
+  while (!userInput %in% c("y", "n", "")) {
+    userInput <- tolower(readline(prompt = "Please enter Y or N "))
+  }
+
+  if (userInput %in% c("n", "")) {
+    message("stopping")
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+
 #' Upload results to the database server.
 #'
 #' @description
@@ -325,14 +340,8 @@ uploadResults <- function(connection = NULL,
 
   if (purgeDataModel) {
 
-    if (interactive()) {
-      userInput <- tolower(readline(prompt = "Warning - this will delete all data in this model, would you like to proceed? [y/N] "))
-      while (!userInput %in% c("y", "n")) {
-        userInput <- tolower(readline(prompt = "Please enter Y or N "))
-      }
-
-      if (userInput == "n") {
-        message("stopping")
+    if (rlang::is_interactive()) {
+      if (!.removeDataUserCheck()) {
         return(invisible(NULL))
       }
     }
@@ -674,7 +683,7 @@ deleteAllRowsForDatabaseId <-
       "SELECT COUNT(*) FROM @schema.@table_name WHERE database_id IN (@database_id);"
 
     if (!idIsInt) {
-      databaseId <- paste("'", databaseId, " '")
+      databaseId <- paste0("'", databaseId, "'")
     }
 
     sql <- SqlRender::render(
