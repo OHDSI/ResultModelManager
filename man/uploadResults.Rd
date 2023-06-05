@@ -15,6 +15,7 @@ uploadResults(
   databaseIdentifierFile = "cdm_source_info.csv",
   runCheckAndFixCommands = FALSE,
   warnOnMissingTable = TRUE,
+  purgeDataModel = FALSE,
   specifications
 )
 }
@@ -54,6 +55,9 @@ that you correct errors in your results where those results are assembled instea
 relying on this option to try and fix it during upload.}
 
 \item{warnOnMissingTable}{Boolean, print a warning if a table file is missing.}
+
+\item{purgeDataModel}{This function will purge all data from the tables in the specification prior to upload.
+Use with care. If interactive this will require further input.}
 
 \item{specifications}{A tibble data frame object with specifications.}
 }
