@@ -14,6 +14,7 @@ Depends:
   R6,
   DatabaseConnector (>= 6.0.0)
 Imports:
+  Andromeda,
   SqlRender,
   ParallelLogger,
   checkmate,

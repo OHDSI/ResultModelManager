@@ -1,0 +1,306 @@
+# Copyright 2023 Observational Health Data Sciences and Informatics
+#
+# This file is part of CohortDiagnostics
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#' Result Set Export Manager
+#' @export
+#' @description
+#' Utility for simplifying export of results to files from sql queries
+#'
+#' Note that this utility is not strictly thread safe though seperate processes can export separate tables
+#' without issue. When exporting a the same table across multiple threads primary key checks may create
+#' issues.
+ResultExportManager <- R6::R6Class(
+  classname = "ResultExportManager",
+  private = list(
+    tables = NULL,
+    tableSpecification = NULL,
+    databaseId = NULL,
+    connection = NULL,
+    minCellCount = 5,
+    .colTypeValidators = list(
+      "numeric" = checkmate::checkNumeric,
+      "int" = checkmate::checkItegerish,
+      "varchar" = checkmate::checkCharacter,
+      "bigint" = checkmate::checkNumeric,
+      "float" = checkmate::checkNumeric,
+      "character" = checkmate::checkCharacter,
+      "date" = checkmate::checkDate
+    ),
+
+    getPrimaryKeyCache = function(exportTableName) {
+      file.path(tempdir(), paste0(private$databaseId, "-", Sys.getpid(), "-", exportTableName, ".csv"))
+    },
+
+    checkPkeyCache = function(keys, exportTableName, invalidateCache) {
+      cacheFile <- private$getPrimaryKeyCache(exportTableName)
+
+      if (invalidateCache) {
+        unlink(cacheFile)
+      }
+
+      if (!file.exists(cacheFile)) {
+        return(TRUE)
+      }
+
+      isValid <- TRUE
+      # Scan file to see if any keys are duplicated
+      # Stop if they are and handle the error by setting valid to false
+      tryCatch({
+        readr::read_csv_chunked(cacheFile, callback = function(rows, pos) {
+          mergedRows <- dplyr::bind_rows(keys, rows)
+          if (any(duplicated(mergedRows))) {
+            stop("Duplicate keys found")
+          }
+          return(NULL)
+        })
+      }, error = function(err) {
+        if (grepl("Duplicate keys found", err)) {
+          isValid <<- FALSE
+        } else {
+          stop(err)
+        }
+      })
+
+      return(isValid)
+    },
+
+    # Assumes check pkeyCache has been called first as no unqiueness is assesed
+    addToPkeyCache = function(keys, exportTableName) {
+      cacheFile <- private$getPrimaryKeyCache(exportTableName)
+      readr::write_csv(keys, cacheFile, append = file.exists(cacheFile))
+      return(TRUE)
+    },
+
+    removePrimaryKeyCache = function() {
+      lapply(self$listTables(), function(table) {
+        cacheFile <- self$getPrimaryKeyCache(table)
+        unlink(cacheFile)
+      })
+
+      return(invisible(TRUE))
+    }
+  ),
+  public = list(
+    exportDir = NULL,
+    initialize = function(tableSpecification,
+                          exportDir,
+                          minCellCount = getOption("ohdsi.minCellCount" = 5),
+                          databaseId = NULL) {
+      self$exportDir <- exportDir
+      # Check table spec is valid
+      private$tableSpecification <- tableSpecification
+
+      # Check/create export_dir
+      if (!dir.exists(self$exportDir)) {
+        dir.create(self$exportDir, recursive = TRUE)
+      }
+
+      checkmate::assertTRUE(is.null(databaseId) || length(databaseId) == 1)
+      checkmate::assertIntegerish(minCellCount)
+      private$minCellCount <- minCellCount
+      private$databaseId <- databaseId
+
+      #
+      if (is.null(self$databaseId)) {
+        dbIdCount <- private$tableSpecification %>%
+          dplyr::filter(.data$columnName == "databaseId") %>%
+          dplyr::count()
+
+        if (dbIdCount > 0) {
+          stop("database Id must be set for exports with this data model")
+        }
+      }
+      # Remove primary key caches to prevent potentially weird behaviour
+      private$removePrimaryKeyCacheFiles()
+    },
+
+    getTableSpec = function(exportTableName) {
+      private$tableSpecification %>%
+        dplyr::filter(tableName == exportTableName)
+    },
+
+    getMinColValues = function(rows, exportTableName) {
+      spec <- self$getTableSpec(exportTableName)
+      if ("minCellCount" %in% colnames(spec)) {
+        filterCols <- spec %>%
+          dplyr::filter(tolower(.data$minCellCount) == "yes") %>%
+          dplyr::select("columnName") %>%
+          dplyr::pull()
+
+        if (length(filterCols)) {
+          rows <- rows %>% dplyr::mutate(dplyr::across(all_of(filterCols),
+                                                       ~ifelse(. > 0 & . < minCellCount, -minCellCount, .)))
+        }
+      }
+      return(rows)
+    },
+
+    checkRowTypes = function(rows, exportTableName) {
+      spec <- self$getTableSpec(exportTableName)
+      valid <- lapply(spec$columnName, function(colname) {
+        nullOk <- FALSE
+        if ("optional" %in% colnames(spec)) {
+          nullOk <- spec %>%
+            dplyr::filter(.data$columnName == colname) %>%
+            dplyr::select("optional") %>%
+            dplyr::pull() %>%
+            tolower() == "yes"
+        }
+        do.call(
+          private$.colTypeValidators[[coltype]],
+          list(
+            x = rows[[colname]],
+            null.ok = nullOk
+          )
+        )
+      }) %>% unlist()
+      return(all(valid))
+    },
+
+    #' @description list all tables in schema
+    listTables = function() {
+      tableNames <- private$tableSpecification %>%
+        dplyr::select("tableName") %>%
+        dplyr::pull() %>%
+        unique()
+
+      return(tableNames)
+    },
+
+    #' @description
+    #' Checks to see if the rows conform to the valid primary keys
+    #' If the same table has already been checked in the life of this object set
+    #' "invalidateCache" to TRUE as the keys will be cached in a temporary file
+    #' on disk.
+    checkPrimaryKeys = function(rows, exportTableName, invalidateCache = FALSE) {
+      primaryKeyCols <- self$getTableSpec(exportTableName) %>%
+        dplyr::filter(tolower(.data$primaryKey) == "yes")
+
+      pkdt <- rows[, primaryKeyCols]
+      # Primary keys cannot be null
+      if (any(apply(pkdt, 2, function(x) any(is.null(x), is.na(x))))) {
+        logMessage <- "null/na primary keys found"
+        return(FALSE)
+      }
+
+      if (any(duplicated(pkdt))) {
+        logMessage <- "duplicate primary keys found"
+        return(FALSE)
+      }
+
+      isValid <- private$checkPkeyCache(pkdt, exportTableName, invalidateCache)
+      # Add to primary keys cache file
+      private$addToPkeyCache(pkdt, exportTableName)
+      return(isValid)
+    },
+
+    #'
+    #'
+    exportDataFrame = function(rows, exportTableName, append = FALSE) {
+      self$checkRowTypes(rows, exportTableName)
+      # Convert < minCellCount to -minCellCount
+      rows <- self$getMinColValues(rows, exportTableName)
+      self$checkPrimaryKeys(rows, exportTableName)
+
+      # Subset to required columns
+      rows <- rows[, exportColumns]
+
+      # Add database id, if present in spec
+      outputFile <- file.path(private$exportDir, paste0(exportTableName, ".csv"))
+      colnames(rows) <- SqlRender::snakeCaseToCamelCase(colnames(rows))
+      readr::write_csv(rows, file = outputFile, append = append)
+    },
+
+    #' Export Data table with sql query
+    #' @description
+    #'
+    #' Writes files in batch to stop overflowing system memory
+    #' Checks primary keys on write
+    #' Checks minimum
+    #'
+    #' @param sql OHDSI sql string to export tables
+    #' @param exportTableName Name of table to export (in snake_case format)
+    #' @param transformFunction (optional) transformation of the data set callback.
+    #'        must take two paramters - rows and params, also rows.
+    #'
+    #'        Following this transformation callback, results will be verified against data model,
+    #'        Primary keys will be checked and minCellValue rules will be enforced
+    #' @param transformArgs arguments to be passed to the transformation function
+    #' @param ...  extra parameters passed to sql
+    exportQuery = function(connection,
+                           sql,
+                           exportTableName,
+                           transformFunction = NULL,
+                           transformArgs = list(),
+                           ...) {
+      checkmate::assertString(exportTableName)
+      checkmate::assertString(sql)
+
+      if (!exportTableName %in% private$tables) {
+        stop("Table not found in specifications")
+      }
+      outputFile <- file.path(private$exportDir, paste0(exportTableName, ".csv"))
+
+      exportData <- function(rows, pos, outputFile, self, transformFunc, transformArgs) {
+        if (!is.null(transformFunc)) {
+          transformArgs$rows <- rows
+          transformArgs$pos <- pos
+          rows <- do.call(transformFunc, transformArgs)
+        }
+
+        self$exportDataFrame(rows, exportTableName, append = pos != 1)
+        # Once the buffer is filled we no longer store the values
+        return(NULL)
+      }
+
+      DatabaseConnector::renderTranslateQueryApplyBatched(connection,
+                                                          sql,
+                                                          fun = exportData,
+                                                          args = list(self = self,
+                                                                      outputFile = outputFile,
+                                                                      transformFunction = transformFunction,
+                                                                      transformArgs = transformArgs),
+                                                          errorReportFile = file.path(getwd(), "errorReportSql.txt"),
+                                                          snakeCaseToCamelCase = TRUE,
+                                                          ...)
+    },
+
+    #' Create a meta data set for each collection of result files
+    #' @param packageName    if an R analysis package, specify the name
+    #' @param packageVersion if an analysis package, specify the version
+    getManifestList = function(packageName = NULL,
+                               packageVersion = NULL) {
+      # For each file, create a checksum of the file and the filename
+
+      # Get any migrations from package? to store in dir?
+
+      # Store expected migrations for validation on insert (if present)
+
+      resultFiles <- file.path(self$exportDir, paste0(self$getTableNames(snakeCase = TRUE), ".csv"))
+      csvFiles <- list.files(self$exportDir, "*.csv")
+
+      manifest <- list(
+        packageName = packageName,
+        packageVersion = packageVersion,
+        resultFiles = resultFiles,
+        expectedMigrations = list(),
+        rmmVersion = utils::packageVersion("ResultModelManager")
+      )
+
+      class(manifest) <- "RmmExportManifest"
+    }
+  )
+)
