@@ -22,6 +22,8 @@
 #' Note that this utility is not strictly thread safe though seperate processes can export separate tables
 #' without issue. When exporting a the same table across multiple threads primary key checks may create
 #' issues.
+#'
+#' @field exportDir direcotry path to export files to
 ResultExportManager <- R6::R6Class(
   classname = "ResultExportManager",
   private = list(
@@ -32,7 +34,7 @@ ResultExportManager <- R6::R6Class(
     minCellCount = 5,
     .colTypeValidators = list(
       "numeric" = checkmate::checkNumeric,
-      "int" = checkmate::checkItegerish,
+      "int" = checkmate::checkIntegerish,
       "varchar" = checkmate::checkCharacter,
       "bigint" = checkmate::checkNumeric,
       "float" = checkmate::checkNumeric,
@@ -46,7 +48,6 @@ ResultExportManager <- R6::R6Class(
 
     checkPkeyCache = function(keys, exportTableName, invalidateCache) {
       cacheFile <- private$getPrimaryKeyCache(exportTableName)
-
       if (invalidateCache) {
         unlink(cacheFile)
       }
@@ -65,7 +66,7 @@ ResultExportManager <- R6::R6Class(
             stop("Duplicate keys found")
           }
           return(NULL)
-        })
+        }, show_col_types = FALSE)
       }, error = function(err) {
         if (grepl("Duplicate keys found", err)) {
           isValid <<- FALSE
@@ -86,8 +87,8 @@ ResultExportManager <- R6::R6Class(
 
     removePrimaryKeyCache = function() {
       lapply(self$listTables(), function(table) {
-        cacheFile <- self$getPrimaryKeyCache(table)
-        unlink(cacheFile)
+        cacheFile <- private$getPrimaryKeyCache(table)
+        unlink(cacheFile, force = TRUE)
       })
 
       return(invisible(TRUE))
@@ -97,12 +98,12 @@ ResultExportManager <- R6::R6Class(
     exportDir = NULL,
     initialize = function(tableSpecification,
                           exportDir,
-                          minCellCount = getOption("ohdsi.minCellCount" = 5),
+                          minCellCount = getOption("ohdsi.minCellCount", default = 5),
                           databaseId = NULL) {
       self$exportDir <- exportDir
       # Check table spec is valid
+      assertSpecificationColumns(colnames(tableSpecification))
       private$tableSpecification <- tableSpecification
-
       # Check/create export_dir
       if (!dir.exists(self$exportDir)) {
         dir.create(self$exportDir, recursive = TRUE)
@@ -124,9 +125,13 @@ ResultExportManager <- R6::R6Class(
         }
       }
       # Remove primary key caches to prevent potentially weird behaviour
-      private$removePrimaryKeyCacheFiles()
+      private$removePrimaryKeyCache()
     },
 
+    #' get table spec
+    #' @description
+    #' Get specification of table
+    #' @param exportTableName table name
     getTableSpec = function(exportTableName) {
       private$tableSpecification %>%
         dplyr::filter(tableName == exportTableName)
@@ -147,7 +152,11 @@ ResultExportManager <- R6::R6Class(
       }
       return(rows)
     },
-
+    #' Check row types
+    #' @description
+    #' Check types of rows before exporting
+    #' @param rows data.frame of rows to export
+    #' @param exportTableName table name
     checkRowTypes = function(rows, exportTableName) {
       spec <- self$getTableSpec(exportTableName)
       valid <- lapply(spec$columnName, function(colname) {
@@ -159,6 +168,11 @@ ResultExportManager <- R6::R6Class(
             dplyr::pull() %>%
             tolower() == "yes"
         }
+
+        coltype <- spec %>%
+            dplyr::filter(.data$columnName == colname) %>%
+            dplyr::pull("dataType")
+
         do.call(
           private$.colTypeValidators[[coltype]],
           list(
@@ -170,6 +184,7 @@ ResultExportManager <- R6::R6Class(
       return(all(valid))
     },
 
+    #' List tables
     #' @description list all tables in schema
     listTables = function() {
       tableNames <- private$tableSpecification %>%
@@ -180,6 +195,7 @@ ResultExportManager <- R6::R6Class(
       return(tableNames)
     },
 
+    #' Check primary keys of exported data
     #' @description
     #' Checks to see if the rows conform to the valid primary keys
     #' If the same table has already been checked in the life of this object set
@@ -187,11 +203,12 @@ ResultExportManager <- R6::R6Class(
     #' on disk.
     checkPrimaryKeys = function(rows, exportTableName, invalidateCache = FALSE) {
       primaryKeyCols <- self$getTableSpec(exportTableName) %>%
-        dplyr::filter(tolower(.data$primaryKey) == "yes")
+        dplyr::filter(tolower(.data$primaryKey) == "yes") %>%
+        dplyr::pull("columnName")
 
-      pkdt <- rows[, primaryKeyCols]
+      pkdt <- rows %>% dplyr::select(dplyr::all_of(primaryKeyCols))
       # Primary keys cannot be null
-      if (any(apply(pkdt, 2, function(x) any(is.null(x), is.na(x))))) {
+      if (any(sapply(pkdt, function(x) any(is.null(x), is.na(x))))) {
         logMessage <- "null/na primary keys found"
         return(FALSE)
       }
@@ -202,26 +219,43 @@ ResultExportManager <- R6::R6Class(
       }
 
       isValid <- private$checkPkeyCache(pkdt, exportTableName, invalidateCache)
-      # Add to primary keys cache file
-      private$addToPkeyCache(pkdt, exportTableName)
+
+      if (isValid)
+        # Add to primary keys cache file
+        private$addToPkeyCache(pkdt, exportTableName)
       return(isValid)
     },
 
+    #' Export data frame
+    #' @description
+    #' This method is intended for use where exporting a data.frame and not a query from a rdbms table
+    #' For example, if you perform a transformation in R this method will check primary keys, min cell counts and
+    #' data types before writing the file to according to the table spec
     #'
-    #'
+    #' @param
+    #' @param
+    #' @param append    logical - if true will append the result to a file, otherwise the file will be overwritten
     exportDataFrame = function(rows, exportTableName, append = FALSE) {
       self$checkRowTypes(rows, exportTableName)
       # Convert < minCellCount to -minCellCount
       rows <- self$getMinColValues(rows, exportTableName)
-      self$checkPrimaryKeys(rows, exportTableName)
+      validPkeys <- self$checkPrimaryKeys(rows, exportTableName, invalidateCache = !append)
 
-      # Subset to required columns
-      rows <- rows[, exportColumns]
+      if (!validPkeys) {
+        stop("Cannot write data - primary keys already written to cache")
+      }
+
+      exportColumns <- self$getTableSpec(exportTableName) %>%
+        dplyr::pull("columnName")
+      # Subset to required columns only
+      rows <- rows %>% dplyr::select(all_of(exportColumns))
 
       # Add database id, if present in spec
-      outputFile <- file.path(private$exportDir, paste0(exportTableName, ".csv"))
+      outputFile <- file.path(self$exportDir, paste0(exportTableName, ".csv"))
       colnames(rows) <- SqlRender::snakeCaseToCamelCase(colnames(rows))
       readr::write_csv(rows, file = outputFile, append = append)
+
+      return(TRUE)
     },
 
     #' Export Data table with sql query
@@ -262,7 +296,7 @@ ResultExportManager <- R6::R6Class(
         }
 
         self$exportDataFrame(rows, exportTableName, append = pos != 1)
-        # Once the buffer is filled we no longer store the values
+        # Once the buffer is filled we no longer store the values to stop memory being killed
         return(NULL)
       }
 
@@ -278,25 +312,40 @@ ResultExportManager <- R6::R6Class(
                                                           ...)
     },
 
+    #' get manifest list
+    #' @description
     #' Create a meta data set for each collection of result files
     #' @param packageName    if an R analysis package, specify the name
     #' @param packageVersion if an analysis package, specify the version
     getManifestList = function(packageName = NULL,
-                               packageVersion = NULL) {
+                               packageVersion = NULL,
+                               migrationManager = NULL) {
+
+      checkmate::assertR6(migrationManager, classes = "DataMigrationManager", null.ok = TRUE)
       # For each file, create a checksum of the file and the filename
+      exportedFiles <- file.path(self$exportDir, list.files(self$exportDir, "*.(csv|json)"))
+
+      checksums <- data.frame(
+        file = exportedFiles,
+        checksum = lapply(exportedFiles, digest::digest, algo = "sha256") |> unlist()
+      )
 
       # Get any migrations from package? to store in dir?
 
       # Store expected migrations for validation on insert (if present)
+      expectedMigrations <- data.frame()
+      if (!is.null(migrationManager)) {
+
+      }
 
       resultFiles <- file.path(self$exportDir, paste0(self$getTableNames(snakeCase = TRUE), ".csv"))
-      csvFiles <- list.files(self$exportDir, "*.csv")
 
       manifest <- list(
         packageName = packageName,
         packageVersion = packageVersion,
         resultFiles = resultFiles,
-        expectedMigrations = list(),
+        checksums = checksums,
+        expectedMigrations = expectedMigrations,
         rmmVersion = utils::packageVersion("ResultModelManager")
       )
 
@@ -304,3 +353,31 @@ ResultExportManager <- R6::R6Class(
     }
   )
 )
+
+#' Create Result Export Manager
+#' @export
+#' @description
+#' For a give table specification file, create an export manager instance for creating results data sets that conform
+#' to the data model.
+#'
+#' This checks that, at export time, internal validity is assured for the data (e.g. primary keys are valid, data types
+#' are compatible
+#'
+#' In addition this utility will create a manifest object that can be used to maintain the validity of data.
+#'
+#' If an instance of a DataMigrationManager is present and available a packageVersion reference (where applicable)
+#' and migration set will be referenced. Allowing data to be imported into a database schema at a specific version.
+#'
+#' @param tableSpecification
+#' @param exportDir
+#' @param minCellCount
+#' @param databaseId
+createResultExportManager <- function(tableSpecification,
+                                       exportDir,
+                                       minCellCount = getOption("ohdsi.minCellCount", default = 5),
+                                       databaseId = NULL) {
+  ResultExportManager$new(tableSpecification = tableSpecification,
+                          exportDir = exportDir,
+                          minCellCount = minCellCount,
+                          databaseId = databaseId)
+}
