@@ -286,9 +286,8 @@ ResultExportManager <- R6::R6Class(
       if (!exportTableName %in% private$tables) {
         stop("Table not found in specifications")
       }
-      outputFile <- file.path(private$exportDir, paste0(exportTableName, ".csv"))
 
-      exportData <- function(rows, pos, outputFile, self, transformFunc, transformArgs) {
+      exportData <- function(rows, pos, self, transformFunc, transformArgs) {
         if (!is.null(transformFunc)) {
           transformArgs$rows <- rows
           transformArgs$pos <- pos
@@ -304,7 +303,6 @@ ResultExportManager <- R6::R6Class(
                                                           sql,
                                                           fun = exportData,
                                                           args = list(self = self,
-                                                                      outputFile = outputFile,
                                                                       transformFunction = transformFunction,
                                                                       transformArgs = transformArgs),
                                                           errorReportFile = file.path(getwd(), "errorReportSql.txt"),

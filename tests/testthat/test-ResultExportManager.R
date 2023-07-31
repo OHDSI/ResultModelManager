@@ -1,6 +1,6 @@
 test_that("Test result export manager methods", {
   # Create a dummy table specification and set the export directory
-  table_spec <- data.frame(
+  table_spec <- dplyr::tibble(
     tableName = c("table1", "table1"),
     columnName = c("col1", "col2"),
     primaryKey = c("yes", "no"),
@@ -21,13 +21,13 @@ test_that("Test result export manager methods", {
 # Test exporting a data frame
 test_that("exportDataFrame method exports data frame correctly", {
   # Create a dummy data frame
-  df <- tibble::tibble(
+  df <- dplyr::tibble(
     col1 = c(1, 2, 3),
     col2 = c("A", "B", "C")
   )
 
   # Create a dummy table specification and set the export directory
-  table_spec <- tibble::tibble(
+  table_spec <- dplyr::tibble(
     tableName = "table1",
     columnName = c("col1", "col2"),
     primaryKey = c("yes", "no"),
@@ -49,7 +49,7 @@ test_that("exportDataFrame method exports data frame correctly", {
   dfR <- readr::read_csv(output_file, , show_col_types = FALSE)
   expect_equal(dfR, df)
 
-  df2 <- tibble::tibble(
+  df2 <- dplyr::tibble(
     col1 = c(4, 5, 6),
     col2 = c("D", "E", "F")
   )
