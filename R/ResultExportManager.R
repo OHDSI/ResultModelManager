@@ -104,6 +104,8 @@ ResultExportManager <- R6::R6Class(
       # Check table spec is valid
       assertSpecificationColumns(colnames(tableSpecification))
       private$tableSpecification <- tableSpecification
+      private$tables <- unique(tableSpecification$tableName)
+
       # Check/create export_dir
       if (!dir.exists(self$exportDir)) {
         dir.create(self$exportDir, recursive = TRUE)
@@ -147,7 +149,7 @@ ResultExportManager <- R6::R6Class(
 
         if (length(filterCols)) {
           rows <- rows %>% dplyr::mutate(dplyr::across(all_of(filterCols),
-                                                       ~ifelse(. > 0 & . < minCellCount, -minCellCount, .)))
+                                                       ~ifelse(. > 0 & . < private$minCellCount, -private$minCellCount, .)))
         }
       }
       return(rows)
@@ -236,6 +238,11 @@ ResultExportManager <- R6::R6Class(
     #' @param
     #' @param append    logical - if true will append the result to a file, otherwise the file will be overwritten
     exportDataFrame = function(rows, exportTableName, append = FALSE) {
+      checkmate::assertDataFrame(rows)
+      if (!exportTableName %in% private$tables) {
+        stop("Table not found in specifications")
+      }
+
       self$checkRowTypes(rows, exportTableName)
       # Convert < minCellCount to -minCellCount
       rows <- self$getMinColValues(rows, exportTableName)
@@ -252,7 +259,7 @@ ResultExportManager <- R6::R6Class(
 
       # Add database id, if present in spec
       outputFile <- file.path(self$exportDir, paste0(exportTableName, ".csv"))
-      colnames(rows) <- SqlRender::snakeCaseToCamelCase(colnames(rows))
+      colnames(rows) <- tolower(colnames(rows))
       readr::write_csv(rows, file = outputFile, append = append)
 
       return(TRUE)
@@ -263,12 +270,12 @@ ResultExportManager <- R6::R6Class(
     #'
     #' Writes files in batch to stop overflowing system memory
     #' Checks primary keys on write
-    #' Checks minimum
+    #' Checks minimum cell count
     #'
     #' @param sql OHDSI sql string to export tables
     #' @param exportTableName Name of table to export (in snake_case format)
     #' @param transformFunction (optional) transformation of the data set callback.
-    #'        must take two paramters - rows and params, also rows.
+    #'        must take two paramters - rows and pos
     #'
     #'        Following this transformation callback, results will be verified against data model,
     #'        Primary keys will be checked and minCellValue rules will be enforced
@@ -278,20 +285,17 @@ ResultExportManager <- R6::R6Class(
                            sql,
                            exportTableName,
                            transformFunction = NULL,
-                           transformArgs = list(),
+                           transformFunctionArgs = list(),
                            ...) {
       checkmate::assertString(exportTableName)
       checkmate::assertString(sql)
+      checkmate::assert(DatabaseConnector::dbIsValid(connection))
 
-      if (!exportTableName %in% private$tables) {
-        stop("Table not found in specifications")
-      }
-
-      exportData <- function(rows, pos, self, transformFunc, transformArgs) {
-        if (!is.null(transformFunc)) {
-          transformArgs$rows <- rows
-          transformArgs$pos <- pos
-          rows <- do.call(transformFunc, transformArgs)
+      exportData <- function(rows, pos, self, transformFunction, transformFunctionArgs) {
+        if (!is.null(transformFunction)) {
+          transformFunctionArgs$rows <- rows
+          transformFunctionArgs$pos <- pos
+          rows <- do.call(transformFunction, transformFunctionArgs)
         }
 
         self$exportDataFrame(rows, exportTableName, append = pos != 1)
@@ -304,9 +308,8 @@ ResultExportManager <- R6::R6Class(
                                                           fun = exportData,
                                                           args = list(self = self,
                                                                       transformFunction = transformFunction,
-                                                                      transformArgs = transformArgs),
-                                                          errorReportFile = file.path(getwd(), "errorReportSql.txt"),
-                                                          snakeCaseToCamelCase = TRUE,
+                                                                      transformFunctionArgs = transformFunctionArgs),
+                                                          snakeCaseToCamelCase = FALSE,
                                                           ...)
     },
 
@@ -366,14 +369,15 @@ ResultExportManager <- R6::R6Class(
 #' If an instance of a DataMigrationManager is present and available a packageVersion reference (where applicable)
 #' and migration set will be referenced. Allowing data to be imported into a database schema at a specific version.
 #'
-#' @param tableSpecification
-#' @param exportDir
-#' @param minCellCount
-#' @param databaseId
+#' @param tableSpecification        Table specification data.frame
+#' @param exportDir                 Directory files are being exported to
+#' @param minCellCount              Minimum cell count - reccomended that you set with
+#'                                  options("ohdsi.minCellCount" = count) in all R projects. Default is 5
+#' @param databaseId                database identifier - required when exporting according to many specs
 createResultExportManager <- function(tableSpecification,
-                                       exportDir,
-                                       minCellCount = getOption("ohdsi.minCellCount", default = 5),
-                                       databaseId = NULL) {
+                                      exportDir,
+                                      minCellCount = getOption("ohdsi.minCellCount", default = 5),
+                                      databaseId = NULL) {
   ResultExportManager$new(tableSpecification = tableSpecification,
                           exportDir = exportDir,
                           minCellCount = minCellCount,
