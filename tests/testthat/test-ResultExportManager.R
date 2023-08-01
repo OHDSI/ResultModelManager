@@ -63,7 +63,11 @@ test_that("exportDataFrame method exports data frame correctly", {
 
 })
 
-test_that("export via sql", {
+
+testDbExport <- function(connectionDetails, schema, n = 100) {
+  ch <- ConnectionHandler$new(connectionDetails)
+  on.exit(ch$finalize())
+  # 1 million random rows
 
   table_spec <- dplyr::tibble(
     tableName = "big_table",
@@ -74,20 +78,16 @@ test_that("export via sql", {
     minCellCount = c("No", "No", "yes")
   )
 
-  testDbC <- DatabaseConnector::createConnectionDetails(dbms = "sqlite", server = ":memory:")
-  ch <- ConnectionHandler$new(testDbC)
-  on.exit(ch$finalize())
-  # 1 million random rows
-  bigData <- data.frame(row_id = 1:1e6, value = stats::runif(1e4), p_count = 3)
+  bigData <- data.frame(row_id = 1:n, value = stats::runif(n), p_count = 3)
   conn <- ch$getConnection()
-  DatabaseConnector::insertTable(conn, data = bigData, tableName = "big_table")
+  DatabaseConnector::insertTable(conn, data = bigData, tableName = "big_table", databaseSchema = schema)
 
-  export_dir <- tempfile()
-  on.exit(unlink(export_dir, recursive = TRUE, force = TRUE))
+  exportDir <- tempfile()
+  on.exit(unlink(exportDir, recursive = TRUE, force = TRUE))
 
-  exportManager <- createResultExportManager(tableSpecification = table_spec, exportDir = export_dir, minCellCount = 5)
+  exportManager <- createResultExportManager(tableSpecification = table_spec, exportDir = exportDir, minCellCount = 5)
 
-  transformFunc <- function (rows, pos, test) {
+  transformFunc <- function(rows, pos, test) {
     expect_data_frame(rows)
     expect_integerish(pos)
     expect_equal(test, 1234)
@@ -98,17 +98,23 @@ test_that("export via sql", {
   exportManager$exportQuery(connection = conn,
                             sql = "SELECT * FROM @schema.big_table",
                             exportTableName = "big_table",
-                            schema = "main",
+                            schema = schema,
                             transformFunction = transformFunc,
                             transformFunctionArgs = transformFuncArgs)
 
   # Test min cell count
-  output_file <- file.path(export_dir, "big_table.csv")
+  output_file <- file.path(exportDir, "big_table.csv")
   result <- readr::read_csv(output_file, show_col_types = FALSE)
   expect_true(all(result$p_count == -5))
+}
+
+test_that("export via sql", {
+  testDbC <- DatabaseConnector::createConnectionDetails(dbms = "sqlite", server = ":memory:")
+  testDbExport(testDbC, schema = "main", n = 1e5)
 })
 
 
 test_that("export from postgres", {
   skip_if_results_db_not_available()
+  testDbExport(testDatabaseConnectionDetails, schema = testSchema)
 })

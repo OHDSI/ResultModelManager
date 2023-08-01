@@ -96,6 +96,15 @@ ResultExportManager <- R6::R6Class(
   ),
   public = list(
     exportDir = NULL,
+
+    #' Init
+    #' @description
+    #' Create a class for exporting results from a study in a standard, consistend manner
+    #' @param tableSpecification        Table specification data.frame
+    #' @param exportDir                 Directory files are being exported to
+    #' @param minCellCount              Minimum cell count - reccomended that you set with
+    #'                                  options("ohdsi.minCellCount" = count) in all R projects. Default is 5
+    #' @param databaseId                database identifier - required when exporting according to many specs
     initialize = function(tableSpecification,
                           exportDir,
                           minCellCount = getOption("ohdsi.minCellCount", default = 5),
@@ -139,6 +148,11 @@ ResultExportManager <- R6::R6Class(
         dplyr::filter(tableName == exportTableName)
     },
 
+    #' Get min col values
+    #' @description
+    #' Columns to convert to minimum for a given table name
+    #' @param rows  data.frame of rows
+    #' @param exportTableName stering table name - must be defined in spec
     getMinColValues = function(rows, exportTableName) {
       spec <- self$getTableSpec(exportTableName)
       if ("minCellCount" %in% colnames(spec)) {
@@ -203,6 +217,10 @@ ResultExportManager <- R6::R6Class(
     #' If the same table has already been checked in the life of this object set
     #' "invalidateCache" to TRUE as the keys will be cached in a temporary file
     #' on disk.
+    #'
+    #' @param rows data.frame to export
+    #' @param exportTableName Table name (must be in spec)
+    #' @param invalidateCache logical - if starting a fresh export use this to delete cache of primary keys
     checkPrimaryKeys = function(rows, exportTableName, invalidateCache = FALSE) {
       primaryKeyCols <- self$getTableSpec(exportTableName) %>%
         dplyr::filter(tolower(.data$primaryKey) == "yes") %>%
@@ -234,8 +252,8 @@ ResultExportManager <- R6::R6Class(
     #' For example, if you perform a transformation in R this method will check primary keys, min cell counts and
     #' data types before writing the file to according to the table spec
     #'
-    #' @param
-    #' @param
+    #' @param rows              Rows to export
+    #' @param exportTableName   Table name
     #' @param append    logical - if true will append the result to a file, otherwise the file will be overwritten
     exportDataFrame = function(rows, exportTableName, append = FALSE) {
       checkmate::assertDataFrame(rows)
@@ -272,6 +290,7 @@ ResultExportManager <- R6::R6Class(
     #' Checks primary keys on write
     #' Checks minimum cell count
     #'
+    #' @param connection DatabaseConnector connection instance
     #' @param sql OHDSI sql string to export tables
     #' @param exportTableName Name of table to export (in snake_case format)
     #' @param transformFunction (optional) transformation of the data set callback.
@@ -279,7 +298,7 @@ ResultExportManager <- R6::R6Class(
     #'
     #'        Following this transformation callback, results will be verified against data model,
     #'        Primary keys will be checked and minCellValue rules will be enforced
-    #' @param transformArgs arguments to be passed to the transformation function
+    #' @param transformFunctionArgs arguments to be passed to the transformation function
     #' @param ...  extra parameters passed to sql
     exportQuery = function(connection,
                            sql,
@@ -318,6 +337,7 @@ ResultExportManager <- R6::R6Class(
     #' Create a meta data set for each collection of result files
     #' @param packageName    if an R analysis package, specify the name
     #' @param packageVersion if an analysis package, specify the version
+    #' @param migrationManager RMM migration manager instance
     getManifestList = function(packageName = NULL,
                                packageVersion = NULL,
                                migrationManager = NULL) {
