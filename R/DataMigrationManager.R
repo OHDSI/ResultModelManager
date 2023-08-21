@@ -112,10 +112,11 @@ DataMigrationManager <- R6::R6Class(
     #' @param dbms               Optionally specify the dbms that the migration fits under
     getMigrationsPath = function(dbms = "sql server") {
       checkmate::assertChoice(dbms, .availableDbms)
+      dbms <- gsub(" ", "_", dbms)
       if (!self$isPackage()) {
-        path <- file.path(self$migrationPath, gsub(" ", "_", dbms))
+        path <- file.path(self$migrationPath, dbms)
       } else {
-        path <- system.file(file.path("sql", gsub(" ", "_", dbms), self$migrationPath), package = self$packageName)
+        path <- system.file(file.path("sql", dbms, self$migrationPath), package = self$packageName)
       }
       return(path)
     },

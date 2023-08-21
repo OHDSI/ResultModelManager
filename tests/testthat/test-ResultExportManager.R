@@ -16,6 +16,12 @@ test_that("Test result export manager methods", {
   # Test that the properties are set correctly
   expect_equal(exportManager$getTableSpec("table1"), table_spec)
   expect_equal(exportManager$exportDir, export_dir)
+
+  expect_false(exportManager$checkPrimaryKeys(data.frame(col1 = NA, col2="foo"), "table1"))
+  expect_false(exportManager$checkPrimaryKeys(data.frame(col1 = c(1,2,1), col2="foo"), "table1"))
+
+  exportManager$writeManifest()
+  expect_file_exists(file.path(export_dir, "manifest.json"))
 })
 
 # Test exporting a data frame
@@ -61,6 +67,9 @@ test_that("exportDataFrame method exports data frame correctly", {
   expect_equal(dfR, rbind(df, df2))
   expect_error(exportManager$exportDataFrame(df2, "table1", append = TRUE), "Cannot write data - primary keys already written to cache")
 
+  expect_error(exportManager$exportDataFrame(df2, "table999", append = TRUE), "Table not found in specifications")
+  exportManager$writeManifest()
+  expect_file_exists(file.path(export_dir, "manifest.json"))
 })
 
 

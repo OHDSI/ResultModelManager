@@ -92,6 +92,16 @@ ResultExportManager <- R6::R6Class(
       })
 
       return(invisible(TRUE))
+    },
+
+    getMigrationFiles = function(migrationPath, packageName, migrationRegexp) {
+      if (is.null(packageName)) {
+        path <- file.path(migrationPath, "sql_server")
+      } else {
+        path <- system.file(file.path("sql", "sql_server", migrationPath), package = packageName)
+      }
+
+      return(list.files(path, migrationRegexp))
     }
   ),
   public = list(
@@ -230,11 +240,13 @@ ResultExportManager <- R6::R6Class(
       # Primary keys cannot be null
       if (any(sapply(pkdt, function(x) any(is.null(x), is.na(x))))) {
         logMessage <- "null/na primary keys found"
+        ParallelLogger::logError(logMessage)
         return(FALSE)
       }
 
       if (any(duplicated(pkdt))) {
         logMessage <- "duplicate primary keys found"
+        ParallelLogger::logError(logMessage)
         return(FALSE)
       }
 
@@ -299,25 +311,28 @@ ResultExportManager <- R6::R6Class(
     #'        Following this transformation callback, results will be verified against data model,
     #'        Primary keys will be checked and minCellValue rules will be enforced
     #' @param transformFunctionArgs arguments to be passed to the transformation function
+    #' @param append Logical add results to existing file, if FALSE (default) creates a new file and removes primary
+    #'               key validation cache
     #' @param ...  extra parameters passed to sql
     exportQuery = function(connection,
                            sql,
                            exportTableName,
                            transformFunction = NULL,
                            transformFunctionArgs = list(),
+                           append = FALSE,
                            ...) {
       checkmate::assertString(exportTableName)
       checkmate::assertString(sql)
       checkmate::assert(DatabaseConnector::dbIsValid(connection))
 
-      exportData <- function(rows, pos, self, transformFunction, transformFunctionArgs) {
+      exportData <- function(rows, pos, self, append, transformFunction, transformFunctionArgs) {
         if (!is.null(transformFunction)) {
           transformFunctionArgs$rows <- rows
           transformFunctionArgs$pos <- pos
           rows <- do.call(transformFunction, transformFunctionArgs)
         }
 
-        self$exportDataFrame(rows, exportTableName, append = pos != 1)
+        self$exportDataFrame(rows, exportTableName, append = append || pos != 1)
         # Once the buffer is filled we no longer store the values to stop memory being killed
         return(NULL)
       }
@@ -326,6 +341,7 @@ ResultExportManager <- R6::R6Class(
                                                           sql,
                                                           fun = exportData,
                                                           args = list(self = self,
+                                                                      append = append,
                                                                       transformFunction = transformFunction,
                                                                       transformFunctionArgs = transformFunctionArgs),
                                                           snakeCaseToCamelCase = FALSE,
@@ -334,15 +350,17 @@ ResultExportManager <- R6::R6Class(
 
     #' get manifest list
     #' @description
-    #' Create a meta data set for each collection of result files
+    #' Create a meta data set for each collection of result files with sha256 has for all files
+    #'
     #' @param packageName    if an R analysis package, specify the name
     #' @param packageVersion if an analysis package, specify the version
-    #' @param migrationManager RMM migration manager instance
+    #' @param migrationsPath path to sql migrations (use top level folder (e.g. sql/sql_server/migrations)
+    #' @param migrationRegexp   (optional) regular expression to search for sql files. It is not reccomended to change the default.
     getManifestList = function(packageName = NULL,
                                packageVersion = NULL,
-                               migrationManager = NULL) {
+                               migrationsPath = NULL,
+                               migrationRegexp = .defaultMigrationRegexp) {
 
-      checkmate::assertR6(migrationManager, classes = "DataMigrationManager", null.ok = TRUE)
       # For each file, create a checksum of the file and the filename
       exportedFiles <- file.path(self$exportDir, list.files(self$exportDir, "*.(csv|json)"))
 
@@ -350,16 +368,9 @@ ResultExportManager <- R6::R6Class(
         file = exportedFiles,
         checksum = lapply(exportedFiles, digest::digest, algo = "sha256") |> unlist()
       )
-
-      # Get any migrations from package? to store in dir?
-
-      # Store expected migrations for validation on insert (if present)
-      expectedMigrations <- data.frame()
-      if (!is.null(migrationManager)) {
-
-      }
-
-      resultFiles <- file.path(self$exportDir, paste0(self$getTableNames(snakeCase = TRUE), ".csv"))
+      # Get any migrations from package that would be expected for data insert to work
+      expectedMigrations <- private$getMigrationFiles(migrationsPath, packageName, migrationRegexp)
+      resultFiles <- file.path(self$exportDir, paste0(self$listTables(), ".csv"))
 
       manifest <- list(
         packageName = packageName,
@@ -371,6 +382,16 @@ ResultExportManager <- R6::R6Class(
       )
 
       class(manifest) <- "RmmExportManifest"
+    },
+
+    #' Write manifest
+    #' @description
+    #' Write manifest json
+    #' @param ...  @seealso getManifestList
+    writeManifest = function(...) {
+      outputFile <- file.path(self$exportDir, "manifest.json")
+      ParallelLogger::saveSettingsToJson(self$getManifestList(...), outputFile)
+      invisible()
     }
   )
 )
