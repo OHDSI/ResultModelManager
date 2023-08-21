@@ -30,6 +30,7 @@ Init}
 \item \href{#method-ResultExportManager-exportDataFrame}{\code{ResultExportManager$exportDataFrame()}}
 \item \href{#method-ResultExportManager-exportQuery}{\code{ResultExportManager$exportQuery()}}
 \item \href{#method-ResultExportManager-getManifestList}{\code{ResultExportManager$getManifestList()}}
+\item \href{#method-ResultExportManager-writeManifest}{\code{ResultExportManager$writeManifest()}}
 \item \href{#method-ResultExportManager-clone}{\code{ResultExportManager$clone()}}
 }
 }
@@ -199,6 +200,7 @@ Checks minimum cell count
   exportTableName,
   transformFunction = NULL,
   transformFunctionArgs = list(),
+  append = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -221,6 +223,9 @@ must take two paramters - rows and pos
 
 \item{\code{transformFunctionArgs}}{arguments to be passed to the transformation function}
 
+\item{\code{append}}{Logical add results to existing file, if FALSE (default) creates a new file and removes primary
+key validation cache}
+
 \item{\code{...}}{extra parameters passed to sql
 get manifest list}
 }
@@ -231,12 +236,13 @@ get manifest list}
 \if{html}{\out{<a id="method-ResultExportManager-getManifestList"></a>}}
 \if{latex}{\out{\hypertarget{method-ResultExportManager-getManifestList}{}}}
 \subsection{Method \code{getManifestList()}}{
-Create a meta data set for each collection of result files
+Create a meta data set for each collection of result files with sha256 has for all files
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ResultExportManager$getManifestList(
   packageName = NULL,
   packageVersion = NULL,
-  migrationManager = NULL
+  migrationsPath = NULL,
+  migrationRegexp = .defaultMigrationRegexp
 )}\if{html}{\out{</div>}}
 }
 
@@ -247,7 +253,27 @@ Create a meta data set for each collection of result files
 
 \item{\code{packageVersion}}{if an analysis package, specify the version}
 
-\item{\code{migrationManager}}{RMM migration manager instance}
+\item{\code{migrationsPath}}{path to sql migrations (use top level folder (e.g. sql/sql_server/migrations)}
+
+\item{\code{migrationRegexp}}{(optional) regular expression to search for sql files. It is not reccomended to change the default.
+Write manifest}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ResultExportManager-writeManifest"></a>}}
+\if{latex}{\out{\hypertarget{method-ResultExportManager-writeManifest}{}}}
+\subsection{Method \code{writeManifest()}}{
+Write manifest json
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ResultExportManager$writeManifest(...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{...}}{@seealso getManifestList}
 }
 \if{html}{\out{</div>}}
 }
