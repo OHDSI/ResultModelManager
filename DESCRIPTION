@@ -16,6 +16,7 @@ Depends:
 Imports:
   SqlRender,
   ParallelLogger,
+  plumber,
   checkmate,
   DBI,
   pool,
