@@ -57,9 +57,14 @@ rmarkdown::render("vignettes/ExampleProject.rmd",
                                           toc = TRUE,
                                           number_sections = TRUE))
 
-
 rmarkdown::render("vignettes/UsingQueryNamespaces.Rmd",
                   output_file = "../inst/doc/UsingQueryNamespaces.pdf",
+                  rmarkdown::pdf_document(latex_engine = "pdflatex",
+                                          toc = TRUE,
+                                          number_sections = TRUE))
+
+rmarkdown::render("vignettes/UsingAnExportManager.Rmd",
+                  output_file = "../inst/doc/UsingAnExportManager.pdf",
                   rmarkdown::pdf_document(latex_engine = "pdflatex",
                                           toc = TRUE,
                                           number_sections = TRUE))
