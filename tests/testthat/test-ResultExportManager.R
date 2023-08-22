@@ -20,6 +20,7 @@ test_that("Test result export manager methods", {
   expect_false(exportManager$checkPrimaryKeys(data.frame(col1 = NA, col2="foo"), "table1"))
   expect_false(exportManager$checkPrimaryKeys(data.frame(col1 = c(1,2,1), col2="foo"), "table1"))
 
+  checkmate::expect_list(exportManager$getManifestList())
   exportManager$writeManifest()
   expect_file_exists(file.path(export_dir, "manifest.json"))
 })

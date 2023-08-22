@@ -36,7 +36,7 @@ ResultExportManager <- R6::R6Class(
       "numeric" = checkmate::checkNumeric,
       "int" = checkmate::checkIntegerish,
       "varchar" = checkmate::checkCharacter,
-      "bigint" = checkmate::checkNumeric,
+      "bigint" = function(x, ...) { checkmate::checkNumeric(x = x, ...) && x %% 1 == 0},
       "float" = checkmate::checkNumeric,
       "character" = checkmate::checkCharacter,
       "date" = checkmate::checkDate
@@ -102,6 +102,22 @@ ResultExportManager <- R6::R6Class(
       }
 
       return(list.files(path, migrationRegexp))
+    },
+
+    validateColType = function(coltype, rowData, dataSize, null.ok) {
+      params <- list(
+        x = rowData,
+        null.ok = null.ok
+      )
+
+      if (!is.na(dataSize)) {
+        if (colType %in% c("bigint", "int")) {
+          params$upper <- 2 ** as.integer(dataSize)
+        } else if (coltype %in% c("character", "varchar") && dataSize != "max") {
+          params$max.chars <- dataSize
+        }
+      }
+      do.call(private$.colTypeValidators[[coltype]], params)
     }
   ),
   public = list(
@@ -199,13 +215,16 @@ ResultExportManager <- R6::R6Class(
             dplyr::filter(.data$columnName == colname) %>%
             dplyr::pull("dataType")
 
-        do.call(
-          private$.colTypeValidators[[coltype]],
-          list(
-            x = rows[[colname]],
-            null.ok = nullOk
-          )
-        )
+        pattern <- "\\((\\d+|max)\\)"
+
+        dataSize <- NA
+        if (grepl(pattern, coltype)) {
+          matches <- gregexpr(pattern, coltype)
+          coltype <- gsub(dataSize, "", coltype)
+          dataSize <- gsub("[()]", "", regmatches(text, matches)[1])
+        }
+
+        private$validateColType(coltype, rows[[colname]], dataSize, null.ok = nullOk)
       }) %>% unlist()
       return(all(valid))
     },
@@ -273,7 +292,10 @@ ResultExportManager <- R6::R6Class(
         stop("Table not found in specifications")
       }
 
-      self$checkRowTypes(rows, exportTableName)
+      validRows <- self$checkRowTypes(rows, exportTableName)
+      if (!all(isTRUE(validRows)))
+        stop(paste(validRows[!isTRUE(validRows)], collapse = "\n"))
+
       # Convert < minCellCount to -minCellCount
       rows <- self$getMinColValues(rows, exportTableName)
       validPkeys <- self$checkPrimaryKeys(rows, exportTableName, invalidateCache = !append)
@@ -346,6 +368,7 @@ ResultExportManager <- R6::R6Class(
                                                                       transformFunctionArgs = transformFunctionArgs),
                                                           snakeCaseToCamelCase = FALSE,
                                                           ...)
+      invisible()
     },
 
     #' get manifest list
@@ -367,7 +390,8 @@ ResultExportManager <- R6::R6Class(
       checksums <- data.frame(
         file = exportedFiles,
         checksum = lapply(exportedFiles, digest::digest, algo = "sha256") |> unlist()
-      )
+      ) %>% dplyr:: filter(.data$file != "mainfest.json")
+
       # Get any migrations from package that would be expected for data insert to work
       expectedMigrations <- private$getMigrationFiles(migrationsPath, packageName, migrationRegexp)
       resultFiles <- file.path(self$exportDir, paste0(self$listTables(), ".csv"))
@@ -382,6 +406,7 @@ ResultExportManager <- R6::R6Class(
       )
 
       class(manifest) <- "RmmExportManifest"
+      return(manifest)
     },
 
     #' Write manifest
@@ -390,7 +415,9 @@ ResultExportManager <- R6::R6Class(
     #' @param ...  @seealso getManifestList
     writeManifest = function(...) {
       outputFile <- file.path(self$exportDir, "manifest.json")
-      ParallelLogger::saveSettingsToJson(self$getManifestList(...), outputFile)
+      manifest <- self$getManifestList(...)
+      json <- jsonlite::toJSON(manifest, pretty = TRUE, force = TRUE, null = "null", auto_unbox = TRUE)
+      write(json, outputFile)
       invisible()
     }
   )
