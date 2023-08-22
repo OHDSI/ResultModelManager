@@ -1,5 +1,5 @@
 ---
-title: "Using An Export Manager
+title: "Using An Export Manager"
 author: "James P. Gilbert"
 date: "`r Sys.Date()`"
 output:
@@ -26,7 +26,7 @@ You cannot export data that does not conform to this model, so make sure that th
 that the data are being imported in to.
 It is assumed that package developers will include this in the unit tests of their package.
 
-```{r,eval = FALSE}
+```{r, eval=FALSE}
 library(ResultModelManager)
 
 tableSpecification <- dplyr::tibble(
@@ -59,7 +59,7 @@ exposed functions with a callback), or exporting from an Andromeda object.
 
 First we will connect to a test database and create some test data:
 
-```{r,eval = FALSE}
+```{r, eval=FALSE}
 connection <- DatabaseConnector::connect(server = ":memory:", dbms = "sqlite")
 schema <- "main"
 
@@ -78,9 +78,9 @@ DatabaseConnector::insertTable(connection, data = data, tableName = "result_tabl
 
 ## Exporting a database query result
 
-```{r}
-sql <- "SELECT * FROM @schema.result_table"
+```{r, eval=FALSE}
 
+sql <- "SELECT * FROM @schema.result_table"
 exportManager$exportQuery(connection = connection, sql = sql, exportTableName = "my_table", schema = schema)
 ```
 
@@ -98,7 +98,7 @@ In order to perform R operations (for example, computing a rate ratio or p-value
 SQL) it is recommended that is performed inside a callback function to the `exportQuery` method.
 Modifying the above to include a rate ratio calculation using the `rateratio.test` package:
 
-```{r,eval=FALSE}
+```{r, eval=FALSE}
 library(rateratio.test)
 
 transformation <- function(rows, pos) {
@@ -126,7 +126,7 @@ exportManager$exportQuery(connection,
 It is generally inadvisable to collect an entire andromeda table for export in to the R session before saving to disk.
 Instead, it is best practice to use batch operations as follows
 
-```{r, eval=FALSE}
+```{r eval=FALSE}
 andr <- Andromeda::andromeda()
 andr$my_andromeda_table <- data.frame(covariate_id = 1:1e4, value = stats::runif(1e4))
 

@@ -15,58 +15,30 @@
 # limitations under the License.
 
 # Format and check code
-OhdsiRTools::checkUsagePackage("ResultModelManager")
+packageName <- "ResultModelManager"
+OhdsiRTools::checkUsagePackage(packageName)
 OhdsiRTools::updateCopyrightYearFolder()
 styler::style_pkg()
 devtools::spell_check()
 
 # Create manual and vignettes:
-unlink("extras/ResultModelManager.pdf")
-system("R CMD Rd2pdf ./ --output=extras/ResultModelManager.pdf")
+manualFile <- paste0("extras/", packageName, ".pdf")
+unlink(manualFile)
+system(paste0("R CMD Rd2pdf ./ --output=", manualFile))
 
 dir.create(path = "./inst/doc/", showWarnings = FALSE)
 
 
-rmarkdown::render("vignettes/CreatingMigrations.Rmd",
-                  output_file = "../inst/doc/CreatingMigrations.pdf",
-                  rmarkdown::pdf_document(latex_engine = "pdflatex",
-                                          toc = TRUE,
-                                          number_sections = TRUE))
+vignetteFiles <- list.files("vignettes", pattern = "*.Rmd", full.names = TRUE)
 
-rmarkdown::render("vignettes/PackageDesign.Rmd",
-                  output_file = "../inst/doc/PackageDesign.pdf",
+lapply(vignetteFiles, function(filename) {
+  outputFile <- file.path("..", "inst", "doc", paste0(gsub(".Rmd", ".pdf", basename(filename))))
+  rmarkdown::render(filename,
+                  output_file = outputFile,
                   rmarkdown::pdf_document(latex_engine = "pdflatex",
                                           toc = TRUE,
                                           number_sections = TRUE))
+})
 
-rmarkdown::render("vignettes/UsingConnectionHandlers.Rmd",
-                  output_file = "../inst/doc/UsingConnectionHandlers.pdf",
-                  rmarkdown::pdf_document(latex_engine = "pdflatex",
-                                          toc = TRUE,
-                                          number_sections = TRUE))
-
-rmarkdown::render("vignettes/UploadFunctionality.Rmd",
-                  output_file = "../inst/doc/UploadFunctionality.pdf",
-                  rmarkdown::pdf_document(latex_engine = "pdflatex",
-                                          toc = TRUE,
-                                          number_sections = TRUE))
-
-rmarkdown::render("vignettes/ExampleProject.rmd",
-                  output_file = "../inst/doc/ExampleProject.pdf",
-                  rmarkdown::pdf_document(latex_engine = "pdflatex",
-                                          toc = TRUE,
-                                          number_sections = TRUE))
-
-rmarkdown::render("vignettes/UsingQueryNamespaces.Rmd",
-                  output_file = "../inst/doc/UsingQueryNamespaces.pdf",
-                  rmarkdown::pdf_document(latex_engine = "pdflatex",
-                                          toc = TRUE,
-                                          number_sections = TRUE))
-
-rmarkdown::render("vignettes/UsingAnExportManager.Rmd",
-                  output_file = "../inst/doc/UsingAnExportManager.pdf",
-                  rmarkdown::pdf_document(latex_engine = "pdflatex",
-                                          toc = TRUE,
-                                          number_sections = TRUE))
 pkgdown::build_site()
 OhdsiRTools::fixHadesLogo()
