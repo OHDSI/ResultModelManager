@@ -1,7 +1,9 @@
-# ResultModelManager 0.4.1
+# ResultModelManager 0.5.0
 Changes:
 1. Added utility function `grantTablePermissions` to make it easier to grant select, delete, insert and update
 permissions for users on results database setups
+
+2. Added `ResultExportManager` class and utility to support standardized validation routines for exported data
 
 Bug fixes:
 
