@@ -133,7 +133,10 @@ QueryNamespace <- R6::R6Class(
     #' @param useTablePrefix prefix the results with the tablePrefix (TRUE)
     #' @param tablePrefix prefix string - defaults to class variable set during initialization
     #' @param replace replace existing variables of the same name
-    addTableSpecification = function(tableSpecification, useTablePrefix = TRUE, tablePrefix = self$tablePrefix, replace = TRUE) {
+    addTableSpecification = function(tableSpecification,
+                                     useTablePrefix = TRUE,
+                                     tablePrefix = self$tablePrefix,
+                                     replace = TRUE) {
       checkmate::assertString(tablePrefix)
       assertSpecificationColumns(colnames(tableSpecification))
       for (tableName in tableSpecification$tableName %>% unique()) {
