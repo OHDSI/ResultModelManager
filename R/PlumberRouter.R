@@ -34,24 +34,29 @@
 
   queryParams <- "WHERE 1 = 1"
   params <- list()
-  for (param in columnSpecs$columnName) {
-    camelParam <- SqlRender::snakeCaseToCamelCase(param)
-    reqVal <- req$body[[camelParam]]
+  for (camelParam in names(req$body)) {
+    snakeParam <- SqlRender::camelCaseToSnakeCase(camelParam)
 
-    if (is.null(reqVal)) {
+    if (!snakeParam %in% columnSpecs$columnName) {
+      stop("Parameter not found in specification")
+    }
+
+    value <- req$body[[camelParam]]
+
+    if (!is.null(value)) {
       dataType <- columnSpecs %>%
-        dplyr::filter(.data$columnName == param) %>%
+        dplyr::filter(.data$columnName == snakeParam) %>%
         dplyr::select("dataType") %>%
         dplyr::pull()
       # Wrap query in comments
       if (dataType %in% c("character", "varchar", "date")) {
-        reqVal <- paste0("'", reqVal, "'")
+        value <- paste0("'", value, "'")
       }
 
-      if (length(reqVal) == 1) {
-        queryParam <- SqlRender::render("AND @param = @req_val", param = param, req_val = reqVal)
+      if (length(value) == 1) {
+        queryParam <- SqlRender::render("AND @param = @req_val", param = snakeParam, req_val = value)
       } else {
-        queryParam <- SqlRender::render("AND @param IN (@req_val)", param = param, req_val = reqVal)
+        queryParam <- SqlRender::render("AND @param IN (@req_val)", param = snakeParam, req_val = value)
       }
       queryParams <- c(queryParams, queryParam)
     }
@@ -73,6 +78,9 @@
 #' If using multiple routers within a singler served plumber application is highly advised to use the same
 #' ConnectionHandler instance across all routes.
 #'
+#' The optional use of the column "apiQueryField" in the table specification allows setting which variables can be used
+#' to query data. By default these are primary keys only.
+#'
 #' For example, mounting an additional file can be achieved with plumber::pr_mount
 #'
 #' Note that, by default, a new environment is created for the router rather than using the global nnv.
@@ -84,58 +92,70 @@
 #' @param ...       @seealso createQueryNamespace
 #' @param apiTitle  Name to give API
 #' @param apiVersion  API version number (defaults to 0.0.1)
+#' @param pr   Optional - an existing plumber router to append functions to
 #' @inheritParams createQueryNamespace
 #' @param plumberEnv    (Optional) environment for access to plumber environment
 createPlumberRouter <- function(tableSpecification,
                                 plumberEnv = new.env(),
+                                pr = plumber::pr(envir = plumberEnv),
                                 tablePrefix = "",
                                 apiTitle = "OHDSI result set",
                                 apiVersion = "0.0.1",
                                 ...) {
   checkmate::assertEnvironment(plumberEnv)
+  checkmate::assertR6(pr, "Plumber")
   assertSpecificationColumns(colnames(tableSpecification))
+
+  if (!"apiQueryField" %in% colnames(tableSpecification)) {
+    tableSpecification$apiQueryField <- tableSpecification$primaryKey
+  } else {
+    tableSpecification$apiQueryField <- tolower(tableSpecification$apiQueryField)
+    checkmate::assertTRUE(all(tableSpecification$apiQueryField %in% c("yes", "no")))
+  }
 
   qns <- createQueryNamespace(tableSpecification = tableSpecification, tablePrefix = tablePrefix, ...)
   plumberEnv$qns <- qns
   plumberEnv$tableSpecification <- tableSpecification
   plumberEnv$tablePrefix <- tablePrefix
 
-  router <- plumber::pr(envir = plumberEnv) %>%
+  pr <- pr %>%
     plumber::pr_get("/table_spec",
                     function() tableSpecification,
                     serializer = plumber::serializer_csv())
 
   lapply(unique(tableSpecification$tableName), function(tableName) {
     tablePath <- paste0("/", tableName)
-    columnSpecs <- tableSpecification %>% dplyr::filter(.data$tableName == columnName)
+    columnSpecs <- tableSpecification %>% dplyr::filter(.data$tableName == tableName,
+                                                        .data$apiQueryField == "yes")
 
     handler <- function(req, ...) {
       .defaultPostHandler(req, qns, tableName, tablePrefix, columnSpecs, ...)
     }
 
     callingParams <- list(
-      pr = router,
+      pr = pr,
       handler = handler,
       path = tablePath,
       serializer = plumber::serializer_json()
     )
 
     # Set handler call
-    router <- do.call(plumber::pr_post, callingParams)
-    return(router)
+    pr <- do.call(plumber::pr_post, callingParams)
+    return(pr)
   })
 
-  router <- plumber::pr_set_api_spec(router, function(spec) {
+  pr <- plumber::pr_set_api_spec(pr, function(spec) {
     spec$info$title <- apiTitle
     spec$info$version <- apiVersion
 
     for (tableName in unique(tableSpecification$tableName)) {
       tablePath <- paste0("/", tableName)
-      columnSpecs <- tableSpecification %>% dplyr::filter(.data$tableName == tableName)
+      columnSpecs <- tableSpecification %>% dplyr::filter(.data$tableName == tableName,
+                                                          .data$apiQueryField == "yes")
       requestSchema <- list()
       for (i in seq_len(nrow(columnSpecs))) {
         colDef <- columnSpecs[i, ]
-        requestSchema[[colDef$columnName]] <- list(
+        requestSchema[[SqlRender::snakeCaseToCamelCase(colDef$columnName)]] <- list(
           type = .getOpenApiSpecType(colDef$dataType),
           description = colDef$columnName
         )
@@ -146,5 +166,5 @@ createPlumberRouter <- function(tableSpecification,
     return(spec)
   })
 
-  invisible(router)
+  invisible(pr)
 }

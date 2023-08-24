@@ -4,11 +4,51 @@
 \alias{createPlumberRouter}
 \title{Create a router for a plumber API}
 \usage{
-createPlumberRouter(tableSpecification, ...)
+createPlumberRouter(
+  tableSpecification,
+  plumberEnv = new.env(),
+  pr = plumber::pr(envir = plumberEnv),
+  tablePrefix = "",
+  apiTitle = "OHDSI result set",
+  apiVersion = "0.0.1",
+  ...
+)
 }
 \arguments{
+\item{tableSpecification}{Table specfication data.frame}
+
+\item{plumberEnv}{(Optional) environment for access to plumber environment}
+
+\item{pr}{Optional - an existing plumber router to append functions to}
+
+\item{tablePrefix}{String to prefix table names with - default is empty string}
+
+\item{apiTitle}{Name to give API}
+
+\item{apiVersion}{API version number (defaults to 0.0.1)}
+
 \item{...}{@seealso createQueryNamespace}
 }
+\value{
+plumber::pr router (invisibly)
+}
 \description{
-create a plumber router for each table within a given table space
+create a plumber router for each table within a given table space.
+
+This is intended to be a basic web route to your data model and tables are automatically exposed.
+However, you will likely want to expand this with additional results that join across tables or query the data
+in specific ways. This is possible by expanding the route provided here with the
+\href{https://www.rplumber.io/articles/programmatic-usage.html}{Plumber API}.
+
+If using multiple routers within a singler served plumber application is highly advised to use the same
+ConnectionHandler instance across all routes.
+
+The optional use of the column "apiQueryField" in the table specification allows setting which variables can be used
+to query data. By default these are primary keys only.
+
+For example, mounting an additional file can be achieved with plumber::pr_mount
+
+Note that, by default, a new environment is created for the router rather than using the global nnv.
+
+use plumberEnv = .GlobalEnv to override this behaviour (not reccomended)
 }

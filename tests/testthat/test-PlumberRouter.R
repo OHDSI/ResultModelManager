@@ -21,9 +21,38 @@ tableSpecification <- data.frame(
 schemaSql <- generateSqlSchema(schemaDefinition = tableSpecification)
 connectionHandler$executeSql(schemaSql, table_prefix = "cd_", database_schema = "main")
 
+withr::defer(
+  connectionHandler$finalize(),
+  testthat::teardown_env()
+)
+
+makeFakeReq <- function(...) {
+  list(body = list(...))
+}
 
 test_that("post handler", {
-  .defaultPostHandler(req, qns, tableName, tablePrefix, columnSpecs)
+  req <- makeFakeReq(cohort_definition_id = 1)
+
+  tableName <- "cohort"
+  tablePrefix <- "cd_"
+
+  columnSpecs <- tableSpecification %>% dplyr::filter(.data$tableName == tableName)
+
+  qns <- createQueryNamespace(connectionHandler = connectionHandler,
+                              tableSpecification = tableSpecification,
+                              schema = "main",
+                              tablePrefix = "cd_")
+
+  resp <- .defaultPostHandler(req, qns, tableName, tablePrefix, columnSpecs)
+  expect_data_frame(resp)
+
+  req <- makeFakeReq(cohort_definition_id = c(1, 2))
+  resp <- .defaultPostHandler(req, qns, tableName, tablePrefix, columnSpecs)
+  expect_data_frame(resp)
+
+  # Column name must exist in parameter
+  req <- makeFakeReq(cohort_definition_id = 1, foo = "failure")
+  expect_error(.defaultPostHandler(req, qns, tableName, tablePrefix, columnSpecs))
 })
 
 test_that("plumber router loads", {
@@ -39,5 +68,13 @@ test_that("plumber router loads", {
 
   # Table spec should always be exposed
   expect_true("/table_spec" %in% names(apiSpec$paths))
+
+  # Bad API query field
+  tableSpecification$apiQueryField <- c("yeeees", "no", "no", "no")
+
+  expect_error(createPlumberRouter(connectionHandler = connectionHandler,
+                                   tableSpecification = tableSpecification,
+                                   schema = "main",
+                                   tablePrefix = "cd_"))
 })
 
