@@ -9,6 +9,9 @@ Bug fixes:
 
 1.  `generateSqlSchema` No longer requires primary key field to be lower case in results spec files, is now case-insensitive
 
+2. connectionHandlers now check sql string attribute to see if query needs translating, avoiding potential for errors
+caused by double translation
+
 # ResultModelManager 0.4.0
 Changes:
 

@@ -75,8 +75,17 @@ ConnectionHandler <- R6::R6Class(
     #' @param sql                     Sql query string
     #' @param ...                     Elipsis
     renderTranslateSql = function(sql, ...) {
+      mustTranslate <- TRUE
+      if (isTRUE(attr(sql, "sqlDialect", TRUE) == gsub(" ", "_", self$connectionDetails$dbms))) {
+        mustTranslate <- FALSE
+      }
+
       sql <- SqlRender::render(sql = sql, ...)
-      SqlRender::translate(sql, targetDialect = self$connectionDetails$dbms)
+      # Only translate if translate is needed.
+      if (mustTranslate) {
+        sql <- SqlRender::translate(sql, targetDialect = self$connectionDetails$dbms)
+      }
+      return(sql)
     },
 
     #' initConnection
