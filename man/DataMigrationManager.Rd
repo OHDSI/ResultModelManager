@@ -22,7 +22,9 @@ R6 class for management of database migration
 
 \item{\code{packageName}}{packageName, can be null}
 
-\item{\code{tablePrefix}}{packageName, can be null}
+\item{\code{tablePrefix}}{tablePrefix, can be empty character vector}
+
+\item{\code{packageTablePrefix}}{packageTablePrefix, can be empty character vector}
 }
 \if{html}{\out{</div>}}
 }
@@ -50,6 +52,7 @@ R6 class for management of database migration
   connectionDetails,
   databaseSchema,
   tablePrefix = "",
+  packageTablePrefix = "",
   migrationPath,
   packageName = NULL,
   migrationRegexp = .defaultMigrationRegexp
@@ -64,6 +67,9 @@ R6 class for management of database migration
 \item{\code{databaseSchema}}{Database Schema to execute on}
 
 \item{\code{tablePrefix}}{Optional table prefix for all tables (e.g. plp, cm, cd etc)}
+
+\item{\code{packageTablePrefix}}{A table prefix when used in conjunction with other package results schema,
+e.g. "cd_", "sccs_", "plp_", "cm_"}
 
 \item{\code{migrationPath}}{Path to location of migration sql files. If in package mode, this should just
 be a folder (e.g. "migrations") that lives in the location "sql/sql_server" (and)

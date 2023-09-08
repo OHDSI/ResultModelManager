@@ -51,7 +51,7 @@ test_that("Migrations manager runs in folder mode", {
   manager <- DataMigrationManager$new(
     connectionDetails = connectionDetails,
     databaseSchema = "main",
-    tablePrefix = "mg_",
+    packageTablePrefix = "mg_",
     migrationPath = "migrations",
     packageName = NULL
   )
