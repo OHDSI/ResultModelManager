@@ -18,7 +18,7 @@
 #' @export
 #' @description
 #'
-#' [EXPERIMENTAL] - this feature is still in design stage and it is not reccomended that you implement this for your
+#' EXPERIMENTAL - this feature is still in design stage and it is not reccomended that you implement this for your
 #' package at this stage.
 #' Utility for simplifying export of results to files from sql queries
 #'
