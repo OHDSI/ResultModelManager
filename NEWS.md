@@ -7,6 +7,8 @@ permissions for users on results database setups
 
 3. Allow packages to have an internal migration table prefix separate from the user defined one e.g `my_study_sccs_migration`
 
+4. `emptyIsNa` field is no longer required in specifications
+
 Bug fixes:
 
 1.  `generateSqlSchema` No longer requires primary key field to be lower case in results spec files, is now case-insensitive

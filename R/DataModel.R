@@ -473,7 +473,6 @@ uploadResults <- function(connection = NULL,
           toEmpty <- specifications %>%
             dplyr::filter(
               tableName == env$specTableName &
-                tolower(.data$emptyIsNa) != "yes" &
                 grepl("varchar", .data$dataType)
             ) %>%
             dplyr::select("columnName") %>%
@@ -486,7 +485,6 @@ uploadResults <- function(connection = NULL,
           toZero <- specifications %>%
             dplyr::filter(
               tableName == env$specTableName &
-                tolower(.data$emptyIsNa) != "yes" &
                 .data$dataType %in% c("int", "bigint", "float")
             ) %>%
             dplyr::select("columnName") %>%
