@@ -9,6 +9,8 @@ permissions for users on results database setups
 
 4. `emptyIsNa` field is no longer required in specifications
 
+5. Purge all data supported in upload functionality (requiring user input)
+
 Bug fixes:
 
 1.  `generateSqlSchema` No longer requires primary key field to be lower case in results spec files, is now case-insensitive
