@@ -4,6 +4,8 @@
 \alias{ResultExportManager}
 \title{Result Set Export Manager}
 \description{
+EXPERIMENTAL - this feature is still in design stage and it is not reccomended that you implement this for your
+package at this stage.
 Utility for simplifying export of results to files from sql queries
 
 Note that this utility is not strictly thread safe though seperate processes can export separate tables

@@ -37,7 +37,10 @@ isUnitTest <- function() {
   "sqlite",
   "sqlite extended",
   "spark",
-  "hive"
+  "hive",
+  "duckdb",
+  "snowflake",
+  "synapse"
 )
 
 #' DataMigrationManager (DMM)
@@ -47,7 +50,8 @@ isUnitTest <- function() {
 #' @field migrationPath                 Path migrations exist in
 #' @field databaseSchema                Path migrations exist in
 #' @field packageName                   packageName, can be null
-#' @field tablePrefix                   packageName, can be null
+#' @field tablePrefix                   tablePrefix, can be empty character vector
+#' @field packageTablePrefix                   packageTablePrefix, can be empty character vector
 #'
 #' @importFrom ParallelLogger logError logInfo
 #'
@@ -57,6 +61,7 @@ DataMigrationManager <- R6::R6Class(
   public = list(
     migrationPath = NULL,
     tablePrefix = "",
+    packageTablePrefix = "",
     databaseSchema = NULL,
     packageName = NULL,
     #'
@@ -64,6 +69,8 @@ DataMigrationManager <- R6::R6Class(
     #' @param databaseSchema            Database Schema to execute on
     #' @param tablePrefix               Optional table prefix for all tables (e.g. plp, cm, cd etc)
     #' @param packageName               If in package mode, the name of the R package
+    #' @param packageTablePrefix        A table prefix when used in conjunction with other package results schema,
+    #'                                  e.g. "cd_", "sccs_", "plp_", "cm_"
     #' @param migrationPath             Path to location of migration sql files. If in package mode, this should just
     #'                                  be a folder (e.g. "migrations") that lives in the location "sql/sql_server" (and)
     #'                                  other database platforms.
@@ -73,16 +80,19 @@ DataMigrationManager <- R6::R6Class(
     initialize = function(connectionDetails,
                           databaseSchema,
                           tablePrefix = "",
+                          packageTablePrefix = "",
                           migrationPath,
                           packageName = NULL,
                           migrationRegexp = .defaultMigrationRegexp) {
       checkmate::checkString(databaseSchema)
       checkmate::checkString(tablePrefix)
+      checkmate::checkString(packageTablePrefix)
       checkmate::checkString(migrationPath)
       checkmate::checkClass(connectionDetails, "connectionDetails")
 
       # Set required variables
       self$tablePrefix <- tablePrefix
+      self$packageTablePrefix <- packageTablePrefix
       self$databaseSchema <- databaseSchema
       private$migrationRegexp <- migrationRegexp
       self$packageName <- packageName
@@ -221,7 +231,7 @@ DataMigrationManager <- R6::R6Class(
         }
 
         for (i in 1:nrow(migrations)) {
-          migration <- migrations[i, ]
+          migration <- migrations[i,]
           if (isTRUE(migration$migrationOrder <= stopMigrationVersion)) {
             private$executeMigration(migration)
           }
@@ -251,10 +261,10 @@ DataMigrationManager <- R6::R6Class(
       # Load, render, translate and execute sql
       if (self$isPackage()) {
         sql <- SqlRender::loadRenderTranslateSql(file.path(self$migrationPath, migration$migrationFile),
-          dbms = private$connectionDetails$dbms,
-          database_schema = self$databaseSchema,
-          table_prefix = self$tablePrefix,
-          packageName = self$packageName
+                                                 dbms = private$connectionDetails$dbms,
+                                                 database_schema = self$databaseSchema,
+                                                 table_prefix = self$tablePrefix,
+                                                 packageName = self$packageName
         )
         private$connectionHandler$executeSql(sql)
       } else {
@@ -266,29 +276,28 @@ DataMigrationManager <- R6::R6Class(
           sql <- SqlRender::readSql(file.path(self$migrationPath, "sql_server", migration$migrationFile))
         }
         private$connectionHandler$executeSql(sql,
-          database_schema = self$databaseSchema,
-          table_prefix = self$tablePrefix
+                                             database_schema = self$databaseSchema,
+                                             table_prefix = self$tablePrefix
         )
       }
       private$logInfo("Saving migration: ", migration$migrationFile)
       # Save migration in set of migrations
       iSql <- "
-      {DEFAULT @migration = migration}
       INSERT INTO @database_schema.@table_prefix@migration (migration_file, migration_order)
         VALUES ('@migration_file', @order);
       "
       private$connectionHandler$executeSql(iSql,
-        database_schema = self$databaseSchema,
-        migration_file = migration$migrationFile,
-        table_prefix = self$tablePrefix,
-        order = migration$migrationOrder
+                                           database_schema = self$databaseSchema,
+                                           migration_file = migration$migrationFile,
+                                           table_prefix = self$tablePrefix,
+                                           migration = paste0(self$packageTablePrefix, "migration"),
+                                           order = migration$migrationOrder
       )
       private$logInfo("Migration complete ", migration$migrationFile)
     },
     createMigrationsTable = function() {
       private$logInfo("Creating migrations table")
       sql <- "
-      {DEFAULT @migration = migration}
       --HINT DISTRIBUTE ON RANDOM
       CREATE TABLE @database_schema.@table_prefix@migration (
           migration_file VARCHAR PRIMARY KEY, --string value represents file name
@@ -296,8 +305,9 @@ DataMigrationManager <- R6::R6Class(
       );"
 
       private$connectionHandler$executeSql(sql,
-        database_schema = self$databaseSchema,
-        table_prefix = self$tablePrefix
+                                           database_schema = self$databaseSchema,
+                                           table_prefix = self$tablePrefix,
+                                           migration = paste0(self$packageTablePrefix, "migration")
       )
       private$logInfo("Migrations table created")
     },
@@ -307,11 +317,11 @@ DataMigrationManager <- R6::R6Class(
       }
 
       sql <- "
-      {DEFAULT @migration = migration}
       SELECT migration_file, migration_order FROM @database_schema.@table_prefix@migration ORDER BY migration_order;"
       migrationsExecuted <- private$connectionHandler$queryDb(sql,
-        database_schema = self$databaseSchema,
-        table_prefix = self$tablePrefix
+                                                              database_schema = self$databaseSchema,
+                                                              migration = paste0(self$packageTablePrefix, "migration"),
+                                                              table_prefix = self$tablePrefix
       )
 
       return(migrationsExecuted)
