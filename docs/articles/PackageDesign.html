@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -60,6 +60,9 @@
     </li>
     <li>
       <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
+    </li>
+    <li>
+      <a href="../articles/UsingAnExportManager.html">Using An Export Manager</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -94,7 +97,7 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2023-04-05</h4>
+            <h4 data-toc-skip class="date">2023-09-12</h4>
       
       
       <div class="hidden name"><code>PackageDesign.Rmd</code></div>
@@ -245,21 +248,18 @@ not been completed</li>
 <span>    resulultsDatabaseSchema <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    connection <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>    initalize <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">connectionDetails</span>,</span>
-<span>                          <span class="va">resultsDatabaseSchema</span>,</span>
-<span>                          <span class="va">tablePrefix</span>,</span>
-<span>                          <span class="va">migrationsPath</span>,</span>
-<span>                          <span class="va">migrationRegexp</span> <span class="op">=</span> <span class="va">.defaultMigrationRegexp</span><span class="op">)</span> <span class="op">{</span></span>
+<span>                         <span class="va">resultsDatabaseSchema</span>,</span>
+<span>                         <span class="va">tablePrefix</span>,</span>
+<span>                         <span class="va">migrationsPath</span>,</span>
+<span>                         <span class="va">migrationRegexp</span> <span class="op">=</span> <span class="va">.defaultMigrationRegexp</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="co"># Set required variables</span></span>
 <span>    <span class="op">}</span>,</span>
-<span></span>
 <span>    getStatus <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="co"># return data frame all migrations, including file name, order and</span></span>
 <span>    <span class="op">}</span>,</span>
-<span></span>
 <span>    check <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="co"># Check to see if files follow pattern</span></span>
 <span>    <span class="op">}</span>,</span>
-<span></span>
 <span>    executeMigrations <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="co"># load list of migrations</span></span>
 <span>      <span class="co"># Load list of executed migrations</span></span>
@@ -276,7 +276,7 @@ not been completed</li>
 <code class="sourceCode R"><span><span class="co">#' @inheritParams ResultModelManager::DatabaseMigrationManager - this will probably need to be a factory</span></span>
 <span><span class="co">#' @export`</span></span>
 <span><span class="va">getMigrationManager</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">migrationsPath</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"sql"</span>, <span class="st">"sql_server"</span>, <span class="st">"migrations"</span>, package <span class="op">=</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/packageName.html" class="external-link">packageName</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
-<span>   <span class="va">migrationManager</span> <span class="op">&lt;-</span> <span class="fu">ResultModelManager</span><span class="fu">::</span><span class="va">DatabaseMigrationManager</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>migrationsPath <span class="op">=</span> <span class="va">migrationsPath</span>, <span class="va">...</span><span class="op">)</span></span>
+<span>  <span class="va">migrationManager</span> <span class="op">&lt;-</span> <span class="fu">ResultModelManager</span><span class="fu">::</span><span class="va">DatabaseMigrationManager</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>migrationsPath <span class="op">=</span> <span class="va">migrationsPath</span>, <span class="va">...</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>It should also be possible to load the manager from a directory
 structure outside of a package. However, this may have limitations when
@@ -337,12 +337,12 @@ migrations, or if this is even desirable. Users can manage this with the
 <div class="section level4">
 <h4 id="example-sql">Example SQL<a class="anchor" aria-label="anchor" href="#example-sql"></a>
 </h4>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- changes incidence_rate.person_years from bigint to float</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>{<span class="kw">DEFAULT</span> @migration <span class="op">=</span> migration}</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>{<span class="kw">DEFAULT</span> @incidence_rate <span class="op">=</span> incidence_rate}</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>{<span class="kw">DEFAULT</span> @table_prefix <span class="op">=</span> <span class="st">''</span>}</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">TABLE</span> @results_schema.@table_prefix@incidence_rate <span class="kw">ALTER</span> <span class="kw">COLUMN</span> person_years <span class="dt">FLOAT</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co">-- changes incidence_rate.person_years from bigint to float</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>{<span class="kw">DEFAULT</span> @migration <span class="op">=</span> migration}</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>{<span class="kw">DEFAULT</span> @incidence_rate <span class="op">=</span> incidence_rate}</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>{<span class="kw">DEFAULT</span> @table_prefix <span class="op">=</span> <span class="st">''</span>}</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">TABLE</span> @results_schema.@table_prefix@incidence_rate <span class="kw">ALTER</span> <span class="kw">COLUMN</span> person_years <span class="dt">FLOAT</span>;</span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="adding-script-to-list-of-executed-migrations">Adding script to list of executed migrations<a class="anchor" aria-label="anchor" href="#adding-script-to-list-of-executed-migrations"></a>
@@ -429,7 +429,7 @@ CDMs!</li>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

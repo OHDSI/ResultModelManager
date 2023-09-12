@@ -44,12 +44,14 @@ We then load a `QueryNamespace` instance with this table:
 
 ```{r}
 connectionDetails <- DatabaseConnector::createConnectionDetails("sqlite", server = tempfile())
-qns <- createQueryNamespace(connectionDetails = connectionDetails,
-                            usePooledConnection = FALSE,
-                            tableSpecification = tableSpecification,
-                            tablePrefix = "rwe_study_99_",
-                            snakeCaseToCamelCase = TRUE,
-                            database_schema = "main")
+qns <- createQueryNamespace(
+  connectionDetails = connectionDetails,
+  usePooledConnection = FALSE,
+  tableSpecification = tableSpecification,
+  tablePrefix = "rwe_study_99_",
+  snakeCaseToCamelCase = TRUE,
+  database_schema = "main"
+)
 
 # Create our schema within the namespace
 sql <- generateSqlSchema(schemaDefinition = tableSpecification)
@@ -71,7 +73,8 @@ qns$queryDb("SELECT * FROM @database_schema.@cohort_definition")
 Variables can naturally be added at runtime, for example, in a query:
 ```{r}
 qns$queryDb("SELECT * FROM @database_schema.@cohort_definition WHERE cohort_definition_id = @id",
-            id = 5)
+  id = 5
+)
 ```
 Alternatively we can persist the id in the object for use in all queries.
 

@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -60,6 +60,9 @@
     </li>
     <li>
       <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
+    </li>
+    <li>
+      <a href="../articles/UsingAnExportManager.html">Using An Export Manager</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -94,7 +97,7 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2023-04-05</h4>
+            <h4 data-toc-skip class="date">2023-09-12</h4>
       
       
       <div class="hidden name"><code>UsingQueryNamespaces.Rmd</code></div>
@@ -142,12 +145,14 @@ can be loaded.</p>
 table:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">connectionDetails</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span><span class="st">"sqlite"</span>, server <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">qns</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/createQueryNamespace.html">createQueryNamespace</a></span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
-<span>                            usePooledConnection <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                            tableSpecification <span class="op">=</span> <span class="va">tableSpecification</span>,</span>
-<span>                            tablePrefix <span class="op">=</span> <span class="st">"rwe_study_99_"</span>,</span>
-<span>                            snakeCaseToCamelCase <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                            database_schema <span class="op">=</span> <span class="st">"main"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">qns</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/createQueryNamespace.html">createQueryNamespace</a></span><span class="op">(</span></span>
+<span>  connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
+<span>  usePooledConnection <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  tableSpecification <span class="op">=</span> <span class="va">tableSpecification</span>,</span>
+<span>  tablePrefix <span class="op">=</span> <span class="st">"rwe_study_99_"</span>,</span>
+<span>  snakeCaseToCamelCase <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  database_schema <span class="op">=</span> <span class="st">"main"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Connecting using SQLite driver</span></span></code></pre>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create our schema within the namespace</span></span>
@@ -159,7 +164,7 @@ table:</p>
   |                                                                      |   0%
   |                                                                            
   |======================================================================| 100%</code></pre>
-<pre><code><span><span class="co">## Executing SQL took 0.0194 secs</span></span></code></pre>
+<pre><code><span><span class="co">## Executing SQL took 0.0176 secs</span></span></code></pre>
 <p>We can then query the table with sql that automatically replaces the
 table names:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
@@ -180,7 +185,8 @@ table names:</p>
 query:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">qns</span><span class="op">$</span><span class="fu">queryDb</span><span class="op">(</span><span class="st">"SELECT * FROM @database_schema.@cohort_definition WHERE cohort_definition_id = @id"</span>,</span>
-<span>            id <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<span>  id <span class="op">=</span> <span class="fl">5</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] cohortDefinitionId cohortName         json               sql               </span></span>
 <span><span class="co">## &lt;0 rows&gt; (or 0-length row.names)</span></span></code></pre>
 <p>Alternatively we can persist the id in the object for use in all
@@ -219,7 +225,7 @@ queries.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

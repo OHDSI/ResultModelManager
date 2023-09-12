@@ -20,7 +20,7 @@ bulk upload (recommended)."><!-- mathjax --><script src="https://cdnjs.cloudflar
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -45,6 +45,9 @@ bulk upload (recommended)."><!-- mathjax --><script src="https://cdnjs.cloudflar
     </li>
     <li>
       <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
+    </li>
+    <li>
+      <a href="../articles/UsingAnExportManager.html">Using An Export Manager</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -92,6 +95,7 @@ bulk upload (recommended).</p>
 <span>  databaseIdentifierFile <span class="op">=</span> <span class="st">"cdm_source_info.csv"</span>,</span>
 <span>  runCheckAndFixCommands <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  warnOnMissingTable <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  purgeDataModel <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">specifications</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -154,6 +158,11 @@ relying on this option to try and fix it during upload.</p></dd>
 <dd><p>Boolean, print a warning if a table file is missing.</p></dd>
 
 
+<dt>purgeDataModel</dt>
+<dd><p>This function will purge all data from the tables in the specification prior to upload.
+Use with care. If interactive this will require further input.</p></dd>
+
+
 <dt>specifications</dt>
 <dd><p>A tibble data frame object with specifications.</p></dd>
 
@@ -171,7 +180,7 @@ relying on this option to try and fix it during upload.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

@@ -79,27 +79,28 @@ writeLines(sql)
 ```
 We can then easily use this to create a schema using a `QueryNamespace`:
 ```{r}
-connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sqlite",
-                                                                server = tempfile())
-qns <- ResultModelManager::createQueryNamespace(connectionDetails = connectionDetails,
-                                                tableSpecification = specification,
-                                                tablePrefix = "my_study_",
-                                                database_schema = "main")
+connectionDetails <- DatabaseConnector::createConnectionDetails(
+  dbms = "sqlite",
+  server = tempfile()
+)
+qns <- ResultModelManager::createQueryNamespace(
+  connectionDetails = connectionDetails,
+  tableSpecification = specification,
+  tablePrefix = "my_study_",
+  database_schema = "main"
+)
 
 # note - the table prefix and schema parameters are not neeeded when we do this
 qns$executeSql(sql)
 ```
 Alternatively, we can just use `DatabaseConnector` functions directly.
 ```{r,eval=FALSE}
-
-
 connection <- DatabaseConnector::connect(connectionDetails)
 DatabaseConnector::renderTranslateExecuteSql(connection,
-                                             sql,
-                                             table_prefix = "my_study_",
-                                             database_schema = "main")
-
-
+  sql,
+  table_prefix = "my_study_",
+  database_schema = "main"
+)
 ```
 ## Uploading results
 
@@ -117,21 +118,21 @@ Using the above example, a results folder should have the following files:
 We can now use the results spec to upload these files (and validate that they conform to the specification):
 ```{r,eval=FALSE}
 ResultModelManager::uploadResults(connectionDetails,
-                                  schema = "main",
-                                  resultsFolder = "results",
-                                  tablePrefix = "my_study_",
-                                  specifications = specification)
+  schema = "main",
+  resultsFolder = "results",
+  tablePrefix = "my_study_",
+  specifications = specification
+)
 ```
 
 With the results uploaded we can now write queries inside the namespace:
 
 ```{r}
 qns$queryDb("SELECT * FROM @database_schema.@covariate_definition")
-
 ```
 
 ```{r}
 qns$queryDb("SELECT * FROM @database_schema.@covariate_result WHERE cohort_definition_id = @cohort_id",
-            cohort_id = 5)
-
+  cohort_id = 5
+)
 ```

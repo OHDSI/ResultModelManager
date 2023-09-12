@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -42,6 +42,9 @@
     </li>
     <li>
       <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
+    </li>
+    <li>
+      <a href="../articles/UsingAnExportManager.html">Using An Export Manager</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -69,6 +72,17 @@
       
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.5.0" id="resultmodelmanager-050">ResultModelManager 0.5.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-050"></a></h2>
+<p>Changes: 1. Added utility function <code>grantTablePermissions</code> to make it easier to grant select, delete, insert and update permissions for users on results database setups</p>
+<ol start="2" style="list-style-type: decimal"><li><p>Added <code>ResultExportManager</code> class and utility to support standardized validation routines for exported data</p></li>
+<li><p>Allow packages to have an internal migration table prefix separate from the user defined one e.g <code>my_study_sccs_migration</code></p></li>
+<li><p><code>emptyIsNa</code> field is no longer required in specifications</p></li>
+<li><p>Purge all data supported in upload functionality (requiring user input)</p></li>
+</ol><p>Bug fixes:</p>
+<ol style="list-style-type: decimal"><li><p><code>generateSqlSchema</code> No longer requires primary key field to be lower case in results spec files, is now case-insensitive</p></li>
+<li><p>connectionHandlers now check sql string attribute to see if query needs translating, avoiding potential for errors caused by double translation</p></li>
+</ol></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.4.0" id="resultmodelmanager-040">ResultModelManager 0.4.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-040"></a></h2>
 <p>Changes:</p>
@@ -116,7 +130,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer></div>

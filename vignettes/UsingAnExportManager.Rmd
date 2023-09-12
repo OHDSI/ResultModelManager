@@ -30,24 +30,35 @@ It is assumed that package developers will include this in the unit tests of the
 library(ResultModelManager)
 
 tableSpecification <- dplyr::tibble(
-    tableName = c("my_table",  "my_table",  "my_table", "my_table",  "my_table",  "my_table", "my_table",
-                  "my_andromeda_table", "my_andromeda_table", "my_andromeda_table"),
-    columnName = c("database_id", "target_cohort_id", "comparator_cohort_id", "target_count", "comparator_count", "rr", "p_value",
-                   "database_id", "covariate_id", "value"),
-    primaryKey = c("yes", "yes", "no", "no", "no", "no", "no",
-                   "yes", "yes", "no"),
-    minCellCount = c("no", "no", "no", "yes", "yes", "no", "no",
-                     "no", "no", "no"),
-    dataType = c("varchar(255)", "int", "int", "int", "int", "float", "float",
-                 "varchar(255)", "bigint", "float")
+  tableName = c(
+    "my_table", "my_table", "my_table", "my_table", "my_table", "my_table", "my_table",
+    "my_andromeda_table", "my_andromeda_table", "my_andromeda_table"
+  ),
+  columnName = c(
+    "database_id", "target_cohort_id", "comparator_cohort_id", "target_count", "comparator_count", "rr", "p_value",
+    "database_id", "covariate_id", "value"
+  ),
+  primaryKey = c(
+    "yes", "yes", "no", "no", "no", "no", "no",
+    "yes", "yes", "no"
+  ),
+  minCellCount = c(
+    "no", "no", "no", "yes", "yes", "no", "no",
+    "no", "no", "no"
+  ),
+  dataType = c(
+    "varchar(255)", "int", "int", "int", "int", "float", "float",
+    "varchar(255)", "bigint", "float"
+  )
 )
 
 # Per database export folder is a good principle to follow
 exportDir <- "output_folder/example_cdm"
-exportManager <- createResultExportManager(tableSpecification = tableSpecification,
-                                          exportDir = exportDir,
-                                          databaseId = "example_cdm")
-
+exportManager <- createResultExportManager(
+  tableSpecification = tableSpecification,
+  exportDir = exportDir,
+  databaseId = "example_cdm"
+)
 ```
 
 
@@ -79,7 +90,6 @@ DatabaseConnector::insertTable(connection, data = data, tableName = "result_tabl
 ## Exporting a database query result
 
 ```{r, eval=FALSE}
-
 sql <- "SELECT * FROM @schema.result_table"
 exportManager$exportQuery(connection = connection, sql = sql, exportTableName = "my_table", schema = schema)
 ```
@@ -102,10 +112,12 @@ Modifying the above to include a rate ratio calculation using the `rateratio.tes
 library(rateratio.test)
 
 transformation <- function(rows, pos) {
-  rrResult <- rateratio.test(x = c(row$target_count, row$comparator_count),
-                             n = c(row$target_time, row$comparator_time),
-                             RR = 1,
-                             conf.level = 0.95)
+  rrResult <- rateratio.test(
+    x = c(row$target_count, row$comparator_count),
+    n = c(row$target_time, row$comparator_time),
+    RR = 1,
+    conf.level = 0.95
+  )
 
   row$rr <- rrResult$estimate
   row$p_value <- rrResult$p.value
@@ -114,12 +126,13 @@ transformation <- function(rows, pos) {
 }
 
 exportManager$exportQuery(connection,
-                          sql,
-                          "my_table",
-                          transformFunction = transformation,
-                          transformFunctionArgs = list(),
-                          append = FALSE,
-                          schema = schema)
+  sql,
+  "my_table",
+  transformFunction = transformation,
+  transformFunctionArgs = list(),
+  append = FALSE,
+  schema = schema
+)
 ```
 
 ## Exporting an Andromeda result in batch
@@ -139,7 +152,6 @@ writeBatch <- function(batch) {
 }
 
 Andromeda::batchApply(andr$my_andromeda_table, writeBatch)
-
 ```
 # Creating a results manifest file
 Export manifests contain an sha256 hash of all files exported.

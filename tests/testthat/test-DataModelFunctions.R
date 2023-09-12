@@ -1,4 +1,3 @@
-
 test_that("results utility functions work", {
   expect_true(naToEmpty(NA) == "")
   expect_true(naToZero(NA) == 0)

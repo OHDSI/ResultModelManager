@@ -152,7 +152,6 @@ test_that("appending results rows using primary keys works", {
     # append new data into table
     if (("database_id" %in% primaryKey) &&
       ("analysis3_id" %in% primaryKey)) {
-
       # read 2 rows of test data
       csvFilePathName <- file.path("testdata", "test_table_3.csv")
       data <- readr::read_csv(

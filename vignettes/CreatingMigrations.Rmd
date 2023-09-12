@@ -94,11 +94,13 @@ For example, for the package `CohortDiagnostics` a function such as the followin
 ```{r, eval = FALSE}
 #' @export
 getDataMigrator <- function(connectionDetails, databaseSchema, tablePrefix) {
-  ResultModelManager::DataMigrationManager$new(connectionDetails = connectionDetails,
-                                               databaseSchema = databaseSchema,
-                                               tablePrefix = tablePrefix,
-                                               migrationPath = "migrations",
-                                               packageName = "CohortDiagnostics")
+  ResultModelManager::DataMigrationManager$new(
+    connectionDetails = connectionDetails,
+    databaseSchema = databaseSchema,
+    tablePrefix = tablePrefix,
+    migrationPath = "migrations",
+    packageName = "CohortDiagnostics"
+  )
 }
 ```
 This will return an instance of data migrator that will expose teh functionality on a given data set.
@@ -109,7 +111,6 @@ Loading the migrator is then straightforward:
 ```{r eval = FALSE}
 connectionDetails <- DatabaseConnector::createConnectionDetails(MySettings)
 migrator <- getDataMigrator(connectionDetails = connectionDetails, databaseSchema = "mySchema", tablePrefix = "cd_")
-
 ```
 To check migrations are valid
 ```{r eval = FALSE}

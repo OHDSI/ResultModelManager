@@ -231,7 +231,7 @@ DataMigrationManager <- R6::R6Class(
         }
 
         for (i in 1:nrow(migrations)) {
-          migration <- migrations[i,]
+          migration <- migrations[i, ]
           if (isTRUE(migration$migrationOrder <= stopMigrationVersion)) {
             private$executeMigration(migration)
           }
@@ -261,10 +261,10 @@ DataMigrationManager <- R6::R6Class(
       # Load, render, translate and execute sql
       if (self$isPackage()) {
         sql <- SqlRender::loadRenderTranslateSql(file.path(self$migrationPath, migration$migrationFile),
-                                                 dbms = private$connectionDetails$dbms,
-                                                 database_schema = self$databaseSchema,
-                                                 table_prefix = self$tablePrefix,
-                                                 packageName = self$packageName
+          dbms = private$connectionDetails$dbms,
+          database_schema = self$databaseSchema,
+          table_prefix = self$tablePrefix,
+          packageName = self$packageName
         )
         private$connectionHandler$executeSql(sql)
       } else {
@@ -276,8 +276,8 @@ DataMigrationManager <- R6::R6Class(
           sql <- SqlRender::readSql(file.path(self$migrationPath, "sql_server", migration$migrationFile))
         }
         private$connectionHandler$executeSql(sql,
-                                             database_schema = self$databaseSchema,
-                                             table_prefix = self$tablePrefix
+          database_schema = self$databaseSchema,
+          table_prefix = self$tablePrefix
         )
       }
       private$logInfo("Saving migration: ", migration$migrationFile)
@@ -287,11 +287,11 @@ DataMigrationManager <- R6::R6Class(
         VALUES ('@migration_file', @order);
       "
       private$connectionHandler$executeSql(iSql,
-                                           database_schema = self$databaseSchema,
-                                           migration_file = migration$migrationFile,
-                                           table_prefix = self$tablePrefix,
-                                           migration = paste0(self$packageTablePrefix, "migration"),
-                                           order = migration$migrationOrder
+        database_schema = self$databaseSchema,
+        migration_file = migration$migrationFile,
+        table_prefix = self$tablePrefix,
+        migration = paste0(self$packageTablePrefix, "migration"),
+        order = migration$migrationOrder
       )
       private$logInfo("Migration complete ", migration$migrationFile)
     },
@@ -305,9 +305,9 @@ DataMigrationManager <- R6::R6Class(
       );"
 
       private$connectionHandler$executeSql(sql,
-                                           database_schema = self$databaseSchema,
-                                           table_prefix = self$tablePrefix,
-                                           migration = paste0(self$packageTablePrefix, "migration")
+        database_schema = self$databaseSchema,
+        table_prefix = self$tablePrefix,
+        migration = paste0(self$packageTablePrefix, "migration")
       )
       private$logInfo("Migrations table created")
     },
@@ -319,9 +319,9 @@ DataMigrationManager <- R6::R6Class(
       sql <- "
       SELECT migration_file, migration_order FROM @database_schema.@table_prefix@migration ORDER BY migration_order;"
       migrationsExecuted <- private$connectionHandler$queryDb(sql,
-                                                              database_schema = self$databaseSchema,
-                                                              migration = paste0(self$packageTablePrefix, "migration"),
-                                                              table_prefix = self$tablePrefix
+        database_schema = self$databaseSchema,
+        migration = paste0(self$packageTablePrefix, "migration"),
+        table_prefix = self$tablePrefix
       )
 
       return(migrationsExecuted)

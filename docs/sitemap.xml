@@ -19,6 +19,9 @@
     <loc>/articles/UploadFunctionality.html</loc>
   </url>
   <url>
+    <loc>/articles/UsingAnExportManager.html</loc>
+  </url>
+  <url>
     <loc>/articles/UsingConnectionHandlers.html</loc>
   </url>
   <url>
@@ -58,10 +61,16 @@
     <loc>/reference/QueryNamespace.html</loc>
   </url>
   <url>
+    <loc>/reference/ResultExportManager.html</loc>
+  </url>
+  <url>
     <loc>/reference/ResultModelManager-package.html</loc>
   </url>
   <url>
     <loc>/reference/createQueryNamespace.html</loc>
+  </url>
+  <url>
+    <loc>/reference/createResultExportManager.html</loc>
   </url>
   <url>
     <loc>/reference/createResultsDataModel.html</loc>
@@ -74,6 +83,9 @@
   </url>
   <url>
     <loc>/reference/generateSqlSchema.html</loc>
+  </url>
+  <url>
+    <loc>/reference/grantTablePermissions.html</loc>
   </url>
   <url>
     <loc>/reference/index.html</loc>

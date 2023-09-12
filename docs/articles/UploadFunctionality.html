@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -60,6 +60,9 @@
     </li>
     <li>
       <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
+    </li>
+    <li>
+      <a href="../articles/UsingAnExportManager.html">Using An Export Manager</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -94,7 +97,7 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2023-04-05</h4>
+            <h4 data-toc-skip class="date">2023-09-12</h4>
       
       
       <div class="hidden name"><code>UploadFunctionality.Rmd</code></div>
@@ -155,7 +158,7 @@ field <code>is_required</code> and <code>primary_key</code>.</p>
 <p>We should also define a function for loading this file that converts
 the column headers to camel case format.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#'Get Results Data Model Specifcations</span></span>
+<code class="sourceCode R"><span><span class="co">#' Get Results Data Model Specifcations</span></span>
 <span><span class="va">getResultsDataModelSpec</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="co"># For loading inside an R package</span></span>
 <span>  <span class="va">specPath</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"settings"</span>, <span class="st">"resulsDataModelSpecifications.csv"</span>, package <span class="op">=</span> <span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/packageName.html" class="external-link">packageName</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
@@ -189,11 +192,12 @@ csv files corresponding to the table names provided in the
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">ResultModelManager</span><span class="fu">::</span><span class="fu"><a href="../reference/unzipResults.html">unzipResults</a></span><span class="op">(</span>zipFile <span class="op">=</span> <span class="st">"MyResultsZip.zip"</span>, resultsFolder <span class="op">=</span> <span class="st">"extraction_folder"</span><span class="op">)</span></span>
 <span><span class="fu">ResultModelManager</span><span class="fu">::</span><span class="fu"><a href="../reference/uploadResults.html">uploadResults</a></span><span class="op">(</span><span class="va">connectionDetails</span>,</span>
-<span>                                  schema <span class="op">=</span> <span class="st">"main"</span>,</span>
-<span>                                  resultsFolder <span class="op">=</span> <span class="st">"extraction_folder"</span>,</span>
-<span>                                  tablePrefix <span class="op">=</span> <span class="st">"pre_"</span>,</span>
-<span>                                  purgeSiteDataBeforeUploading <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>                                  specifications <span class="op">=</span> <span class="fu">getResultsDataModelSpec</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  schema <span class="op">=</span> <span class="st">"main"</span>,</span>
+<span>  resultsFolder <span class="op">=</span> <span class="st">"extraction_folder"</span>,</span>
+<span>  tablePrefix <span class="op">=</span> <span class="st">"pre_"</span>,</span>
+<span>  purgeSiteDataBeforeUploading <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  specifications <span class="op">=</span> <span class="fu">getResultsDataModelSpec</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>This will extract the zip file and upload results using
 <code>DatabaseConnector</code>. For most platforms some form of bulk
 loading is supported, the setup for this is contained in the
@@ -221,7 +225,7 @@ sqlite example demonstrated here.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

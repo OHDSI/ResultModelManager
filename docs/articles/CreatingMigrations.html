@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.0</span>
       </span>
     </div>
 
@@ -60,6 +60,9 @@
     </li>
     <li>
       <a href="../articles/UploadFunctionality.html">Upload Functionality</a>
+    </li>
+    <li>
+      <a href="../articles/UsingAnExportManager.html">Using An Export Manager</a>
     </li>
     <li>
       <a href="../articles/UsingConnectionHandlers.html">Using Connection Handlers</a>
@@ -94,7 +97,7 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2023-04-05</h4>
+            <h4 data-toc-skip class="date">2023-09-12</h4>
       
       
       <div class="hidden name"><code>CreatingMigrations.Rmd</code></div>
@@ -144,10 +147,10 @@ should exist within the generic (and SqlRender OHDSI common sql)
 <code>inst/sql/sql_server/migrations</code>. For any database specific
 migrations they should be in the approprate sub directory. For
 example:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">inst/sql/</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">sql_server/migrations/Migration_1-create.sql</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">sqlite/migrations/Migration_1-create.sql</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">redshift/migrations/Migration_1-create.sql</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="ex">inst/sql/</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>    <span class="ex">sql_server/migrations/Migration_1-create.sql</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>    <span class="ex">sqlite/migrations/Migration_1-create.sql</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>    <span class="ex">redshift/migrations/Migration_1-create.sql</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="using-folder-structure">Using folder structure<a class="anchor" aria-label="anchor" href="#using-folder-structure"></a>
@@ -155,10 +158,10 @@ example:</p>
 <p>A folder structure requires a slightly different set up. Here, the
 migrations should be split via database platform within the
 <code>migration</code> path. For example.</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">migrations/</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="ex">sql_server/Migration_1-create.sql</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">sqlite/Migration_1-create.sql</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">redshift/Migration_1-create.sql</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">migrations/</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>    <span class="ex">sql_server/Migration_1-create.sql</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>    <span class="ex">sqlite/Migration_1-create.sql</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>    <span class="ex">redshift/Migration_1-create.sql</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -198,11 +201,13 @@ written:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' @export</span></span>
 <span><span class="va">getDataMigrator</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">connectionDetails</span>, <span class="va">databaseSchema</span>, <span class="va">tablePrefix</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu">ResultModelManager</span><span class="fu">::</span><span class="va"><a href="../reference/DataMigrationManager.html">DataMigrationManager</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
-<span>                                               databaseSchema <span class="op">=</span> <span class="va">databaseSchema</span>,</span>
-<span>                                               tablePrefix <span class="op">=</span> <span class="va">tablePrefix</span>,</span>
-<span>                                               migrationPath <span class="op">=</span> <span class="st">"migrations"</span>,</span>
-<span>                                               packageName <span class="op">=</span> <span class="st">"CohortDiagnostics"</span><span class="op">)</span></span>
+<span>  <span class="fu">ResultModelManager</span><span class="fu">::</span><span class="va"><a href="../reference/DataMigrationManager.html">DataMigrationManager</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<span>    connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span>,</span>
+<span>    databaseSchema <span class="op">=</span> <span class="va">databaseSchema</span>,</span>
+<span>    tablePrefix <span class="op">=</span> <span class="va">tablePrefix</span>,</span>
+<span>    migrationPath <span class="op">=</span> <span class="st">"migrations"</span>,</span>
+<span>    packageName <span class="op">=</span> <span class="st">"CohortDiagnostics"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>This will return an instance of data migrator that will expose teh
 functionality on a given data set. Naturally, the package is not
@@ -257,17 +262,11 @@ appropriate data transformations/casting).</p>
 <p>For example, changing an <code>INT</code> column in the table
 <code>foo</code> to a float requires the sqlite specific
 transformation:</p>
-<pre class="{sqlite-sql}"><code>{DEFAULT @foo = foo}
-
-ALTER TABLE @database_schema.@table_prefix@foo RENAME TO _foo_old;
-
-CREATE TABLE @database_schema.@table_prefix@foo (
-    id bigint,
-    foo float
-);
-
-INSERT INTO @database_schema.@table_prefix@foo (id, foo)
-SELECT * FROM _foo_old;</code></pre>
+<p>```{sqlite-sql} {DEFAULT <span class="citation">@foo</span> =
+foo}</p>
+<p>ALTER TABLE <span class="citation">@database_schema</span>.@table_prefix<span class="citation">@foo</span> RENAME TO _foo_old;</p>
+<p>CREATE TABLE <span class="citation">@database_schema</span>.@table_prefix<span class="citation">@foo</span> ( id bigint, foo float );</p>
+<p>INSERT INTO <span class="citation">@database_schema</span>.@table_prefix<span class="citation">@foo</span> (id, foo) SELECT * FROM _foo_old; ```</p>
 </div>
 <div class="section level3">
 <h3 id="non-existent-data">Non-existent data<a class="anchor" aria-label="anchor" href="#non-existent-data"></a>
@@ -298,7 +297,7 @@ reports/web applications.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>

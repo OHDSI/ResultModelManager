@@ -17,8 +17,8 @@ test_that("Test result export manager methods", {
   expect_equal(exportManager$getTableSpec("table1"), table_spec)
   expect_equal(exportManager$exportDir, export_dir)
 
-  expect_false(exportManager$checkPrimaryKeys(data.frame(col1 = NA, col2="foo"), "table1"))
-  expect_false(exportManager$checkPrimaryKeys(data.frame(col1 = c(1,2,1), col2="foo"), "table1"))
+  expect_false(exportManager$checkPrimaryKeys(data.frame(col1 = NA, col2 = "foo"), "table1"))
+  expect_false(exportManager$checkPrimaryKeys(data.frame(col1 = c(1, 2, 1), col2 = "foo"), "table1"))
 
   checkmate::expect_list(exportManager$getManifestList())
   exportManager$writeManifest()
@@ -105,12 +105,14 @@ testDbExport <- function(connectionDetails, schema, n = 100) {
   }
 
   transformFuncArgs <- list(test = 1234)
-  exportManager$exportQuery(connection = conn,
-                            sql = "SELECT * FROM @schema.big_table",
-                            exportTableName = "big_table",
-                            schema = schema,
-                            transformFunction = transformFunc,
-                            transformFunctionArgs = transformFuncArgs)
+  exportManager$exportQuery(
+    connection = conn,
+    sql = "SELECT * FROM @schema.big_table",
+    exportTableName = "big_table",
+    schema = schema,
+    transformFunction = transformFunc,
+    transformFunctionArgs = transformFuncArgs
+  )
 
   # Test min cell count
   output_file <- file.path(exportDir, "big_table.csv")

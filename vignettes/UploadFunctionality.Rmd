@@ -67,7 +67,7 @@ and `primary_key`.
 We should also define a function for loading this file that converts the column headers to camel case format.
 
 ```{r eval = FALSE}
-#'Get Results Data Model Specifcations
+#' Get Results Data Model Specifcations
 getResultsDataModelSpec <- function() {
   # For loading inside an R package
   specPath <- system.file("settings", "resulsDataModelSpecifications.csv", package = utils::packageName())
@@ -75,7 +75,6 @@ getResultsDataModelSpec <- function() {
   colnames(spec) <- SqlRender::snakeCaseToCamelCase(colnames(spec))
   return(spec)
 }
-
 ```
 
 # Creating a schema
@@ -97,14 +96,14 @@ It is assumed that a zip file has been created with csv files corresponding to t
 `resulsDataModelSpecifications.csv` file.
 
 ```{r eval=FALSE}
-
 ResultModelManager::unzipResults(zipFile = "MyResultsZip.zip", resultsFolder = "extraction_folder")
 ResultModelManager::uploadResults(connectionDetails,
-                                  schema = "main",
-                                  resultsFolder = "extraction_folder",
-                                  tablePrefix = "pre_",
-                                  purgeSiteDataBeforeUploading = FALSE,
-                                  specifications = getResultsDataModelSpec())
+  schema = "main",
+  resultsFolder = "extraction_folder",
+  tablePrefix = "pre_",
+  purgeSiteDataBeforeUploading = FALSE,
+  specifications = getResultsDataModelSpec()
+)
 ```
 This will extract the zip file and upload results using `DatabaseConnector`.
 For most platforms some form of bulk loading is supported, the setup for this is contained in the documentation for

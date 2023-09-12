@@ -39,16 +39,16 @@ ResultExportManager <- R6::R6Class(
       "numeric" = checkmate::checkNumeric,
       "int" = checkmate::checkIntegerish,
       "varchar" = checkmate::checkCharacter,
-      "bigint" = function(x, ...) { checkmate::checkNumeric(x = x, ...) && x %% 1 == 0},
+      "bigint" = function(x, ...) {
+        checkmate::checkNumeric(x = x, ...) && x %% 1 == 0
+      },
       "float" = checkmate::checkNumeric,
       "character" = checkmate::checkCharacter,
       "date" = checkmate::checkDate
     ),
-
     getPrimaryKeyCache = function(exportTableName) {
       file.path(tempdir(), paste0(private$databaseId, "-", Sys.getpid(), "-", exportTableName, ".csv"))
     },
-
     checkPkeyCache = function(keys, exportTableName, invalidateCache) {
       cacheFile <- private$getPrimaryKeyCache(exportTableName)
       if (invalidateCache) {
@@ -62,21 +62,24 @@ ResultExportManager <- R6::R6Class(
       isValid <- TRUE
       # Scan file to see if any keys are duplicated
       # Stop if they are and handle the error by setting valid to false
-      tryCatch({
-        readr::read_csv_chunked(cacheFile, callback = function(rows, pos) {
-          mergedRows <- dplyr::bind_rows(keys, rows)
-          if (any(duplicated(mergedRows))) {
-            stop("Duplicate keys found")
+      tryCatch(
+        {
+          readr::read_csv_chunked(cacheFile, callback = function(rows, pos) {
+            mergedRows <- dplyr::bind_rows(keys, rows)
+            if (any(duplicated(mergedRows))) {
+              stop("Duplicate keys found")
+            }
+            return(NULL)
+          }, show_col_types = FALSE)
+        },
+        error = function(err) {
+          if (grepl("Duplicate keys found", err)) {
+            isValid <<- FALSE
+          } else {
+            stop(err)
           }
-          return(NULL)
-        }, show_col_types = FALSE)
-      }, error = function(err) {
-        if (grepl("Duplicate keys found", err)) {
-          isValid <<- FALSE
-        } else {
-          stop(err)
         }
-      })
+      )
 
       return(isValid)
     },
@@ -87,7 +90,6 @@ ResultExportManager <- R6::R6Class(
       readr::write_csv(keys, cacheFile, append = file.exists(cacheFile))
       return(TRUE)
     },
-
     removePrimaryKeyCache = function() {
       lapply(self$listTables(), function(table) {
         cacheFile <- private$getPrimaryKeyCache(table)
@@ -96,7 +98,6 @@ ResultExportManager <- R6::R6Class(
 
       return(invisible(TRUE))
     },
-
     getMigrationFiles = function(migrationPath, packageName, migrationRegexp) {
       if (is.null(packageName)) {
         path <- file.path(migrationPath, "sql_server")
@@ -106,7 +107,6 @@ ResultExportManager <- R6::R6Class(
 
       return(list.files(path, migrationRegexp))
     },
-
     validateColType = function(coltype, rowData, dataSize, null.ok) {
       params <- list(
         x = rowData,
@@ -115,7 +115,7 @@ ResultExportManager <- R6::R6Class(
 
       if (!is.na(dataSize)) {
         if (colType %in% c("bigint", "int")) {
-          params$upper <- 2 ** as.integer(dataSize)
+          params$upper <- 2**as.integer(dataSize)
         } else if (coltype %in% c("character", "varchar") && dataSize != "max") {
           params$max.chars <- dataSize
         }
@@ -191,8 +191,10 @@ ResultExportManager <- R6::R6Class(
           dplyr::pull()
 
         if (length(filterCols)) {
-          rows <- rows %>% dplyr::mutate(dplyr::across(all_of(filterCols),
-                                                       ~ifelse(. > 0 & . < private$minCellCount, -private$minCellCount, .)))
+          rows <- rows %>% dplyr::mutate(dplyr::across(
+            all_of(filterCols),
+            ~ ifelse(. > 0 & . < private$minCellCount, -private$minCellCount, .)
+          ))
         }
       }
       return(rows)
@@ -215,8 +217,8 @@ ResultExportManager <- R6::R6Class(
         }
 
         coltype <- spec %>%
-            dplyr::filter(.data$columnName == colname) %>%
-            dplyr::pull("dataType")
+          dplyr::filter(.data$columnName == colname) %>%
+          dplyr::pull("dataType")
 
         pattern <- "\\((\\d+|max)\\)"
 
@@ -274,9 +276,10 @@ ResultExportManager <- R6::R6Class(
 
       isValid <- private$checkPkeyCache(pkdt, exportTableName, invalidateCache)
 
-      if (isValid)
+      if (isValid) {
         # Add to primary keys cache file
         private$addToPkeyCache(pkdt, exportTableName)
+      }
       return(isValid)
     },
 
@@ -296,8 +299,9 @@ ResultExportManager <- R6::R6Class(
       }
 
       validRows <- self$checkRowTypes(rows, exportTableName)
-      if (!all(isTRUE(validRows)))
+      if (!all(isTRUE(validRows))) {
         stop(paste(validRows[!isTRUE(validRows)], collapse = "\n"))
+      }
 
       # Convert < minCellCount to -minCellCount
       rows <- self$getMinColValues(rows, exportTableName)
@@ -363,14 +367,17 @@ ResultExportManager <- R6::R6Class(
       }
 
       DatabaseConnector::renderTranslateQueryApplyBatched(connection,
-                                                          sql,
-                                                          fun = exportData,
-                                                          args = list(self = self,
-                                                                      append = append,
-                                                                      transformFunction = transformFunction,
-                                                                      transformFunctionArgs = transformFunctionArgs),
-                                                          snakeCaseToCamelCase = FALSE,
-                                                          ...)
+        sql,
+        fun = exportData,
+        args = list(
+          self = self,
+          append = append,
+          transformFunction = transformFunction,
+          transformFunctionArgs = transformFunctionArgs
+        ),
+        snakeCaseToCamelCase = FALSE,
+        ...
+      )
       invisible()
     },
 
@@ -386,14 +393,13 @@ ResultExportManager <- R6::R6Class(
                                packageVersion = NULL,
                                migrationsPath = NULL,
                                migrationRegexp = .defaultMigrationRegexp) {
-
       # For each file, create a checksum of the file and the filename
       exportedFiles <- file.path(self$exportDir, list.files(self$exportDir, "*.(csv|json)"))
 
       checksums <- data.frame(
         file = exportedFiles,
         checksum = lapply(exportedFiles, digest::digest, algo = "sha256") |> unlist()
-      ) %>% dplyr:: filter(.data$file != "mainfest.json")
+      ) %>% dplyr::filter(.data$file != "mainfest.json")
 
       # Get any migrations from package that would be expected for data insert to work
       expectedMigrations <- private$getMigrationFiles(migrationsPath, packageName, migrationRegexp)
@@ -449,8 +455,10 @@ createResultExportManager <- function(tableSpecification,
                                       exportDir,
                                       minCellCount = getOption("ohdsi.minCellCount", default = 5),
                                       databaseId = NULL) {
-  ResultExportManager$new(tableSpecification = tableSpecification,
-                          exportDir = exportDir,
-                          minCellCount = minCellCount,
-                          databaseId = databaseId)
+  ResultExportManager$new(
+    tableSpecification = tableSpecification,
+    exportDir = exportDir,
+    minCellCount = minCellCount,
+    databaseId = databaseId
+  )
 }

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.allowedGrantPermissions = "SELECT|INSERT|DELETE|UPDATE"
+.allowedGrantPermissions <- "SELECT|INSERT|DELETE|UPDATE"
 
 #' Grant Table Permissions
 #' @description
@@ -52,26 +52,30 @@ grantTablePermissions <- function(connectionDetails = NULL,
     stopifnot(DatabaseConnector::dbIsValid(connection))
   }
 
-  if (DatabaseConnector::dbms(connection) == "sqlite")
+  if (DatabaseConnector::dbms(connection) == "sqlite") {
     stop("sqlite does not support permission handling")
-  else if (DatabaseConnector::dbms(connection) != "postgresql")
+  } else if (DatabaseConnector::dbms(connection) != "postgresql") {
     warning("Untested grant function for this database platform")
+  }
 
   sql <- c()
   for (table in tableSpecification$tableName %>% unique()) {
-    sql <- c(sql,
-             SqlRender::render("GRANT @permissions ON @database_schema.@table_prefix@table TO @user;",
-                               table = table,
-                               table_prefix = tablePrefix))
+    sql <- c(
+      sql,
+      SqlRender::render("GRANT @permissions ON @database_schema.@table_prefix@table TO @user;",
+        table = table,
+        table_prefix = tablePrefix
+      )
+    )
   }
 
   if (length(sql) >= 1) {
     sql <- paste(sql, collapse = "\n")
     DatabaseConnector::renderTranslateExecuteSql(connection,
-                                                 sql,
-                                                 user = user,
-
-                                                 database_schema = databaseSchema,
-                                                 permissions = permissions)
+      sql,
+      user = user,
+      database_schema = databaseSchema,
+      permissions = permissions
+    )
   }
 }
