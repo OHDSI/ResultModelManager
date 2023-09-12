@@ -44,7 +44,7 @@ checkAndFixColumnNames <-
     expectedNames <- tableSpecs %>%
       dplyr::select("columnName") %>%
       dplyr::anti_join(dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
-        by = "columnName"
+                       by = "columnName"
       ) %>%
       dplyr::arrange("columnName") %>%
       dplyr::pull()
@@ -176,7 +176,7 @@ checkAndFixDuplicateRows <-
            specifications) {
     primaryKeys <- specifications %>%
       dplyr::filter(.data$tableName == !!tableName &
-        tolower(.data$primaryKey) == "yes") %>%
+                      tolower(.data$primaryKey) == "yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
@@ -189,7 +189,7 @@ checkAndFixDuplicateRows <-
           sum(duplicatedRows)
         )
       )
-      return(table[!duplicatedRows, ])
+      return(table[!duplicatedRows,])
     } else {
       return(table)
     }
@@ -215,7 +215,7 @@ appendNewRows <-
     if (nrow(data) > 0) {
       primaryKeys <- specifications %>%
         dplyr::filter(.data$tableName == !!tableName &
-          tolower(.data$primaryKey) == "yes") %>%
+                        tolower(.data$primaryKey) == "yes") %>%
         dplyr::select("columnName") %>%
         dplyr::pull()
       newData <- newData %>%
@@ -242,6 +242,30 @@ formatDouble <- function(x) {
   val <- as.numeric(val)
   return(val)
 }
+
+.truncateTable <- function(tableName, connection, schema, tablePrefix) {
+  DatabaseConnector::renderTranslateExecuteSql(connection,
+                                               "TRUNCATE TABLE @schema.@table_prefix@table;",
+                                               table_prefix = tablePrefix,
+                                               schema = schema,
+                                               table = tableName)
+  invisible(NULL)
+}
+
+
+.removeDataUserCheck <- function(inp = readline(prompt = "Warning - this will delete all data in this model, would you like to proceed? [y/N] ")) {
+  userInput <- tolower(inp)
+  while (!userInput %in% c("y", "n", "")) {
+    userInput <- tolower(readline(prompt = "Please enter Y or N "))
+  }
+
+  if (userInput %in% c("n", "")) {
+    message("stopping")
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
 
 #' Upload results to the database server.
 #'
@@ -277,6 +301,9 @@ formatDouble <- function(x) {
 #' @param databaseIdentifierFile  File contained that references databaseId field (used when purgeSiteDataBeforeUploading == TRUE). You may
 #'                       specify a relative path for the cdmSourceFile and the function will assume it resides in the resultsFolder.
 #'                       Alternatively, you can provide a path outside of the resultsFolder for this file.
+#'
+#' @param purgeDataModel  This function will purge all data from the tables in the specification prior to upload.
+#'                              Use with care. If interactive this will require further input.
 #' @param specifications A tibble data frame object with specifications.
 #' @param warnOnMissingTable Boolean, print a warning if a table file is missing.
 #'
@@ -291,6 +318,7 @@ uploadResults <- function(connection = NULL,
                           databaseIdentifierFile = "cdm_source_info.csv",
                           runCheckAndFixCommands = FALSE,
                           warnOnMissingTable = TRUE,
+                          purgeDataModel = FALSE,
                           specifications) {
   if (is.null(connection)) {
     if (!is.null(connectionDetails)) {
@@ -309,6 +337,23 @@ uploadResults <- function(connection = NULL,
   assertSpecificationColumns(colnames(specifications))
 
   start <- Sys.time()
+
+  if (purgeDataModel) {
+
+    if (rlang::is_interactive()) {
+      if (!.removeDataUserCheck()) {
+        return(invisible(NULL))
+      }
+    }
+
+    ParallelLogger::logInfo("Removing all records for tables within specification")
+
+    invisible(lapply(unique(specifications$tableName),
+                     .truncateTable,
+                     connection = connection,
+                     schema = schema,
+                     tablePrefix = tablePrefix))
+  }
 
   # Retrieve the databaseId from the cdmSourceFile if the file exists
   # and we're purging site data before uploading. First check to see if the
@@ -343,7 +388,7 @@ uploadResults <- function(connection = NULL,
 
       primaryKey <- specifications %>%
         dplyr::filter(.data$tableName == !!tableName &
-          tolower(.data$primaryKey) == "yes") %>%
+                        tolower(.data$primaryKey) == "yes") %>%
         dplyr::select("columnName") %>%
         dplyr::pull()
 
@@ -359,7 +404,7 @@ uploadResults <- function(connection = NULL,
       if (purgeSiteDataBeforeUploading && "database_id" %in% primaryKey) {
         type <- specifications %>%
           dplyr::filter(.data$tableName == !!tableName &
-            .data$columnName == "database_id") %>%
+                          .data$columnName == "database_id") %>%
           dplyr::select("dataType") %>%
           dplyr::pull()
         # Remove the existing data for the databaseId
@@ -428,7 +473,6 @@ uploadResults <- function(connection = NULL,
           toEmpty <- specifications %>%
             dplyr::filter(
               tableName == env$specTableName &
-                tolower(.data$emptyIsNa) != "yes" &
                 grepl("varchar", .data$dataType)
             ) %>%
             dplyr::select("columnName") %>%
@@ -441,7 +485,6 @@ uploadResults <- function(connection = NULL,
           toZero <- specifications %>%
             dplyr::filter(
               tableName == env$specTableName &
-                tolower(.data$emptyIsNa) != "yes" &
                 .data$dataType %in% c("int", "bigint", "float")
             ) %>%
             dplyr::select("columnName") %>%
@@ -495,8 +538,8 @@ uploadResults <- function(connection = NULL,
           primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
           duplicates <-
             dplyr::inner_join(env$primaryKeyValuesInDb,
-              primaryKeyValuesInChunk,
-              by = env$primaryKey
+                              primaryKeyValuesInChunk,
+                              by = env$primaryKey
             )
 
           if (nrow(duplicates) != 0) {
@@ -527,7 +570,7 @@ uploadResults <- function(connection = NULL,
             # Remove duplicates we already dealt with:
             env$primaryKeyValuesInDb <-
               env$primaryKeyValuesInDb %>%
-              dplyr::anti_join(duplicates, by = env$primaryKey)
+                dplyr::anti_join(duplicates, by = env$primaryKey)
           }
         }
         if (nrow(chunk) == 0) {
@@ -583,6 +626,7 @@ uploadResults <- function(connection = NULL,
 #' @export
 deleteAllRowsForPrimaryKey <-
   function(connection, schema, tableName, keyValues) {
+
     createSqlStatement <- function(i) {
       sql <- paste0(
         "DELETE FROM ",
@@ -591,7 +635,7 @@ deleteAllRowsForPrimaryKey <-
         tableName,
         "\nWHERE ",
         paste(paste0(
-          colnames(keyValues), " = '", keyValues[i, ], "'"
+          colnames(keyValues), " = '", keyValues[i,], "'"
         ), collapse = " AND "),
         ";"
       )
@@ -632,13 +676,14 @@ deleteAllRowsForDatabaseId <-
            tableName,
            databaseId,
            idIsInt = TRUE) {
-    if (idIsInt) {
-      sql <-
-        "SELECT COUNT(*) FROM @schema.@table_name WHERE database_id = @database_id;"
-    } else {
-      sql <-
-        "SELECT COUNT(*) FROM @schema.@table_name WHERE database_id = '@database_id';"
+
+    sql <-
+      "SELECT COUNT(*) FROM @schema.@table_name WHERE database_id IN (@database_id);"
+
+    if (!idIsInt) {
+      databaseId <- paste0("'", databaseId, "'")
     }
+
     sql <- SqlRender::render(
       sql = sql,
       schema = schema,
@@ -655,13 +700,9 @@ deleteAllRowsForDatabaseId <-
           databaseId
         )
       )
-      if (idIsInt) {
-        sql <-
-          "DELETE FROM @schema.@table_name WHERE database_id = @database_id;"
-      } else {
-        sql <-
-          "DELETE FROM @schema.@table_name WHERE database_id = '@database_id';"
-      }
+
+      sql <-
+        "DELETE FROM @schema.@table_name WHERE database_id IN (@database_id);"
 
       sql <- SqlRender::render(
         sql = sql,
@@ -670,9 +711,9 @@ deleteAllRowsForDatabaseId <-
         database_id = databaseId
       )
       DatabaseConnector::executeSql(connection,
-        sql,
-        progressBar = FALSE,
-        reportOverallTime = FALSE
+                                    sql,
+                                    progressBar = FALSE,
+                                    reportOverallTime = FALSE
       )
     }
   }

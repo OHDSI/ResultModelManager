@@ -15,8 +15,7 @@ test_that("Bad model format", {
     dataType = c("bigint", "varchar", "date"),
     isRequired = "Yes",
     primaryKey = "Yes",
-    optional = "No",
-    emptyIsNa = "No"
+    optional = "No"
   )
   expect_error(checkAndFixColumnNames(data, "foo", "foo.zip", junkSpec))
 

@@ -57,6 +57,7 @@ result <- cohortNamespace$querySql(sql, cohort_id = 1)
 \item \href{#method-QueryNamespace-queryDb}{\code{QueryNamespace$queryDb()}}
 \item \href{#method-QueryNamespace-executeSql}{\code{QueryNamespace$executeSql()}}
 \item \href{#method-QueryNamespace-getVars}{\code{QueryNamespace$getVars()}}
+\item \href{#method-QueryNamespace-finalize}{\code{QueryNamespace$finalize()}}
 \item \href{#method-QueryNamespace-clone}{\code{QueryNamespace$clone()}}
 }
 }
@@ -234,8 +235,19 @@ get vars}
 \if{latex}{\out{\hypertarget{method-QueryNamespace-getVars}{}}}
 \subsection{Method \code{getVars()}}{
 returns full list of variables that will be replaced
+Destruct object
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$getVars()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-QueryNamespace-finalize"></a>}}
+\if{latex}{\out{\hypertarget{method-QueryNamespace-finalize}{}}}
+\subsection{Method \code{finalize()}}{
+Close connections etc
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$finalize()}\if{html}{\out{</div>}}
 }
 
 }

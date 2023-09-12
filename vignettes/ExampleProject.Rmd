@@ -21,8 +21,7 @@ specification <- data.frame(
   dataType = c("int", "varchar", "int", "bigint", "numeric"),
   isRequired = c("Yes", "Yes", "Yes", "Yes", "Yes"),
   primaryKey = c("Yes", "No", "Yes", "Yes", "No"),
-  optional = c("No", "No", "No", "No", "No"),
-  emptyIsNa = c("No", "No", "No", "No", "No")
+  optional = c("No", "No", "No", "No", "No")
 )
 ```
 

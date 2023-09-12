@@ -116,6 +116,25 @@ test_that("results are uploaded", {
       expect_true(databaseIdCount > 0)
     }
   }
+
+  # Test uploading after truncate
+  uploadResults(
+    connectionDetails = testDatabaseConnectionDetails,
+    schema = testSchema,
+    databaseIdentifierFile = "database.csv",
+    resultsFolder = tempDir,
+    specifications = specifications,
+    purgeSiteDataBeforeUploading = FALSE,
+    purgeDataModel = TRUE,
+    runCheckAndFixCommands = TRUE,
+    warnOnMissingTable = FALSE
+  )
+
+  expect_false(.removeDataUserCheck("N"))
+  expect_false(.removeDataUserCheck("n"))
+  expect_false(.removeDataUserCheck(""))
+  expect_true(.removeDataUserCheck("Y"))
+  expect_true(.removeDataUserCheck("y"))
 })
 
 

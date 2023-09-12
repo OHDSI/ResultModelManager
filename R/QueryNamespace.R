@@ -193,6 +193,14 @@ QueryNamespace <- R6::R6Class(
     #' returns full list of variables that will be replaced
     getVars = function() {
       return(private$replacementVars$as_list())
+    },
+
+    #' Destruct object
+    #' @description
+    #' Close connections etc
+    finalize = function() {
+      private$connectionHandler$finalize()
+      invisible(NULL)
     }
   )
 )
