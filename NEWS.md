@@ -1,3 +1,9 @@
+# ResultModelManager 0.5.1
+
+Bug fixes:
+
+1. Fixed issue with uploads results from removal of `emptyIsNa` property which is no longer used/required
+
 # ResultModelManager 0.5.0
 Changes:
 1. Added utility function `grantTablePermissions` to make it easier to grant select, delete, insert and update
