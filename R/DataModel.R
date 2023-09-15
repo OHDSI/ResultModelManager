@@ -463,37 +463,13 @@ uploadResults <- function(connection = NULL,
             resultsFolder = resultsFolder,
             specifications = specifications
           )
+
           chunk <- checkAndFixDuplicateRows(
             table = chunk,
             tableName = env$specTableName,
             resultsFolder = resultsFolder,
             specifications = specifications
           )
-
-          # Primary key fields cannot be NULL, so for some tables convert NAs to empty or zero:
-          toEmpty <- specifications %>%
-            dplyr::filter(
-              tableName == env$specTableName &
-                grepl("varchar", .data$dataType)
-            ) %>%
-            dplyr::select("columnName") %>%
-            dplyr::pull()
-          if (length(toEmpty) > 0) {
-            chunk <- chunk %>%
-              dplyr::mutate_at(toEmpty, naToEmpty)
-          }
-
-          toZero <- specifications %>%
-            dplyr::filter(
-              tableName == env$specTableName &
-                .data$dataType %in% c("int", "bigint", "float")
-            ) %>%
-            dplyr::select("columnName") %>%
-            dplyr::pull()
-          if (length(toZero) > 0) {
-            chunk <- chunk %>%
-              dplyr::mutate_at(toZero, naToZero)
-          }
         }
 
         # Ensure dates are formatted properly
@@ -504,6 +480,7 @@ uploadResults <- function(connection = NULL,
           ) %>%
           dplyr::select("columnName") %>%
           dplyr::pull()
+
         if (length(toDate) > 0) {
           chunk <- chunk %>%
             dplyr::mutate_at(toDate, lubridate::as_date)
