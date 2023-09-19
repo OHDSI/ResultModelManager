@@ -26,7 +26,7 @@
 #' without issue. When exporting a the same table across multiple threads primary key checks may create
 #' issues.
 #'
-#' @field exportDir direcotry path to export files to
+#' @field exportHandler ExportHandler class that implements method for saving files to disk @seeAlso ExportHandler
 ResultExportManager <- R6::R6Class(
   classname = "ResultExportManager",
   private = list(
@@ -124,18 +124,18 @@ ResultExportManager <- R6::R6Class(
     }
   ),
   public = list(
-    exportDir = NULL,
+    exportHandler = NULL,
 
     #' Init
     #' @description
     #' Create a class for exporting results from a study in a standard, consistend manner
     #' @param tableSpecification        Table specification data.frame
-    #' @param exportDir                 Directory files are being exported to
     #' @param minCellCount              Minimum cell count - reccomended that you set with
     #'                                  options("ohdsi.minCellCount" = count) in all R projects. Default is 5
     #' @param databaseId                database identifier - required when exporting according to many specs
+    #' @param exportHandler             exportHandler instance
     initialize = function(tableSpecification,
-                          exportDir,
+                          exportHandler,
                           minCellCount = getOption("ohdsi.minCellCount", default = 5),
                           databaseId = NULL) {
       self$exportDir <- exportDir
@@ -319,8 +319,7 @@ ResultExportManager <- R6::R6Class(
       # Add database id, if present in spec
       outputFile <- file.path(self$exportDir, paste0(exportTableName, ".csv"))
       colnames(rows) <- tolower(colnames(rows))
-      readr::write_csv(rows, file = outputFile, append = append)
-
+      self$exportHandler$saveResultFile(data, outputFile, append = append)
       return(TRUE)
     },
 
