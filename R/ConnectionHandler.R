@@ -122,6 +122,7 @@ ConnectionHandler <- R6::R6Class(
     #' Closes connection (if active)
     closeConnection = function() {
       if (self$dbIsValid()) {
+        ParallelLogger::logInfo("Closing database connection")
         DatabaseConnector::disconnect(self$con)
       }
       self$isActive <- FALSE
