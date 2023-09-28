@@ -22,15 +22,42 @@
 #'
 ExportHandler <- R6::R6Class(
   classname = "ExportHandler",
+
+  private = list(
+    exportedFiles = data.frame(),
+    writeFile = function(data, filename, append) {
+      readr::write_csv(data, file = filename, append = append)
+      return(TRUE)
+    }
+  ),
   public = list(
     exportDir = "",
     initalize = function(exportDir) {
+      checkmate::assertPathForOutput(exportDir, overwrite = TRUE)
       self$exportDir <- exportDir
+
+      # Check/create export_dir
+      if (!dir.exists(self$exportDir)) {
+        dir.create(self$exportDir, recursive = TRUE)
+      }
     },
 
-    saveResultFile = function(data, dataFileName, append) {
-      readr::write_csv(data, file = dataFileName, append = append)
-      return(TRUE)
+    #' Get the name of the handler
+    getName = function () {
+      return(class(self))
+    },
+    #'
+    #' @param data      data.frame
+    #' @param filename      filename
+    #' @param append to existing or overite
+    saveResultFile = function(data, filename, append) {
+      if (append && filename %in% private$exportedFiles$filename) {
+        private$exportedFiles[private$exportedFiles$filename == filename,]$rowCount <-
+            private$exportedFiles[private$exportedFiles$filename == filename,]$rowCount + nrow(data)
+      } else {
+        private$exportedFiles <- rbind(data.frame(filename = filename, rowCount = nrow(data)))
+      }
+      return(private$writeFile(data, dataFileName, append))
     }
   )
 )
@@ -54,53 +81,9 @@ S3ExportHandler <- R6::R6Class(
   pivate = list(
     awsSseType = NULL,
     awsObjectKey = NULL,
-    exportDir = ""
-  ),
-  public = list(
-    logFile = "",
-    #' @param logFile           Location of log file for uploads to interrogate for issues
-    #' @param exportDir         (optional) s3 sub directory for files to be saved to e.g. filename.csv is saved to
-    #'                          /<exportDir>/filename.csv within bucket. This is a good idea if you're running a study
-    #'                          Across multiple databases
-    #' @param bucket            s3 bucket to use
-    initalize = function(logFile,
-                         exportDir = "",
-                         bucket = Sys.getenv("AWS_BUCKET_NAME"),
-                         awsSseType = Sys.getenv("AWS_SSE_TYPE"),
-                         awsObjectKey = Sys.getenv("AWS_OBJECT_KEY")) {
-      checkmate::assertPathForOutput(logFile)
-      checkmate::assertString(exportDir)
-      checkmate::assertString(bucket)
-      checkmate::assertString(awsSseType)
-      checkmate::assertString(awsObjectKey)
+    exportDir = "",
 
-      # Check if required s3 packages are installed
-      s3PackagesInstalled <- all(c("aws.s3", "aws.ec2metadata", "aws.signature") %in% as.data.frame(installed.packages())$Package)
-      if (!s3PackagesInstalled) {
-        if (interactive()) {
-          resp <- utils::menu(c("Yes", "No"), title = "Package aws.s3 is required to use this functionality. Install?")
-          if (resp != 1) {
-            stop("Must install aws.s3 to continue")
-          }
-        }
-        install.packages(c("aws.signature", "aws.s3", "ec2metadata"))
-      }
-      # Check credentials are set/valid
-      credentials <- aws.signature::locate_credentials()
-      checkmate::assertFALSE(is.null(credentials$key))
-      checkmate::assertFALSE(is.null(credentials$secret))
-      checkmate::assertTRUE(aws.s3::bucket_exist(bucket))
-
-      self$logFile <- logFile
-      self$bucket <- bucket
-      private$awsSseType <- awsSseType
-      private$awsObjectKey <- awsObjectKey
-      private$exportDir <- exportDir
-
-      self
-    },
-
-    saveResultFile = function(data, dataFileName, append) {
+    writeFile = function(data, dataFileName, append) {
       checksum <- digest::digest(data, "sha1")
       object <- paste(private$awsObjectKey, dataFileName, sep = "/")
 
@@ -127,12 +110,55 @@ S3ExportHandler <- R6::R6Class(
       # Always store meta data logs locally
       log <- data.frame(object = object,
                         bucket = self$bucket,
-                        ec2Meta = jsonlite::toJSON(aws.ec2metadata::instance_document()),
                         success = success,
                         checksum = checksum)
       readr::write_csv(log, file = config$awsS3Log, append = file.exists(self$logFile))
 
       return(success)
+    }
+  ),
+  public = list(
+    logFile = "",
+    #' @param logFile           Location of log file for uploads to interrogate for issues
+    #' @param exportDir         (optional) s3 sub directory for files to be saved to e.g. filename.csv is saved to
+    #'                          /<exportDir>/filename.csv within bucket. This is a good idea if you're running a study
+    #'                          Across multiple databases
+    #' @param bucket            s3 bucket to use
+    initalize = function(logFile,
+                         exportDir = "",
+                         bucket = Sys.getenv("AWS_BUCKET_NAME"),
+                         awsSseType = Sys.getenv("AWS_SSE_TYPE"),
+                         awsObjectKey = Sys.getenv("AWS_OBJECT_KEY")) {
+      checkmate::assertPathForOutput(logFile, overwrite = TRUE)
+      checkmate::assertString(exportDir)
+      checkmate::assertString(bucket)
+      checkmate::assertString(awsSseType)
+      checkmate::assertString(awsObjectKey)
+
+      # Check if required s3 packages are installed
+      s3PackagesInstalled <- all(c("aws.s3", "aws.ec2metadata", "aws.signature") %in% as.data.frame(installed.packages())$Package)
+      if (!s3PackagesInstalled) {
+        if (interactive()) {
+          resp <- utils::menu(c("Yes", "No"), title = "Package aws.s3 is required to use this functionality. Install?")
+          if (resp != 1) {
+            stop("Must install aws.s3 to continue")
+          }
+        }
+        install.packages(c("aws.signature", "aws.s3"))
+      }
+      # Check credentials are set/valid
+      credentials <- aws.signature::locate_credentials()
+      checkmate::assertFALSE(is.null(credentials$key))
+      checkmate::assertFALSE(is.null(credentials$secret))
+      checkmate::assertTRUE(aws.s3::bucket_exist(bucket))
+
+      self$logFile <- logFile
+      self$bucket <- bucket
+      private$awsSseType <- awsSseType
+      private$awsObjectKey <- awsObjectKey
+      private$exportDir <- exportDir
+
+      self
     }
   )
 )

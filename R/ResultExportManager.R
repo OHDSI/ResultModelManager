@@ -26,7 +26,8 @@
 #' without issue. When exporting a the same table across multiple threads primary key checks may create
 #' issues.
 #'
-#' @field exportHandler ExportHandler class that implements method for saving files to disk @seeAlso ExportHandler
+#' @field exportHandlers  list of ExportHandlers class that implement methods for saving files to disk, object store etc
+#'                        @seeAlso ExportHandler
 ResultExportManager <- R6::R6Class(
   classname = "ResultExportManager",
   private = list(
@@ -124,7 +125,7 @@ ResultExportManager <- R6::R6Class(
     }
   ),
   public = list(
-    exportHandler = NULL,
+    exportHandlers = NULL,
 
     #' Init
     #' @description
@@ -135,26 +136,22 @@ ResultExportManager <- R6::R6Class(
     #' @param databaseId                database identifier - required when exporting according to many specs
     #' @param exportHandler             exportHandler instance
     initialize = function(tableSpecification,
-                          exportHandler,
+                          exportHandlers = list(),
                           minCellCount = getOption("ohdsi.minCellCount", default = 5),
                           databaseId = NULL) {
-      self$exportDir <- exportDir
       # Check table spec is valid
       assertSpecificationColumns(colnames(tableSpecification))
       private$tableSpecification <- tableSpecification
       private$tables <- unique(tableSpecification$tableName)
-
-      # Check/create export_dir
-      if (!dir.exists(self$exportDir)) {
-        dir.create(self$exportDir, recursive = TRUE)
-      }
 
       checkmate::assertTRUE(is.null(databaseId) || length(databaseId) == 1)
       checkmate::assertIntegerish(minCellCount)
       private$minCellCount <- minCellCount
       private$databaseId <- databaseId
 
-      #
+      checkmate::assertList(exportHandlers, types = "ExportHandler", min.len = 1)
+      self$exportHandlers <- exportHandlers
+
       if (is.null(self$databaseId)) {
         dbIdCount <- private$tableSpecification %>%
           dplyr::filter(.data$columnName == "databaseId") %>%
@@ -319,7 +316,19 @@ ResultExportManager <- R6::R6Class(
       # Add database id, if present in spec
       outputFile <- file.path(self$exportDir, paste0(exportTableName, ".csv"))
       colnames(rows) <- tolower(colnames(rows))
-      self$exportHandler$saveResultFile(data, outputFile, append = append)
+
+
+      lapply(self$exportHandlers, function(handler) {
+        tryCatch({
+          status <- handler$saveResultFile(data, outputFile, append = append)
+
+          if (!status) {
+            ParallelLogger::logError("Error with result export handler ", handler$getName())
+          }
+        }, error = function(message) {
+          ParallelLogger::logError(message)
+        })
+      })
       return(TRUE)
     },
 
@@ -451,13 +460,28 @@ ResultExportManager <- R6::R6Class(
 #'                                  options("ohdsi.minCellCount" = count) in all R projects. Default is 5
 #' @param databaseId                database identifier - required when exporting according to many specs
 createResultExportManager <- function(tableSpecification,
-                                      exportDir,
+                                      exportDir = NULL,
+                                      exportHandlers = NULL,
                                       minCellCount = getOption("ohdsi.minCellCount", default = 5),
                                       databaseId = NULL) {
+
+  if (all(is.null(exportHandlers), is.null(exportDir))) {
+    stop("must specify export directory or export managers list")
+  }
+
+  if (is.null(exportHandlers) || !is.list(exportHandlers)) {
+      exportHandlers <- list(exportHandlers)
+  }
+
+  if (!is.null(exportDir)) {
+    exportHandlers[[length(exportManagers) + 1]] <- ExportHandler$new(exportDir = exportDir)
+  }
+
   ResultExportManager$new(
     tableSpecification = tableSpecification,
     exportDir = exportDir,
     minCellCount = minCellCount,
-    databaseId = databaseId
+    databaseId = databaseId,
+    exportHandlers = exportHandlers
   )
 }
