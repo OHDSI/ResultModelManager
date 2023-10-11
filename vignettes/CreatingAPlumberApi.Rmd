@@ -1,0 +1,79 @@
+---
+title: "Creating A Plumber API"
+author: "James P. Gilbert"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    number_sections: yes
+    toc: yes
+vignette: >
+  %\VignetteIndexEntry{Creating A Plumber API}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+Creating an API for a data set may be a useful way to allow sharing and improve exploration of results without requiring
+full access to the data.
+Similarly, it may allow the building of web-applications in a consistent manner.
+In this guide we make use of an plumber API to serve up a series of endpoints based on a data description.
+
+Note that the endpoints exposed in this are intended to be the most basic boilerplate API, however, the created
+plumber routers allow [easy extension](https://www.rplumber.io/articles/programmatic-usage.html) and customisation
+for your own purposes.
+
+This guide will not explore important topics such as [hosting](https://www.rplumber.io/articles/hosting.html) or
+[securing](https://www.rplumber.io/articles/security.html) your API.
+
+# Creating a basic plumber router
+
+First, the most basic way to host an API is simply to expose the table specification for your data model.
+For a setup step we will create a basic schema that hosts some cohort definitions:
+
+```{r eval = FALSE}
+library(ResultModelManager)
+connectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sqlite", server = ":memory:")
+# In a hosted situation we strongly reccomend using a pooled connection handler
+connectionHandler <- ConnectionHandler$new(connectionDetails = connectionDetails)
+tableSpecification <- data.frame(
+  tableName = "cohort",
+  columnName = c("cohort_definition_id", "cohort_name", "json", "sql"),
+  primaryKey = c("yes", "no", "no", "no"),
+  dataType = c("int", "varchar", "varchar", "varchar")
+)
+
+schemaSql <- generateSqlSchema(schemaDefinition = tableSpecification)
+connectionHandler$executeSql(schemaSql, table_prefix = "cd_", database_schema = "main")
+```
+Creating the plumber router can then be acomplished using the `createPlumberRouter` function:
+
+```{r eval = FALSE}
+pr <- createPlumberRouter(tableSpecification = tableSpecification,
+                          schema = "main",
+                          tablePrefix = "cd_",
+                          connectionHandler = connectionHandler)
+pr$run()
+```
+
+This will then locally host a web server with the endpoints `/table_spec` and `/cohort`.
+You will also notice that the searchable parameter for cohor (required in the json body of the `/cohort` post request) is
+`cohortDefinitionId`.
+
+If we would like to allow searching via the cohort name we can add the `apiQueryField` column to our table specification.
+By deafult, the searchable parameters are only the primary key fields of the table.
+
+```{r, eval = FALSE}
+tableSpecification$apiQueryField <- c("yes", "yes", "no", "no")
+pr <- createPlumberRouter(tableSpecification = tableSpecification,
+                          schema = "main",
+                          tablePrefix = "cd_",
+                          connectionHandler = connectionHandler)
+pr$run()
+```
+# Mounting different result models/table specifications
+
+Plumber supports mounting multiple APIs in different manners with fully customizable routes.
+It is advised that you follow the
+[provided documentation](https://www.rplumber.io/articles/programmatic-usage.html#mount-static) on how to do this for
+your project.
