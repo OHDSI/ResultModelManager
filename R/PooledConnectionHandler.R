@@ -28,10 +28,14 @@
 PooledConnectionHandler <- R6::R6Class(
   classname = "PooledConnectionHandler",
   inherit = ConnectionHandler,
+  private = list(
+    poolArgs = NULL
+  ),
   public = list(
     #' @param ...                           Elisis @seealso[ConnectionHandler]
-    initialize = function(...) {
-      ## Note this function is just a dummy because of roxygen
+    #' @param poolArgs                      Optional arguments to call pool::dbPool overrides default usage of connectionDetails
+    initialize = function(..., poolArgs = NULL) {
+      private$poolArgs <- poolArgs
       super$initialize(...)
     },
     #' initialize pooled db connection
@@ -43,22 +47,27 @@ PooledConnectionHandler <- R6::R6Class(
         self$closeConnection()
       }
 
-      self$con <- pool::dbPool(
-        drv = DatabaseConnector::DatabaseConnectorDriver(),
-        dbms = self$connectionDetails$dbms,
-        server = self$connectionDetails$server(),
-        port = self$connectionDetails$port(),
-        user = self$connectionDetails$user(),
-        password = self$connectionDetails$password()
-      )
+      if (is.null(private$poolArgs)) {
+        self$con <- do.call(pool::dbPool, poolArgs)
+      } else {
+        self$con <- pool::dbPool(
+          drv = private$driver,
+          dbms = self$connectionDetails$dbms,
+          server = self$connectionDetails$server(),
+          port = self$connectionDetails$port(),
+          user = self$connectionDetails$user(),
+          password = self$connectionDetails$password(),
+          connectionString = self$connectionDetails$connectionString()
+        )
+      }
       self$isActive <- TRUE
     },
 
     #' get dbms
     #' @description Get the dbms type of the connection
     dbms = function() {
-      #conn <- pool::poolCheckout(self$getConnection())
-      #on.exit(pool::poolReturn(conn))
+      conn <- pool::poolCheckout(self$getConnection())
+      on.exit(pool::poolReturn(conn))
       DatabaseConnector::dbms(self$getConnection())
     },
 
@@ -80,7 +89,7 @@ PooledConnectionHandler <- R6::R6Class(
     #' @param snakeCaseToCamelCase                  (Optional) Boolean. return the results columns in camel case (default)
     queryFunction = function(sql, snakeCaseToCamelCase = self$snakeCaseToCamelCase) {
       conn <- self$getConnection()
-      #on.exit(pool::poolReturn(conn))
+      on.exit(pool::poolReturn(conn))
       data <- DatabaseConnector::dbGetQuery(conn, sql, translate = FALSE)
       if (snakeCaseToCamelCase) {
         colnames(data) <- SqlRender::snakeCaseToCamelCase(colnames(data))
@@ -96,7 +105,7 @@ PooledConnectionHandler <- R6::R6Class(
     #' @param sql                                   sql query string
     executeFunction = function(sql) {
       conn <- self$getConnection()
-      #on.exit(pool::poolReturn(conn))
+      on.exit(pool::poolReturn(conn))
       DatabaseConnector::dbExecute(conn, sql, translate = FALSE)
     }
   )
