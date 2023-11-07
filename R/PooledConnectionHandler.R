@@ -15,6 +15,61 @@
 # limitations under the License.
 
 
+requiredPackage <- function(packageName) {
+  packages <- installed.packages()
+  packages <- as.data.frame(packages)
+  if (!packageName %in% packages) {
+    install.packages(packageName)
+  }
+}
+
+# map a ConnectionDetails objects and translates them to DBI pool args
+.DBCToDBIArgs <- list(
+  "sqlite" = function(cd) {
+    requiredPackage("RSQLite")
+    list(
+      drv = RSQLite::SQLite(),
+      dbname = cd$server()
+    )
+  },
+
+  "postgresql" = function(cd) {
+    requiredPackage("RPostgres")
+    host <- strsplit(cd$server(), "/")[[1]][1]
+    dbname <- strsplit(cd$server(), "/")[[1]][2]
+    list(
+      drv = RPostgres::Postgres(),
+      dbname = dbname,
+      host = server,
+      user = cd$user(),
+      port = cd$port(),
+
+    )
+  },
+
+  "duckdb" = function(cd) {
+    requiredPackage("duckdb")
+    list(
+      drv = duckdb::duckdb(),
+      dbdir = cd$server()
+    )
+  },
+
+  "jdbc" = function(cd) {
+    ParallelLogger::logInfo("Reverting to use of DatabaseConnector jdbc driver. May fail on some systems")
+    list(
+      drv = DatabaseConnector::DatabaseConnectorDriver(),
+      dbms = cd$connectionDetails$dbms,
+      server = cd$connectionDetails$server(),
+      port = cd$connectionDetails$port(),
+      user = cd$connectionDetails$user(),
+      password = cd$connectionDetails$password(),
+      connectionString = cd$connectionDetails$connectionString()
+    )
+  }
+)
+
+
 #' Pooled Connection Handler
 #'
 #' @description
@@ -32,11 +87,24 @@ PooledConnectionHandler <- R6::R6Class(
     poolArgs = NULL
   ),
   public = list(
-    #' @param ...                           Elisis @seealso[ConnectionHandler]
+    #' @param connectionDetails             DatabaseConnector::connectionDetails class
+    #' @param loadConnection                Boolean option to load connection right away
+    #' @param snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
     #' @param poolArgs                      Optional arguments to call pool::dbPool overrides default usage of connectionDetails
-    initialize = function(poolArgs = NULL, ...) {
+    initialize = function(connectionDetails = NULL, snakeCaseToCamelCase = TRUE, loadConnection = TRUE, poolArgs = NULL) {
+      checkmate::assertList(poolArgs, null.ok = TRUE)
+      checkmate::assertClass(connectionDetails, "ConnectionDetails", null.ok = TRUE)
+
+      if (is.null(connectionDetails) && is.null(poolArgs)) {
+        stop("Must either specify usage of poolArgs or DatabaseConnector connection details object")
+      }
+
       private$poolArgs <- poolArgs
-      super$initialize(...)
+      self$connectionDetails <- connectionDetails
+      self$snakeCaseToCamelCase <- snakeCaseToCamelCase
+      if (loadConnection) {
+        self$initConnection()
+      }
     },
     #' initialize pooled db connection
     #' @description
@@ -49,8 +117,9 @@ PooledConnectionHandler <- R6::R6Class(
       if (!is.null(private$poolArgs)) {
         self$con <- do.call(pool::dbPool, private$poolArgs)
       } else {
+        ParallelLogger::logInfo("Reverting to use of DatabaseConnector driver. May fail on some systems")
         self$con <- pool::dbPool(
-          drv = private$driver,
+          drv = DatabaseConnector::DatabaseConnectorDriver(),
           dbms = self$connectionDetails$dbms,
           server = self$connectionDetails$server(),
           port = self$connectionDetails$port(),
