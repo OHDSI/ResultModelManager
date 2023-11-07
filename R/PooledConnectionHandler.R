@@ -34,7 +34,7 @@ PooledConnectionHandler <- R6::R6Class(
   public = list(
     #' @param ...                           Elisis @seealso[ConnectionHandler]
     #' @param poolArgs                      Optional arguments to call pool::dbPool overrides default usage of connectionDetails
-    initialize = function(..., poolArgs = NULL) {
+    initialize = function(poolArgs = NULL, ...) {
       private$poolArgs <- poolArgs
       super$initialize(...)
     },
@@ -46,9 +46,8 @@ PooledConnectionHandler <- R6::R6Class(
         warning("Closing existing connection")
         self$closeConnection()
       }
-
-      if (is.null(private$poolArgs)) {
-        self$con <- do.call(pool::dbPool, poolArgs)
+      if (!is.null(private$poolArgs)) {
+        self$con <- do.call(pool::dbPool, private$poolArgs)
       } else {
         self$con <- pool::dbPool(
           drv = private$driver,
@@ -68,7 +67,7 @@ PooledConnectionHandler <- R6::R6Class(
     dbms = function() {
       conn <- pool::poolCheckout(self$getConnection())
       on.exit(pool::poolReturn(conn))
-      DatabaseConnector::dbms(self$getConnection())
+      DatabaseConnector::dbms(conn)
     },
 
     #' Close Connection
@@ -88,7 +87,7 @@ PooledConnectionHandler <- R6::R6Class(
     #' @param sql                                   sql query string
     #' @param snakeCaseToCamelCase                  (Optional) Boolean. return the results columns in camel case (default)
     queryFunction = function(sql, snakeCaseToCamelCase = self$snakeCaseToCamelCase) {
-      conn <- self$getConnection()
+      conn <- pool::poolCheckout(self$getConnection())
       on.exit(pool::poolReturn(conn))
       data <- DatabaseConnector::dbGetQuery(conn, sql, translate = FALSE)
       if (snakeCaseToCamelCase) {
@@ -104,7 +103,7 @@ PooledConnectionHandler <- R6::R6Class(
     #' Overrides ConnectionHandler Call. Does not translate or render sql.
     #' @param sql                                   sql query string
     executeFunction = function(sql) {
-      conn <- self$getConnection()
+      conn <- pool::poolCheckout(self$getConnection())
       on.exit(pool::poolReturn(conn))
       DatabaseConnector::dbExecute(conn, sql, translate = FALSE)
     }
