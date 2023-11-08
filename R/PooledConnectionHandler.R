@@ -33,11 +33,11 @@ requiredPackage <- function(packageName) {
     )
   },
   "postgresql" = function(cd) {
-    requiredPackage("RPostgreSQL")
+    requiredPackage("RPostgres")
     host <- strsplit(cd$server(), "/")[[1]][1]
     dbname <- strsplit(cd$server(), "/")[[1]][2]
     list(
-      drv = RPostgreSQL::PostgreSQL(),
+      drv = RPostgres::PostgreSQL(),
       dbname = dbname,
       host = host,
       user = cd$user(),
