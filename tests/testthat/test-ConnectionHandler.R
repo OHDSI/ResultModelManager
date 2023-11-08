@@ -1,5 +1,7 @@
 # Implementations of database connection should function in the same way
 genericTests <- function(connClass, classes, connectionClass) {
+
+  browser(expr = connectionClass == "Pool")
   testConnection <- DatabaseConnector::connect(connectionDetails)
   sql <- "
   DROP TABLE IF EXISTS main.concept;

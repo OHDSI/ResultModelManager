@@ -32,7 +32,6 @@ requiredPackage <- function(packageName) {
       dbname = cd$server()
     )
   },
-
   "postgresql" = function(cd) {
     requiredPackage("RPostgreSQL")
     host <- strsplit(cd$server(), "/")[[1]][1]
@@ -47,7 +46,6 @@ requiredPackage <- function(packageName) {
       options = "sslmode=require"
     )
   },
-
   "duckdb" = function(cd) {
     requiredPackage("duckdb")
     list(
@@ -55,7 +53,6 @@ requiredPackage <- function(packageName) {
       dbdir = cd$server()
     )
   },
-
   "jdbc" = function(cd) {
     ParallelLogger::logInfo("Reverting to use of DatabaseConnector jdbc driver. May fail on some systems")
     list(

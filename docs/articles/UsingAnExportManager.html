@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.2</span>
       </span>
     </div>
 
@@ -97,7 +97,7 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2023-09-14</h4>
+            <h4 data-toc-skip class="date">2023-11-08</h4>
       
       
       <div class="hidden name"><code>UsingAnExportManager.Rmd</code></div>
@@ -211,7 +211,7 @@ ratio calculation using the <code>rateratio.test</code> package:</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">rateratio.test</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">transformation</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">rows</span>, <span class="va">pos</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">rrResult</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/rateratio.test/man/rateratio.html" class="external-link">rateratio.test</a></span><span class="op">(</span></span>
+<span>  <span class="va">rrResult</span> <span class="op">&lt;-</span> <span class="fu">rateratio.test</span><span class="op">(</span></span>
 <span>    x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">target_count</span>, <span class="va">row</span><span class="op">$</span><span class="va">comparator_count</span><span class="op">)</span>,</span>
 <span>    n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">target_time</span>, <span class="va">row</span><span class="op">$</span><span class="va">comparator_time</span><span class="op">)</span>,</span>
 <span>    RR <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -241,7 +241,7 @@ ratio calculation using the <code>rateratio.test</code> package:</p>
 export in to the R session before saving to disk. Instead, it is best
 practice to use batch operations as follows</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">andr</span> <span class="op">&lt;-</span> <span class="fu">Andromeda</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Andromeda/man/andromeda_constructor.html" class="external-link">andromeda</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">andr</span> <span class="op">&lt;-</span> <span class="fu">Andromeda</span><span class="fu">::</span><span class="fu">andromeda</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">andr</span><span class="op">$</span><span class="va">my_andromeda_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>covariate_id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">1e4</span>, value <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">1e4</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">first</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
@@ -252,7 +252,7 @@ practice to use batch operations as follows</p>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/invisible.html" class="external-link">invisible</a></span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu">Andromeda</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/Andromeda/man/batchApply.html" class="external-link">batchApply</a></span><span class="op">(</span><span class="va">andr</span><span class="op">$</span><span class="va">my_andromeda_table</span>, <span class="va">writeBatch</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">Andromeda</span><span class="fu">::</span><span class="fu">batchApply</span><span class="op">(</span><span class="va">andr</span><span class="op">$</span><span class="va">my_andromeda_table</span>, <span class="va">writeBatch</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
