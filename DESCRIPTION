@@ -34,5 +34,9 @@ Suggests:
   withr,
   knitr,
   rmarkdown,
-  keyring
+  keyring,
+  devtools,
+  pkgdown,
+  remotes,
+  styler
 Config/testthat/edition: 3

@@ -16,10 +16,10 @@
 
 
 requiredPackage <- function(packageName) {
-  packages <- installed.packages()
+  packages <- utils::installed.packages()
   packages <- as.data.frame(packages)
   if (!packageName %in% packages$Package) {
-    install.packages(packageName)
+    utils::install.packages(packageName)
   }
 }
 
