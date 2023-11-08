@@ -266,6 +266,14 @@ DataMigrationManager <- R6::R6Class(
           table_prefix = self$tablePrefix,
           packageName = self$packageName
         )
+
+        dialect <- attr(sql, "sqlDialect", TRUE)
+
+        if (is.null(dialect)) {
+          # Unknown as to why SqlRender doesn't always set this
+          attr(sql, "sqlDialect") <- private$connectionDetails$dbms
+        }
+
         private$connectionHandler$executeSql(sql)
       } else {
         # Check to see if a file for database platform exists

@@ -15,6 +15,59 @@
 # limitations under the License.
 
 
+requiredPackage <- function(packageName) {
+  packages <- utils::installed.packages()
+  packages <- as.data.frame(packages)
+  if (!packageName %in% packages$Package) {
+    utils::install.packages(packageName)
+  }
+}
+
+# map a ConnectionDetails objects and translates them to DBI pool args
+.DBCToDBIArgs <- list(
+  "sqlite" = function(cd) {
+    requiredPackage("RSQLite")
+    list(
+      drv = RSQLite::SQLite(),
+      dbname = cd$server()
+    )
+  },
+  "postgresql" = function(cd) {
+    requiredPackage("RPostgreSQL")
+    host <- strsplit(cd$server(), "/")[[1]][1]
+    dbname <- strsplit(cd$server(), "/")[[1]][2]
+    list(
+      drv = RPostgreSQL::PostgreSQL(),
+      dbname = dbname,
+      host = host,
+      user = cd$user(),
+      port = cd$port(),
+      password = cd$password(),
+      options = "sslmode=require"
+    )
+  },
+  "duckdb" = function(cd) {
+    requiredPackage("duckdb")
+    list(
+      drv = duckdb::duckdb(),
+      dbdir = cd$server()
+    )
+  },
+  "jdbc" = function(cd) {
+    ParallelLogger::logInfo("Reverting to use of DatabaseConnector jdbc driver. May fail on some systems")
+    list(
+      drv = DatabaseConnector::DatabaseConnectorDriver(),
+      dbms = cd$connectionDetails$dbms,
+      server = cd$connectionDetails$server(),
+      port = cd$connectionDetails$port(),
+      user = cd$connectionDetails$user(),
+      password = cd$connectionDetails$password(),
+      connectionString = cd$connectionDetails$connectionString()
+    )
+  }
+)
+
+
 #' Pooled Connection Handler
 #'
 #' @description
@@ -28,11 +81,42 @@
 PooledConnectionHandler <- R6::R6Class(
   classname = "PooledConnectionHandler",
   inherit = ConnectionHandler,
+  private = list(
+    dbConnectArgs = NULL
+  ),
   public = list(
-    #' @param ...                           Elisis @seealso[ConnectionHandler]
-    initialize = function(...) {
-      ## Note this function is just a dummy because of roxygen
-      super$initialize(...)
+    #' @param connectionDetails             DatabaseConnector::connectionDetails class
+    #' @param loadConnection                Boolean option to load connection right away
+    #' @param snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
+    #' @param dbConnectArgs                 Optional arguments to call pool::dbPool overrides default usage of connectionDetails
+    #' @param forceJdbcConnection           Force JDBC connection (requires using DatabaseConnector ConnectionDetails)
+    initialize = function(connectionDetails = NULL,
+                          snakeCaseToCamelCase = TRUE,
+                          loadConnection = TRUE,
+                          dbConnectArgs = NULL,
+                          forceJdbcConnection = FALSE) {
+      checkmate::assertList(dbConnectArgs, null.ok = TRUE)
+      checkmate::assertClass(connectionDetails, "ConnectionDetails", null.ok = TRUE)
+
+      if (is.null(connectionDetails) && is.null(dbConnectArgs)) {
+        stop("Must either specify usage of poolArgs or DatabaseConnector connection details object")
+      }
+
+      if (is.null(dbConnectArgs)) {
+        if (!forceJdbcConnection && connectionDetails$dbms %in% names(.DBCToDBIArgs)) {
+          fun <- .DBCToDBIArgs[[connectionDetails$dbms]]
+        } else {
+          fun <- .DBCToDBIArgs$jdbc
+        }
+        dbConnectArgs <- fun(connectionDetails)
+      }
+
+      private$dbConnectArgs <- dbConnectArgs
+      self$connectionDetails <- connectionDetails
+      self$snakeCaseToCamelCase <- snakeCaseToCamelCase
+      if (loadConnection) {
+        self$initConnection()
+      }
     },
     #' initialize pooled db connection
     #' @description
@@ -42,15 +126,9 @@ PooledConnectionHandler <- R6::R6Class(
         warning("Closing existing connection")
         self$closeConnection()
       }
+      ParallelLogger::logInfo("Initalizing pooled connection")
+      self$con <- do.call(pool::dbPool, private$dbConnectArgs)
 
-      self$con <- pool::dbPool(
-        drv = DatabaseConnector::DatabaseConnectorDriver(),
-        dbms = self$connectionDetails$dbms,
-        server = self$connectionDetails$server(),
-        port = self$connectionDetails$port(),
-        user = self$connectionDetails$user(),
-        password = self$connectionDetails$password()
-      )
       self$isActive <- TRUE
     },
 

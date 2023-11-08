@@ -40,13 +40,15 @@ Useful for long running applications that serve multiple concurrent requests.
 \if{latex}{\out{\hypertarget{method-PooledConnectionHandler-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$new(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$new(..., poolArgs = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Elisis @seealso\link{ConnectionHandler}
+\item{\code{...}}{Elisis @seealso\link{ConnectionHandler}}
+
+\item{\code{poolArgs}}{Optional arguments to call pool::dbPool overrides default usage of connectionDetails
 initialize pooled db connection}
 }
 \if{html}{\out{</div>}}

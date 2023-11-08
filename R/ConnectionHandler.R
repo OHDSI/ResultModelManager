@@ -32,6 +32,9 @@
 #' @export ConnectionHandler
 ConnectionHandler <- R6::R6Class(
   classname = "ConnectionHandler",
+  private = list(
+    .dbms = ""
+  ),
   public = list(
     connectionDetails = NULL,
     con = NULL,
@@ -48,12 +51,13 @@ ConnectionHandler <- R6::R6Class(
       if (loadConnection) {
         self$initConnection()
       }
+      private$.dbms <- connectionDetails$dbms
     },
 
     #' get dbms
     #' @description Get the dbms type of the connection
     dbms = function() {
-      DatabaseConnector::dbms(self$getConnection())
+      private$.dbms
     },
 
     #' get table
@@ -76,14 +80,14 @@ ConnectionHandler <- R6::R6Class(
     #' @param ...                     Elipsis
     renderTranslateSql = function(sql, ...) {
       mustTranslate <- TRUE
-      if (isTRUE(attr(sql, "sqlDialect", TRUE) == gsub(" ", "_", self$connectionDetails$dbms))) {
+      if (isTRUE(attr(sql, "sqlDialect", TRUE) == gsub(" ", "_", self$dbms()))) {
         mustTranslate <- FALSE
       }
 
       sql <- SqlRender::render(sql = sql, ...)
       # Only translate if translate is needed.
       if (mustTranslate) {
-        sql <- SqlRender::translate(sql, targetDialect = self$connectionDetails$dbms)
+        sql <- SqlRender::translate(sql, targetDialect = self$dbms())
       }
       return(sql)
     },
@@ -179,7 +183,7 @@ ConnectionHandler <- R6::R6Class(
           data <- self$queryFunction(sql, snakeCaseToCamelCase = snakeCaseToCamelCase)
         },
         error = function(error) {
-          if (self$connectionDetails$dbms %in% c("postgresql", "redshift")) {
+          if (self$dbms() %in% c("postgresql", "redshift")) {
             DatabaseConnector::dbExecute(self$getConnection(), "ABORT;")
           }
           print(sql)
@@ -202,7 +206,7 @@ ConnectionHandler <- R6::R6Class(
           data <- self$executeFunction(sql)
         },
         error = function(error) {
-          if (self$connectionDetails$dbms %in% c("postgresql", "redshift")) {
+          if (self$dbms() %in% c("postgresql", "redshift")) {
             self$executeFunction("ABORT;")
           }
           print(sql)

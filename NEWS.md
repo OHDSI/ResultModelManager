@@ -1,3 +1,15 @@
+# ResultModelManager 0.5.2
+
+Changes:
+
+1. Allow `PooledConnectionHandler` classes to use DBI connections to bypass use of JDBC on systems where it may not be
+supported.
+
+Bug Fixes:
+
+1. Fixed issue in platform specific migrations where SqlRender sometimes fails to add attribute when calling 
+`loadRenderTranslateSql`
+
 # ResultModelManager 0.5.1
 
 Bug fixes:
