@@ -1,3 +1,10 @@
+# ResultModelManager 0.5.2
+
+Changes:
+
+1. Allow `PooledConnectionHandler` classes to use DBI connections to bypass use of JDBC on systems where it may not be
+supported.
+
 # ResultModelManager 0.5.1
 
 Bug fixes:
