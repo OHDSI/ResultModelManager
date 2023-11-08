@@ -30,7 +30,7 @@ Suggests:
   testthat (>= 3.0.0),
   RSQLite,
   duckdb,
-  RPostgresql,
+  RPostgreSQL,
   withr,
   knitr,
   rmarkdown,
