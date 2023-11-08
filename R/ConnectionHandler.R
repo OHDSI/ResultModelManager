@@ -32,6 +32,9 @@
 #' @export ConnectionHandler
 ConnectionHandler <- R6::R6Class(
   classname = "ConnectionHandler",
+  private = list(
+    .dbms = ""
+  ),
   public = list(
     connectionDetails = NULL,
     con = NULL,
@@ -48,12 +51,13 @@ ConnectionHandler <- R6::R6Class(
       if (loadConnection) {
         self$initConnection()
       }
+      private$.dbms <- connectionDetails$dbms
     },
 
     #' get dbms
     #' @description Get the dbms type of the connection
     dbms = function() {
-      DatabaseConnector::dbms(self$getConnection())
+      private$.dbms
     },
 
     #' get table
