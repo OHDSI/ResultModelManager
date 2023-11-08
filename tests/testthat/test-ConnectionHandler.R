@@ -1,7 +1,5 @@
 # Implementations of database connection should function in the same way
 genericTests <- function(connClass, classes, connectionClass) {
-
-  browser(expr = connectionClass == "Pool")
   testConnection <- DatabaseConnector::connect(connectionDetails)
   sql <- "
   DROP TABLE IF EXISTS main.concept;
@@ -62,7 +60,11 @@ genericTests <- function(connClass, classes, connectionClass) {
   expect_error(conn$queryDb("SELECT 1 * WHERE;"))
 
   expect_equal(DatabaseConnector::dbms(testConnection), conn$dbms())
-  conceptTbl <- conn$tbl("concept", databaseSchema = "main")
+
+  databaseSchema <- NULL
+  if (connectionClass != "Pool")
+    databaseSchema <- "main"
+  conceptTbl <- conn$tbl("concept", databaseSchema = databaseSchema)
 
   expect_class(conceptTbl, c("tbl", "tbl_lazy"))
 
