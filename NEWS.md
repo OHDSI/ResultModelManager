@@ -1,3 +1,15 @@
+# ResultModelManager 0.5.3
+
+Changes:
+
+1. Tests for PooledConnection classes
+
+Bug Fixes:
+
+1. Use of RPostgres updated.
+
+2. Use of dbplyr::in_schema for using dplyr::tbl in ConnectionHandlers
+
 # ResultModelManager 0.5.2
 
 Changes:

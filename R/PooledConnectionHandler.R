@@ -37,7 +37,7 @@ requiredPackage <- function(packageName) {
     host <- strsplit(cd$server(), "/")[[1]][1]
     dbname <- strsplit(cd$server(), "/")[[1]][2]
     list(
-      drv = RPostgres::PostgreSQL(),
+      drv = RPostgres::Postgres(),
       dbname = dbname,
       host = host,
       user = cd$user(),
@@ -57,12 +57,12 @@ requiredPackage <- function(packageName) {
     ParallelLogger::logInfo("Reverting to use of DatabaseConnector jdbc driver. May fail on some systems")
     list(
       drv = DatabaseConnector::DatabaseConnectorDriver(),
-      dbms = cd$connectionDetails$dbms,
-      server = cd$connectionDetails$server(),
-      port = cd$connectionDetails$port(),
-      user = cd$connectionDetails$user(),
-      password = cd$connectionDetails$password(),
-      connectionString = cd$connectionDetails$connectionString()
+      dbms = cd$dbms,
+      server = cd$server(),
+      port = cd$port(),
+      user = cd$user(),
+      password = cd$password(),
+      connectionString = cd$connectionString()
     )
   }
 )
