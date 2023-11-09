@@ -1,6 +1,6 @@
 test_that("internal connection handlers", {
   cd <- DatabaseConnector::createConnectionDetails(dbms = "sqlite", server = ":memory:")
-  args <-.DBCToDBIArgs$jdbc(cd)
+  args <- .DBCToDBIArgs$jdbc(cd)
   expect_list(args)
   conn <- do.call(pool::dbPool, args)
   expect_class(conn, "Pool")
@@ -25,4 +25,3 @@ test_that("internal connection handlers", {
     expect_list(args)
   }
 })
-
