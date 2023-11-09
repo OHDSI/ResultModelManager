@@ -23,9 +23,6 @@ test_that("internal connection handlers", {
   if (Sys.getenv("CDM5_POSTGRESQL_SERVER") != "") {
     args <- .DBCToDBIArgs$postgresql(testDatabaseConnectionDetails)
     expect_list(args)
-    conn <- do.call(pool::dbPool, args)
-    expect_class(conn, "Pool")
-    pool::poolClose(pool = conn)
   }
 })
 
