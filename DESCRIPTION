@@ -23,6 +23,7 @@ Imports:
   readr,
   zip,
   dplyr,
+  dbplyr,
   rlang,
   lubridate,
   fastmap

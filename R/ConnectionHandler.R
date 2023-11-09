@@ -68,7 +68,7 @@ ConnectionHandler <- R6::R6Class(
       checkmate::assertString(table)
       checkmate::assertString(databaseSchema, null.ok = TRUE)
       if (!is.null(databaseSchema)) {
-        table <- paste0(databaseSchema, ".", table)
+        table <- dbplyr::in_schema(databaseSchema, table)
       }
 
       dplyr::tbl(self$getConnection(), table)
