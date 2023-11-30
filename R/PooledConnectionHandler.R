@@ -94,7 +94,7 @@ PooledConnectionHandler <- R6::R6Class(
                           snakeCaseToCamelCase = TRUE,
                           loadConnection = TRUE,
                           dbConnectArgs = NULL,
-                          forceJdbcConnection = FALSE) {
+                          forceJdbcConnection = TRUE) {
       checkmate::assertList(dbConnectArgs, null.ok = TRUE)
       checkmate::assertClass(connectionDetails, "ConnectionDetails", null.ok = TRUE)
 
