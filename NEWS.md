@@ -2,6 +2,12 @@
 
 Changes:
 
+1. Use of jdbc connection is default in pooled connection class
+
+# ResultModelManager 0.5.3
+
+Changes:
+
 1. Tests for PooledConnection classes
 
 Bug Fixes:
