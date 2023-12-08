@@ -39,5 +39,6 @@ Suggests:
   devtools,
   pkgdown,
   remotes,
-  styler
+  styler,
+  Andromeda
 Config/testthat/edition: 3
