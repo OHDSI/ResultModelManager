@@ -1,3 +1,10 @@
+# ResultModelManager 0.5.4
+
+Changes:
+1. The "optional" column in the model specification is now fully optional (when not present, all columns are assumed to
+be required)
+
+
 # ResultModelManager 0.5.3
 
 Changes:
