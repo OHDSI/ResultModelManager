@@ -267,3 +267,13 @@ test_that("deleting results rows by database id works", {
     }
   }
 })
+
+test_that("checkAndFixColumnNames works correctly", {
+  df <- data.frame(a = 1:3, b = 4:6, c = 7:9)
+  specs <- data.frame(tableName = "test", columnName = c("a", "b", "c"), optional = c("no", "no", "no"))
+  expect_equal(checkAndFixColumnNames(df, "test", ".", specs), df)
+  df2 <- df[, -1]  # Remove column 'a'
+  expect_error(checkAndFixColumnNames(df2, "test", ".", specs), "Column names of table test in results folder . do not match specifications.")
+  specs$optional[1] <- "yes"  # Make column 'a' optional
+  expect_equal(checkAndFixColumnNames(df2, "test", ".", specs), df2)
+})

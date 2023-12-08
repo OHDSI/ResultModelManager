@@ -37,6 +37,10 @@ checkAndFixColumnNames <-
     tableSpecs <- specifications %>%
       dplyr::filter(.data$tableName == !!tableName)
 
+    # Set all fields to requried if optional isn't specified
+    if (!"optional" %in% colnames(tableSpecs))
+      tableSpecs$otpional <- "no"
+
     optionalNames <- tableSpecs %>%
       dplyr::filter(tolower(.data$optional) == "yes") %>%
       dplyr::select("columnName")
