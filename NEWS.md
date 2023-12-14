@@ -1,3 +1,8 @@
+# ResultModelManager 0.5.5
+
+Bug Fixes:
+1. Removal of comment in  DataMigrationManager sql that caused translation error for spark/databricks platforms
+
 # ResultModelManager 0.5.4
 
 Changes:

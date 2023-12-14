@@ -38,8 +38,9 @@ checkAndFixColumnNames <-
       dplyr::filter(.data$tableName == !!tableName)
 
     # Set all fields to requried if optional isn't specified
-    if (!"optional" %in% colnames(tableSpecs))
+    if (!"optional" %in% colnames(tableSpecs)) {
       tableSpecs$otpional <- "no"
+    }
 
     optionalNames <- tableSpecs %>%
       dplyr::filter(tolower(.data$optional) == "yes") %>%
@@ -48,7 +49,7 @@ checkAndFixColumnNames <-
     expectedNames <- tableSpecs %>%
       dplyr::select("columnName") %>%
       dplyr::anti_join(dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
-                       by = "columnName"
+        by = "columnName"
       ) %>%
       dplyr::arrange("columnName") %>%
       dplyr::pull()
@@ -180,7 +181,7 @@ checkAndFixDuplicateRows <-
            specifications) {
     primaryKeys <- specifications %>%
       dplyr::filter(.data$tableName == !!tableName &
-                      tolower(.data$primaryKey) == "yes") %>%
+        tolower(.data$primaryKey) == "yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
@@ -193,7 +194,7 @@ checkAndFixDuplicateRows <-
           sum(duplicatedRows)
         )
       )
-      return(table[!duplicatedRows,])
+      return(table[!duplicatedRows, ])
     } else {
       return(table)
     }
@@ -219,7 +220,7 @@ appendNewRows <-
     if (nrow(data) > 0) {
       primaryKeys <- specifications %>%
         dplyr::filter(.data$tableName == !!tableName &
-                        tolower(.data$primaryKey) == "yes") %>%
+          tolower(.data$primaryKey) == "yes") %>%
         dplyr::select("columnName") %>%
         dplyr::pull()
       newData <- newData %>%
@@ -249,10 +250,10 @@ formatDouble <- function(x) {
 
 .truncateTable <- function(tableName, connection, schema, tablePrefix) {
   DatabaseConnector::renderTranslateExecuteSql(connection,
-                                               "TRUNCATE TABLE @schema.@table_prefix@table;",
-                                               table_prefix = tablePrefix,
-                                               schema = schema,
-                                               table = tableName
+    "TRUNCATE TABLE @schema.@table_prefix@table;",
+    table_prefix = tablePrefix,
+    schema = schema,
+    table = tableName
   )
   invisible(NULL)
 }
@@ -349,8 +350,8 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
     primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
     duplicates <-
       dplyr::inner_join(env$primaryKeyValuesInDb,
-                        primaryKeyValuesInChunk,
-                        by = env$primaryKey
+        primaryKeyValuesInChunk,
+        by = env$primaryKey
       )
 
     if (nrow(duplicates) != 0) {
@@ -381,7 +382,7 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
       # Remove duplicates we already dealt with:
       env$primaryKeyValuesInDb <-
         env$primaryKeyValuesInDb %>%
-          dplyr::anti_join(duplicates, by = env$primaryKey)
+        dplyr::anti_join(duplicates, by = env$primaryKey)
     }
   }
   if (nrow(chunk) == 0) {
@@ -423,7 +424,7 @@ uploadTable <- function(tableName,
 
     primaryKey <- specifications %>%
       dplyr::filter(.data$tableName == !!tableName &
-                      tolower(.data$primaryKey) == "yes") %>%
+        tolower(.data$primaryKey) == "yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -439,7 +440,7 @@ uploadTable <- function(tableName,
     if (purgeSiteDataBeforeUploading && "database_id" %in% primaryKey) {
       type <- specifications %>%
         dplyr::filter(.data$tableName == !!tableName &
-                        .data$columnName == "database_id") %>%
+          .data$columnName == "database_id") %>%
         dplyr::select("dataType") %>%
         dplyr::pull()
       # Remove the existing data for the databaseId
@@ -567,10 +568,10 @@ uploadResults <- function(connection = NULL,
     ParallelLogger::logInfo("Removing all records for tables within specification")
 
     invisible(lapply(unique(specifications$tableName),
-                     .truncateTable,
-                     connection = connection,
-                     schema = schema,
-                     tablePrefix = tablePrefix
+      .truncateTable,
+      connection = connection,
+      schema = schema,
+      tablePrefix = tablePrefix
     ))
   }
 
@@ -601,17 +602,19 @@ uploadResults <- function(connection = NULL,
   }
 
   for (tableName in unique(specifications$tableName)) {
-    uploadTable(tableName,
-                connection,
-                schema,
-                tablePrefix,
-                databaseId,
-                resultsFolder,
-                specifications,
-                runCheckAndFixCommands,
-                forceOverWriteOfSpecifications,
-                purgeSiteDataBeforeUploading,
-                warnOnMissingTable)
+    uploadTable(
+      tableName,
+      connection,
+      schema,
+      tablePrefix,
+      databaseId,
+      resultsFolder,
+      specifications,
+      runCheckAndFixCommands,
+      forceOverWriteOfSpecifications,
+      purgeSiteDataBeforeUploading,
+      warnOnMissingTable
+    )
   }
 
   delta <- Sys.time() - start
@@ -632,7 +635,6 @@ uploadResults <- function(connection = NULL,
 #' @export
 deleteAllRowsForPrimaryKey <-
   function(connection, schema, tableName, keyValues) {
-
     createSqlStatement <- function(i) {
       sql <- paste0(
         "DELETE FROM ",
@@ -641,7 +643,7 @@ deleteAllRowsForPrimaryKey <-
         tableName,
         "\nWHERE ",
         paste(paste0(
-          colnames(keyValues), " = '", keyValues[i,], "'"
+          colnames(keyValues), " = '", keyValues[i, ], "'"
         ), collapse = " AND "),
         ";"
       )
@@ -716,9 +718,9 @@ deleteAllRowsForDatabaseId <-
         database_id = databaseId
       )
       DatabaseConnector::executeSql(connection,
-                                    sql,
-                                    progressBar = FALSE,
-                                    reportOverallTime = FALSE
+        sql,
+        progressBar = FALSE,
+        reportOverallTime = FALSE
       )
     }
   }
