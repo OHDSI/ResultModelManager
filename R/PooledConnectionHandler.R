@@ -54,7 +54,7 @@ requiredPackage <- function(packageName) {
     )
   },
   "jdbc" = function(cd) {
-    ParallelLogger::logInfo("Reverting to use of DatabaseConnector jdbc driver. May fail on some systems")
+    ParallelLogger::logInfo("Using DatabaseConnector jdbc driver.")
     list(
       drv = DatabaseConnector::DatabaseConnectorDriver(),
       dbms = cd$dbms,

@@ -1,20 +1,15 @@
-# ResultModelManager 0.5.5
+# ResultModelManager 0.5.4
 
 Bug Fixes:
 1. Removal of comment in  DataMigrationManager sql that caused translation error for spark/databricks platforms
 
-# ResultModelManager 0.5.4
-
-Changes:
-1. The "optional" column in the model specification is now fully optional (when not present, all columns are assumed to
-be required)
-
-
-# ResultModelManager 0.5.3
-
 Changes:
 
 1. Use of jdbc connection is default in pooled connection class
+
+2. The "optional" column in the model specification is now fully optional (when not present, all columns are assumed to
+be required)
+
 
 # ResultModelManager 0.5.3
 
