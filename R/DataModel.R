@@ -37,6 +37,11 @@ checkAndFixColumnNames <-
     tableSpecs <- specifications %>%
       dplyr::filter(.data$tableName == !!tableName)
 
+    # Set all fields to requried if optional isn't specified
+    if (!"optional" %in% colnames(tableSpecs)) {
+      tableSpecs$otpional <- "no"
+    }
+
     optionalNames <- tableSpecs %>%
       dplyr::filter(tolower(.data$optional) == "yes") %>%
       dplyr::select("columnName")
@@ -268,6 +273,220 @@ formatDouble <- function(x) {
 }
 
 
+uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connection, runCheckAndFixCommands, forceOverWriteOfSpecifications) {
+  ParallelLogger::logInfo(
+    "- Preparing to upload rows ",
+    pos,
+    " through ",
+    pos + nrow(chunk) - 1
+  )
+
+  # Ensure all column names are in lowercase
+  colnames(chunk) <- tolower(colnames(chunk))
+
+  if (runCheckAndFixCommands) {
+    chunk <- checkAndFixColumnNames(
+      table = chunk,
+      tableName = env$specTableName,
+      resultsFolder = resultsFolder,
+      specifications = specifications
+    )
+    chunk <- checkAndFixDataTypes(
+      table = chunk,
+      tableName = env$specTableName,
+      resultsFolder = resultsFolder,
+      specifications = specifications
+    )
+
+    chunk <- checkAndFixDuplicateRows(
+      table = chunk,
+      tableName = env$specTableName,
+      resultsFolder = resultsFolder,
+      specifications = specifications
+    )
+  }
+
+  # Ensure dates are formatted properly
+  toDate <- specifications %>%
+    dplyr::filter(
+      tableName == env$tableName &
+        tolower(.data$dataType) == "date"
+    ) %>%
+    dplyr::select("columnName") %>%
+    dplyr::pull()
+
+  if (length(toDate) > 0) {
+    chunk <- chunk %>%
+      dplyr::mutate_at(toDate, lubridate::as_date)
+  }
+
+  toTimestamp <- specifications %>%
+    dplyr::filter(
+      tableName == env$tableName &
+        grepl("timestamp", tolower(.data$dataType))
+    ) %>%
+    dplyr::select("columnName") %>%
+    dplyr::pull()
+  if (length(toTimestamp) > 0) {
+    chunk <- chunk %>%
+      dplyr::mutate_at(toTimestamp, lubridate::as_datetime)
+  }
+
+  toDouble <- specifications %>%
+    dplyr::filter(
+      .data$tableName == env$tableName &
+        tolower(.data$dataType) %in% c("decimal", "numeric", "float")
+    ) %>%
+    dplyr::select("columnName") %>%
+    dplyr::pull()
+  if (length(toDouble) > 0) {
+    chunk <- chunk %>%
+      dplyr::mutate_at(toDouble, formatDouble)
+  }
+
+
+  # Check if inserting data would violate primary key constraints:
+  if (!is.null(env$primaryKeyValuesInDb)) {
+    primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
+    duplicates <-
+      dplyr::inner_join(env$primaryKeyValuesInDb,
+        primaryKeyValuesInChunk,
+        by = env$primaryKey
+      )
+
+    if (nrow(duplicates) != 0) {
+      if ("database_id" %in% env$primaryKey ||
+        forceOverWriteOfSpecifications) {
+        ParallelLogger::logInfo(
+          "- Found ",
+          nrow(duplicates),
+          " rows in database with the same primary key ",
+          "as the data to insert. Deleting from database before inserting."
+        )
+        deleteAllRowsForPrimaryKey(
+          connection = connection,
+          schema = env$schema,
+          tableName = env$tableName,
+          keyValues = duplicates
+        )
+      } else {
+        ParallelLogger::logInfo(
+          "- Found ",
+          nrow(duplicates),
+          " rows in database with the same primary key ",
+          "as the data to insert. Removing from data to insert."
+        )
+        chunk <- chunk %>%
+          dplyr::anti_join(duplicates, by = env$primaryKey)
+      }
+      # Remove duplicates we already dealt with:
+      env$primaryKeyValuesInDb <-
+        env$primaryKeyValuesInDb %>%
+        dplyr::anti_join(duplicates, by = env$primaryKey)
+    }
+  }
+  if (nrow(chunk) == 0) {
+    ParallelLogger::logInfo("- No data left to insert")
+  } else {
+    insertTableStatus <- tryCatch(expr = {
+      DatabaseConnector::insertTable(
+        connection = connection,
+        tableName = env$tableName,
+        databaseSchema = env$schema,
+        data = chunk,
+        dropTableIfExists = FALSE,
+        createTable = FALSE,
+        tempTable = FALSE,
+        progressBar = TRUE
+      )
+    }, error = function(e) e)
+    if (inherits(insertTableStatus, "error")) {
+      stop(insertTableStatus$message)
+    }
+  }
+}
+
+
+uploadTable <- function(tableName,
+                        connection,
+                        schema,
+                        tablePrefix,
+                        databaseId,
+                        resultsFolder,
+                        specifications,
+                        runCheckAndFixCommands,
+                        forceOverWriteOfSpecifications,
+                        purgeSiteDataBeforeUploading,
+                        warnOnMissingTable) {
+  csvFileName <- paste0(tableName, ".csv")
+  if (csvFileName %in% list.files(resultsFolder)) {
+    rlang::inform(paste0("Uploading file: ", csvFileName, " to table: ", tableName))
+
+    primaryKey <- specifications %>%
+      dplyr::filter(.data$tableName == !!tableName &
+        tolower(.data$primaryKey) == "yes") %>%
+      dplyr::select("columnName") %>%
+      dplyr::pull()
+
+    # Create an environment variable to hold
+    # the information about the target table for
+    # uploading the data
+    env <- new.env()
+    env$schema <- schema
+    env$tableName <- paste0(tablePrefix, tableName)
+    env$specTableName <- tableName
+    env$primaryKey <- primaryKey
+    env$purgeSiteDataBeforeUploading <- purgeSiteDataBeforeUploading
+    if (purgeSiteDataBeforeUploading && "database_id" %in% primaryKey) {
+      type <- specifications %>%
+        dplyr::filter(.data$tableName == !!tableName &
+          .data$columnName == "database_id") %>%
+        dplyr::select("dataType") %>%
+        dplyr::pull()
+      # Remove the existing data for the databaseId
+      deleteAllRowsForDatabaseId(
+        connection = connection,
+        schema = schema,
+        tableName = paste0(tablePrefix, tableName),
+        databaseId = databaseId,
+        idIsInt = type %in% c("int", "bigint")
+      )
+
+      # Set primaryKeyValuesInDb to NULL
+      # to indicate that the primary key
+      # value need not be checked since we've
+      # purged the database data ahead of loading
+      # results from the file
+      env$primaryKeyValuesInDb <- NULL
+    } else if (length(primaryKey) > 0) {
+      sql <- "SELECT DISTINCT @primary_key FROM @schema.@table_name;"
+      sql <- SqlRender::render(
+        sql = sql,
+        primary_key = primaryKey,
+        schema = schema,
+        table_name = env$tableName
+      )
+      primaryKeyValuesInDb <-
+        DatabaseConnector::querySql(connection, sql)
+      colnames(primaryKeyValuesInDb) <-
+        tolower(colnames(primaryKeyValuesInDb))
+      env$primaryKeyValuesInDb <- primaryKeyValuesInDb
+    }
+
+
+    readr::read_csv_chunked(
+      file = file.path(resultsFolder, csvFileName),
+      callback = function(chunk, pos) uploadChunk(chunk, pos, env, specifications, resultsFolder, connection, runCheckAndFixCommands, forceOverWriteOfSpecifications),
+      chunk_size = 1e7,
+      col_types = readr::cols(),
+      guess_max = 1e6,
+      progress = FALSE
+    )
+  } else if (warnOnMissingTable) {
+    warning(paste(csvFileName, "not found"))
+  }
+}
+
 #' Upload results to the database server.
 #'
 #' @description
@@ -382,210 +601,22 @@ uploadResults <- function(connection = NULL,
     }
   }
 
-  uploadTable <- function(tableName) {
-    csvFileName <- paste0(tableName, ".csv")
-    if (csvFileName %in% list.files(resultsFolder)) {
-      rlang::inform(paste0("Uploading file: ", csvFileName, " to table: ", tableName))
-
-      primaryKey <- specifications %>%
-        dplyr::filter(.data$tableName == !!tableName &
-          tolower(.data$primaryKey) == "yes") %>%
-        dplyr::select("columnName") %>%
-        dplyr::pull()
-
-      # Create an environment variable to hold
-      # the information about the target table for
-      # uploading the data
-      env <- new.env()
-      env$schema <- schema
-      env$tableName <- paste0(tablePrefix, tableName)
-      env$specTableName <- tableName
-      env$primaryKey <- primaryKey
-      env$purgeSiteDataBeforeUploading <- purgeSiteDataBeforeUploading
-      if (purgeSiteDataBeforeUploading && "database_id" %in% primaryKey) {
-        type <- specifications %>%
-          dplyr::filter(.data$tableName == !!tableName &
-            .data$columnName == "database_id") %>%
-          dplyr::select("dataType") %>%
-          dplyr::pull()
-        # Remove the existing data for the databaseId
-        deleteAllRowsForDatabaseId(
-          connection = connection,
-          schema = schema,
-          tableName = paste0(tablePrefix, tableName),
-          databaseId = databaseId,
-          idIsInt = type %in% c("int", "bigint")
-        )
-
-        # Set primaryKeyValuesInDb to NULL
-        # to indicate that the primary key
-        # value need not be checked since we've
-        # purged the database data ahead of loading
-        # results from the file
-        env$primaryKeyValuesInDb <- NULL
-      } else if (length(primaryKey) > 0) {
-        sql <- "SELECT DISTINCT @primary_key FROM @schema.@table_name;"
-        sql <- SqlRender::render(
-          sql = sql,
-          primary_key = primaryKey,
-          schema = schema,
-          table_name = env$tableName
-        )
-        primaryKeyValuesInDb <-
-          DatabaseConnector::querySql(connection, sql)
-        colnames(primaryKeyValuesInDb) <-
-          tolower(colnames(primaryKeyValuesInDb))
-        env$primaryKeyValuesInDb <- primaryKeyValuesInDb
-      }
-
-
-      uploadChunk <- function(chunk, pos) {
-        ParallelLogger::logInfo(
-          "- Preparing to upload rows ",
-          pos,
-          " through ",
-          pos + nrow(chunk) - 1
-        )
-
-        # Ensure all column names are in lowercase
-        colnames(chunk) <- tolower(colnames(chunk))
-
-        if (runCheckAndFixCommands) {
-          chunk <- checkAndFixColumnNames(
-            table = chunk,
-            tableName = env$specTableName,
-            resultsFolder = resultsFolder,
-            specifications = specifications
-          )
-          chunk <- checkAndFixDataTypes(
-            table = chunk,
-            tableName = env$specTableName,
-            resultsFolder = resultsFolder,
-            specifications = specifications
-          )
-
-          chunk <- checkAndFixDuplicateRows(
-            table = chunk,
-            tableName = env$specTableName,
-            resultsFolder = resultsFolder,
-            specifications = specifications
-          )
-        }
-
-        # Ensure dates are formatted properly
-        toDate <- specifications %>%
-          dplyr::filter(
-            tableName == env$tableName &
-              tolower(.data$dataType) == "date"
-          ) %>%
-          dplyr::select("columnName") %>%
-          dplyr::pull()
-
-        if (length(toDate) > 0) {
-          chunk <- chunk %>%
-            dplyr::mutate_at(toDate, lubridate::as_date)
-        }
-
-        toTimestamp <- specifications %>%
-          dplyr::filter(
-            tableName == env$tableName &
-              grepl("timestamp", tolower(.data$dataType))
-          ) %>%
-          dplyr::select("columnName") %>%
-          dplyr::pull()
-        if (length(toTimestamp) > 0) {
-          chunk <- chunk %>%
-            dplyr::mutate_at(toTimestamp, lubridate::as_datetime)
-        }
-
-        toDouble <- specifications %>%
-          dplyr::filter(
-            .data$tableName == env$tableName &
-              tolower(.data$dataType) %in% c("decimal", "numeric", "float")
-          ) %>%
-          dplyr::select("columnName") %>%
-          dplyr::pull()
-        if (length(toDouble) > 0) {
-          chunk <- chunk %>%
-            dplyr::mutate_at(toDouble, formatDouble)
-        }
-
-
-        # Check if inserting data would violate primary key constraints:
-        if (!is.null(env$primaryKeyValuesInDb)) {
-          primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
-          duplicates <-
-            dplyr::inner_join(env$primaryKeyValuesInDb,
-              primaryKeyValuesInChunk,
-              by = env$primaryKey
-            )
-
-          if (nrow(duplicates) != 0) {
-            if ("database_id" %in% env$primaryKey ||
-              forceOverWriteOfSpecifications) {
-              ParallelLogger::logInfo(
-                "- Found ",
-                nrow(duplicates),
-                " rows in database with the same primary key ",
-                "as the data to insert. Deleting from database before inserting."
-              )
-              deleteAllRowsForPrimaryKey(
-                connection = connection,
-                schema = env$schema,
-                tableName = env$tableName,
-                keyValues = duplicates
-              )
-            } else {
-              ParallelLogger::logInfo(
-                "- Found ",
-                nrow(duplicates),
-                " rows in database with the same primary key ",
-                "as the data to insert. Removing from data to insert."
-              )
-              chunk <- chunk %>%
-                dplyr::anti_join(duplicates, by = env$primaryKey)
-            }
-            # Remove duplicates we already dealt with:
-            env$primaryKeyValuesInDb <-
-              env$primaryKeyValuesInDb %>%
-              dplyr::anti_join(duplicates, by = env$primaryKey)
-          }
-        }
-        if (nrow(chunk) == 0) {
-          ParallelLogger::logInfo("- No data left to insert")
-        } else {
-          insertTableStatus <- tryCatch(expr = {
-            DatabaseConnector::insertTable(
-              connection = connection,
-              tableName = env$tableName,
-              databaseSchema = env$schema,
-              data = chunk,
-              dropTableIfExists = FALSE,
-              createTable = FALSE,
-              tempTable = FALSE,
-              progressBar = TRUE
-            )
-          }, error = function(e) e)
-          if (inherits(insertTableStatus, "error")) {
-            stop(insertTableStatus$message)
-          }
-        }
-      }
-
-      readr::read_csv_chunked(
-        file = file.path(resultsFolder, csvFileName),
-        callback = uploadChunk,
-        chunk_size = 1e7,
-        col_types = readr::cols(),
-        guess_max = 1e6,
-        progress = FALSE
-      )
-    } else if (warnOnMissingTable) {
-      warning(paste(csvFileName, "not found"))
-    }
+  for (tableName in unique(specifications$tableName)) {
+    uploadTable(
+      tableName,
+      connection,
+      schema,
+      tablePrefix,
+      databaseId,
+      resultsFolder,
+      specifications,
+      runCheckAndFixCommands,
+      forceOverWriteOfSpecifications,
+      purgeSiteDataBeforeUploading,
+      warnOnMissingTable
+    )
   }
 
-  invisible(lapply(unique(specifications$tableName), uploadTable))
   delta <- Sys.time() - start
   writeLines(paste("Uploading data took", signif(delta, 3), attr(delta, "units")))
 }

@@ -1,4 +1,13 @@
-# ResultModelManager 0.5.3
+# ResultModelManager 0.5.5
+
+Bug Fixes:
+1. Removal of comment in  DataMigrationManager sql that caused translation error for spark/databricks platforms
+
+2. The "optional" column in the model specification is now fully optional (when not present, all columns are assumed to
+be required)
+
+
+# ResultModelManager 0.5.4
 
 Changes:
 

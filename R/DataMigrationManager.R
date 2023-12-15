@@ -308,7 +308,7 @@ DataMigrationManager <- R6::R6Class(
       sql <- "
       --HINT DISTRIBUTE ON RANDOM
       CREATE TABLE @database_schema.@table_prefix@migration (
-          migration_file VARCHAR PRIMARY KEY, --string value represents file name
+          migration_file VARCHAR PRIMARY KEY,
           migration_order INT NOT NULL unique
       );"
 
