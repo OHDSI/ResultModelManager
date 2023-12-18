@@ -1,3 +1,11 @@
+
+# ResultModelManager 0.5.6
+
+Changes:
+
+1. For PooledConnectionHandler, added check to see if java stack size is set on unix systems before connecting
+stop overflow errors on rconnect  platforms. Note that this solution will fail if RJava is called before the connection
+
 # ResultModelManager 0.5.5
 
 Bug Fixes:
