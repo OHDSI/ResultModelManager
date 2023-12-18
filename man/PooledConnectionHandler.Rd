@@ -40,15 +40,27 @@ Useful for long running applications that serve multiple concurrent requests.
 \if{latex}{\out{\hypertarget{method-PooledConnectionHandler-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$new(..., poolArgs = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$new(
+  connectionDetails = NULL,
+  snakeCaseToCamelCase = TRUE,
+  loadConnection = TRUE,
+  dbConnectArgs = NULL,
+  forceJdbcConnection = TRUE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{...}}{Elisis @seealso\link{ConnectionHandler}}
+\item{\code{connectionDetails}}{DatabaseConnector::connectionDetails class}
 
-\item{\code{poolArgs}}{Optional arguments to call pool::dbPool overrides default usage of connectionDetails
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+
+\item{\code{loadConnection}}{Boolean option to load connection right away}
+
+\item{\code{dbConnectArgs}}{Optional arguments to call pool::dbPool overrides default usage of connectionDetails}
+
+\item{\code{forceJdbcConnection}}{Force JDBC connection (requires using DatabaseConnector ConnectionDetails)
 initialize pooled db connection}
 }
 \if{html}{\out{</div>}}
