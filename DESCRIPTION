@@ -1,9 +1,8 @@
 Package: ResultModelManager
 Title: Result Model Manager (RMM) for OHDSI packages
 Version: 0.5.6
-Authors@R: c(
+Authors@R:
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
-)
 Description: Database data model management utilities for OHDSI packages.
 License: Apache License (== 2.0)
 Encoding: UTF-8
