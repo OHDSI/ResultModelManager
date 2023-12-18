@@ -55,6 +55,12 @@ requiredPackage <- function(packageName) {
   },
   "jdbc" = function(cd) {
     ParallelLogger::logInfo("Using DatabaseConnector jdbc driver.")
+    # Set java stack size on linux to workaround overflow problem
+    if (is.null(getOption("java.parameters")) & .Platform$OS.type == "linux") {
+      ParallelLogger::logInfo("Unix system detected and no java.parameters option set. Fixing stack with -Xss5m")
+      options(java.parameters = "-Xss5m")
+    }
+
     list(
       drv = DatabaseConnector::DatabaseConnectorDriver(),
       dbms = cd$dbms,
