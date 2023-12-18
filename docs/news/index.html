@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.6</span>
       </span>
     </div>
 
@@ -72,6 +72,11 @@
       
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.5.6" id="resultmodelmanager-056">ResultModelManager 0.5.6<a class="anchor" aria-label="anchor" href="#resultmodelmanager-056"></a></h2>
+<p>Changes:</p>
+<ol style="list-style-type: decimal"><li>For PooledConnectionHandler, added check to see if java stack size is set on unix systems before connecting stop overflow errors on rconnect platforms. Note that this solution will fail if RJava is called before the connection</li>
+</ol></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.5" id="resultmodelmanager-055">ResultModelManager 0.5.5<a class="anchor" aria-label="anchor" href="#resultmodelmanager-055"></a></h2>
 <p>Bug Fixes: 1. Removal of comment in DataMigrationManager sql that caused translation error for spark/databricks platforms</p>
