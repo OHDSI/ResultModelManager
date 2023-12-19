@@ -309,7 +309,7 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
   # Ensure dates are formatted properly
   toDate <- specifications %>%
     dplyr::filter(
-      tableName == env$tableName &
+      .data$tableName == env$tableName &
         tolower(.data$dataType) == "date"
     ) %>%
     dplyr::select("columnName") %>%
@@ -322,7 +322,7 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
 
   toTimestamp <- specifications %>%
     dplyr::filter(
-      tableName == env$tableName &
+      .data$tableName == env$tableName &
         grepl("timestamp", tolower(.data$dataType))
     ) %>%
     dplyr::select("columnName") %>%

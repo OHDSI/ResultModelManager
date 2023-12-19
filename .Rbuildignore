@@ -33,3 +33,5 @@ compare_versions
 ^doc$
 ^Meta$
 LICENSE
+.git
+..Rcheck

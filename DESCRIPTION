@@ -1,5 +1,5 @@
 Package: ResultModelManager
-Title: Result Model Manager (RMM) for OHDSI packages
+Title: Result Model Manager
 Version: 0.5.6
 Authors@R:
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
