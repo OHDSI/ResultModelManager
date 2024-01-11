@@ -4,7 +4,7 @@
 \name{ResultModelManager-package}
 \alias{ResultModelManager}
 \alias{ResultModelManager-package}
-\title{ResultModelManager: Result Model Manager (RMM) for OHDSI packages}
+\title{ResultModelManager: Result Model Manager}
 \description{
 Database data model management utilities for OHDSI packages.
 }

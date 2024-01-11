@@ -1,3 +1,50 @@
+
+# ResultModelManager 0.5.6
+
+Changes:
+
+1. For PooledConnectionHandler, added check to see if java stack size is set on unix systems before connecting
+stop overflow errors on rconnect  platforms. Note that this solution will fail if RJava is called before the connection
+
+# ResultModelManager 0.5.5
+
+Bug Fixes:
+1. Removal of comment in  DataMigrationManager sql that caused translation error for spark/databricks platforms
+
+2. The "optional" column in the model specification is now fully optional (when not present, all columns are assumed to
+be required)
+
+
+# ResultModelManager 0.5.4
+
+Changes:
+
+1. Use of jdbc connection is default in pooled connection class
+
+# ResultModelManager 0.5.3
+
+Changes:
+
+1. Tests for PooledConnection classes
+
+Bug Fixes:
+
+1. Use of RPostgres updated.
+
+2. Use of dbplyr::in_schema for using dplyr::tbl in ConnectionHandlers
+
+# ResultModelManager 0.5.2
+
+Changes:
+
+1. Allow `PooledConnectionHandler` classes to use DBI connections to bypass use of JDBC on systems where it may not be
+supported.
+
+Bug Fixes:
+
+1. Fixed issue in platform specific migrations where SqlRender sometimes fails to add attribute when calling 
+`loadRenderTranslateSql`
+
 # ResultModelManager 0.5.1
 
 Bug fixes:

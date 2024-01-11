@@ -1,9 +1,9 @@
 ResultModelManager
 ==================
 [![Build Status](https://github.com/OHDSI/ResultModelManager/workflows/R-CMD-check/badge.svg)](https://github.com/OHDSI/ResultModelManager/actions?query=workflow%3AR-CMD-check)
-[![codecov.io](https://codecov.io/github/OHDSI/ResultModelManager/coverage.svg?branch=main)](https://codecov.io/github/OHDSI/ResultModelManager?branch=main)
+[![codecov.io](https://app.codecov.io/github/OHDSI/ResultModelManager/coverage.svg?branch=main)](https://codecov.io/github/OHDSI/ResultModelManager?branch=main)
 
-ResultModelManager (RMM) [HADES](https://ohdsi.github.io/Hades).
+ResultModelManager (RMM) [HADES](https://ohdsi.github.io/Hades/).
 
 Introduction
 ============

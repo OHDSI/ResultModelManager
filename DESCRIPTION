@@ -1,11 +1,10 @@
 Package: ResultModelManager
-Title: Result Model Manager (RMM) for OHDSI packages
-Version: 0.5.1
+Title: Result Model Manager
+Version: 0.5.6
 Authors@R:
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
 Description: Database data model management utilities for OHDSI packages.
-License: Apache License
-Language: en-US
+License: Apache License (== 2.0)
 Encoding: UTF-8
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
@@ -23,16 +22,22 @@ Imports:
   readr,
   zip,
   dplyr,
+  dbplyr,
   rlang,
   lubridate,
   fastmap
 Suggests:
   testthat (>= 3.0.0),
   RSQLite,
+  duckdb,
+  RPostgres,
   withr,
   knitr,
   rmarkdown,
   keyring,
-  aws.s3,
-  aws.signature
+  devtools,
+  pkgdown,
+  remotes,
+  styler,
+  Andromeda
 Config/testthat/edition: 3
