@@ -113,7 +113,7 @@ DataMigrationManager <- R6::R6Class(
     #' @return boolean
     migrationTableExists = function() {
       tables <- DatabaseConnector::getTableNames(private$connectionHandler$getConnection(), self$databaseSchema)
-      return(tolower(paste0(self$tablePrefix, "migration")) %in% tables)
+      return(tolower(paste0(self$tablePrefix, self$packageTablePrefix, "migration")) %in% tables)
     },
 
     #' Get path of migrations
@@ -307,7 +307,7 @@ DataMigrationManager <- R6::R6Class(
       private$logInfo("Creating migrations table")
       sql <- "
       --HINT DISTRIBUTE ON RANDOM
-      CREATE TABLE @database_schema.@table_prefix@migration (
+      CREATE TABLE IF NOT EXISTS @database_schema.@table_prefix@migration (
           migration_file VARCHAR PRIMARY KEY,
           migration_order INT NOT NULL unique
       );"
