@@ -1,3 +1,9 @@
+# ResultModelManager 0.5.7
+
+bug fixes:
+
+1. Fixed edge case where database_id is loaded from csv as numeric type but join with real data is character, causing
+dplyr to crash.
 
 # ResultModelManager 0.5.6
 
