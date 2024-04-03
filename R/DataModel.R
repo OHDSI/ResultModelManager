@@ -348,6 +348,12 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
   # Check if inserting data would violate primary key constraints:
   if (!is.null(env$primaryKeyValuesInDb)) {
     primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
+
+    if ("database_id" %in% colnames(primaryKeyValuesInChunk)) {
+      primaryKeyValuesInChunk$database_id <- as.character(primaryKeyValuesInChunk$database_id)
+      env$primaryKeyValuesInDb$database_id <- as.character(env$primaryKeyValuesInDb$database_id)
+    }
+
     duplicates <-
       dplyr::inner_join(env$primaryKeyValuesInDb,
         primaryKeyValuesInChunk,
