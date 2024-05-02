@@ -27,6 +27,29 @@ test_that("Bad model format", {
   checkmate::expect_date(data$dateField)
 })
 
+
+# Create test data
+pkValuesInDb <- data.frame(
+  id = c(1, 2, 3),
+  name = c("Alice", "Bob", "Charlie"),
+  stringsAsFactors = FALSE
+)
+
+chunk <- data.frame(
+  id = c(1, 2, 3),
+  name = c("Alice", "Bob", "Charlie"),
+  stringsAsFactors = FALSE
+)
+
+# Tests for when types match
+test_that("formatChunk converts data types correctly", {
+  expect_identical(
+    formatChunk(pkValuesInDb, chunk),
+    chunk,
+    info = "Data frames should remain unchanged when types match."
+  )
+})
+
 # Tests for when types need conversion
 chunk_numeric <- data.frame(
   id = c(1, 2, 3),
