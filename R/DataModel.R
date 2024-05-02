@@ -813,7 +813,7 @@ formatChunk <- function(pkValuesInDb, chunk) {
   for (columnName in names(pkValuesInDb)) {
     if (class(pkValuesInDb[[columnName]]) != class(chunk[[columnName]])) {
       if (class(pkValuesInDb[[columnName]]) == "character") {
-        chunk <- chunk %>% dplyr::mutate_at(columnName, as.character)
+        chunk <- chunk |> dplyr::mutate_at(columnName, as.character)
       } else {
         errorMsg <- paste0(
           columnName,
