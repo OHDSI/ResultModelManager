@@ -1,4 +1,4 @@
-# Copyright 2023 Observational Health Data Sciences and Informatics
+# Copyright 2024 Observational Health Data Sciences and Informatics
 #
 # This file is part of OHdsiSharing
 #
@@ -347,6 +347,10 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
 
   # Check if inserting data would violate primary key constraints:
   if (!is.null(env$primaryKeyValuesInDb)) {
+    chunk <- formatChunk(
+      pkValuesInDb = env$primaryKeyValuesInDb,
+      chunk = chunk
+    )
     primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
     duplicates <-
       dplyr::inner_join(env$primaryKeyValuesInDb,
@@ -790,4 +794,36 @@ loadResultsDataModelSpecifications <- function(filePath) {
   colnames(spec) <- SqlRender::snakeCaseToCamelCase(colnames(spec))
   assertSpecificationColumns(colnames(spec))
   return(spec)
+}
+
+
+#' This helper function will convert the data in the
+#' primary key values in the `chunk` which is read from
+#' the csv file to the format of the primary key data
+#' retrieved from the database (`pkValuesInDb`). The assumption made
+#' by this function is that the `pkValuesInDb` reflect the proper data
+#' types while `chunk` is the best guess from the readr
+#' package. In the future, if we adopt strongly-types data.frames
+#' this will no longer be necessary.
+#'
+#' Another assumption of this function is that we're only attempting to
+#' recast to a character data type and not try to handle different type
+#' conversions.
+formatChunk <- function(pkValuesInDb, chunk) {
+  for (columnName in names(pkValuesInDb)) {
+    if (class(pkValuesInDb[[columnName]]) != class(chunk[[columnName]])) {
+      if (class(pkValuesInDb[[columnName]]) == "character") {
+        chunk <- chunk |> dplyr::mutate_at(columnName, as.character)
+      } else {
+        errorMsg <- paste0(
+          columnName,
+          " is of type ",
+          class(pkValuesInDb[[columnName]]),
+          " which cannot be converted between data frames pkValuesInDb and chunk"
+        )
+        stop(errorMsg)
+      }
+    }
+  }
+  return(chunk)
 }
