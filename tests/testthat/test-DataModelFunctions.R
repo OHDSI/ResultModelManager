@@ -26,3 +26,56 @@ test_that("Bad model format", {
   checkmate::expect_character(data$charField)
   checkmate::expect_date(data$dateField)
 })
+
+
+# Create test data
+pkValuesInDb <- data.frame(
+  id = c(1, 2, 3),
+  name = c("Alice", "Bob", "Charlie")
+)
+
+chunk <- data.frame(
+  id = c(1, 2, 3),
+  name = c("Alice", "Bob", "Charlie")
+)
+
+# Tests for when types match
+test_that("formatChunk converts data types correctly", {
+  expect_identical(
+    formatChunk(pkValuesInDb, chunk),
+    chunk,
+    info = "Data frames should remain unchanged when types match."
+  )
+})
+
+# Tests for when types need conversion
+char <- data.frame(
+  id = c(1, 2, 3),
+  name = c("Alice", "Bob", "Charlie")
+)
+
+pkValuesInDbChar <- data.frame(
+  id = as.character(c(1, 2, 3)),
+  name = c("Alice", "Bob", "Charlie")
+)
+
+test_that("formatChunk converts non-matching types to character", {
+  expect_identical(
+    formatChunk(pkValuesInDbChar, char)$id,
+    as.character(char$id),
+    info = "Numeric columns in chunk should be converted to character."
+  )
+})
+
+# Test for error when types cannot be converted
+chunk_factor <- data.frame(
+  id = as.character(c(1, 2, 3)),
+  name = c("Alice", "Bob", "Charlie")
+)
+
+test_that("formatChunk throws error for incompatible types", {
+  expect_error(
+    formatChunk(pkValuesInDb, chunk_factor),
+    "id is of type numeric which cannot be converted between data frames pkValuesInDb and chunk"
+  )
+})

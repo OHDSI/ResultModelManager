@@ -1,3 +1,9 @@
+# ResultModelManager 0.5.7
+
+Bug fixes:
+
+1. Added type conversion checking on upload of data where columns are characters but interpreted as numeric from reading
+inserted data
 
 # ResultModelManager 0.5.6
 
