@@ -26,3 +26,31 @@ test_that("Bad model format", {
   checkmate::expect_character(data$charField)
   checkmate::expect_date(data$dateField)
 })
+
+# Tests for when types need conversion
+chunk_numeric <- data.frame(
+  id = c(1, 2, 3),
+  name = c("Alice", "Bob", "Charlie"),
+  stringsAsFactors = FALSE
+)
+
+test_that("formatChunk converts non-matching types to character", {
+  expect_identical(
+    formatChunk(pkValuesInDb, chunk_numeric)$id,
+    as.character(chunk_numeric$id),
+    info = "Numeric columns in chunk should be converted to character."
+  )
+})
+
+# Test for error when types cannot be converted
+chunk_factor <- data.frame(
+  id = c(1, 2, 3),
+  name = factor(c("Alice", "Bob", "Charlie"))
+)
+
+test_that("formatChunk throws error for incompatible types", {
+  expect_error(
+    formatChunk(pkValuesInDb, chunk_factor),
+    "id is of type numeric which cannot be converted between data frames pkValuesInDb and chunk"
+  )
+})
