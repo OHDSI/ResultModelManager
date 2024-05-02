@@ -31,14 +31,12 @@ test_that("Bad model format", {
 # Create test data
 pkValuesInDb <- data.frame(
   id = c(1, 2, 3),
-  name = c("Alice", "Bob", "Charlie"),
-  stringsAsFactors = FALSE
+  name = c("Alice", "Bob", "Charlie")
 )
 
 chunk <- data.frame(
   id = c(1, 2, 3),
-  name = c("Alice", "Bob", "Charlie"),
-  stringsAsFactors = FALSE
+  name = c("Alice", "Bob", "Charlie")
 )
 
 # Tests for when types match
@@ -51,24 +49,28 @@ test_that("formatChunk converts data types correctly", {
 })
 
 # Tests for when types need conversion
-chunk_numeric <- data.frame(
+char <- data.frame(
   id = c(1, 2, 3),
-  name = c("Alice", "Bob", "Charlie"),
-  stringsAsFactors = FALSE
+  name = c("Alice", "Bob", "Charlie")
+)
+
+pkValuesInDbChar <- data.frame(
+  id = as.character(c(1, 2, 3)),
+  name = c("Alice", "Bob", "Charlie")
 )
 
 test_that("formatChunk converts non-matching types to character", {
   expect_identical(
-    formatChunk(pkValuesInDb, chunk_numeric)$id,
-    as.character(chunk_numeric$id),
+    formatChunk(pkValuesInDbChar, char)$id,
+    as.character(char$id),
     info = "Numeric columns in chunk should be converted to character."
   )
 })
 
 # Test for error when types cannot be converted
 chunk_factor <- data.frame(
-  id = c(1, 2, 3),
-  name = factor(c("Alice", "Bob", "Charlie"))
+  id = as.character(c(1, 2, 3)),
+  name = c("Alice", "Bob", "Charlie")
 )
 
 test_that("formatChunk throws error for incompatible types", {
