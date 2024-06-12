@@ -13,4 +13,4 @@ navbar:
   components:
     hades:
       text: hadesLogo
-      href: https://ohdsi.github.io/Hades
+      href: https://ohdsi.github.io/ResultModelManager

@@ -811,6 +811,15 @@ loadResultsDataModelSpecifications <- function(filePath) {
 #' conversions.
 formatChunk <- function(pkValuesInDb, chunk) {
   for (columnName in names(pkValuesInDb)) {
+    if (class(pkValuesInDb[[columnName]]) == "integer") {
+      pkValuesInDb[[columnName]] <- as.numeric(pkValuesInDb[[columnName]])
+    }
+
+    if (class(chunk[[columnName]]) == "integer") {
+      chunk[[columnName]] <- as.numeric(chunk[[columnName]])
+    }
+
+
     if (class(pkValuesInDb[[columnName]]) != class(chunk[[columnName]])) {
       if (class(pkValuesInDb[[columnName]]) == "character") {
         chunk <- chunk |> dplyr::mutate_at(columnName, as.character)
@@ -825,5 +834,6 @@ formatChunk <- function(pkValuesInDb, chunk) {
       }
     }
   }
+
   return(chunk)
 }
