@@ -79,3 +79,12 @@ test_that("formatChunk throws error for incompatible types", {
     "id is of type numeric which cannot be converted between data frames pkValuesInDb and chunk"
   )
 })
+
+test_that("format chunk handles int/numeric type conversions ok", {
+  class(pkValuesInDb$id) <- "numeric"
+  class(chunk$id) <- "integer"
+  chunk <- formatChunk(pkValuesInDb, chunk)
+  checkmate::expect_data_frame(chunk)
+  checkmate::expect_numeric(chunk$id)
+})
+
