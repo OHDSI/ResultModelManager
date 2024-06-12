@@ -810,18 +810,20 @@ loadResultsDataModelSpecifications <- function(filePath) {
 #' recast to a character data type and not try to handle different type
 #' conversions.
 formatChunk <- function(pkValuesInDb, chunk) {
-  for (columnName in names(pkValuesInDb)) {
-    if (class(pkValuesInDb[[columnName]]) != class(chunk[[columnName]])) {
-      if (class(pkValuesInDb[[columnName]]) == "character") {
-        chunk <- chunk |> dplyr::mutate_at(columnName, as.character)
-      } else {
-        errorMsg <- paste0(
-          columnName,
-          " is of type ",
-          class(pkValuesInDb[[columnName]]),
-          " which cannot be converted between data frames pkValuesInDb and chunk"
-        )
-        stop(errorMsg)
+  if (nrow(pkValuesInDb) > 0) {
+    for (columnName in names(pkValuesInDb)) {
+      if (class(pkValuesInDb[[columnName]]) != class(chunk[[columnName]])) {
+        if (class(pkValuesInDb[[columnName]]) == "character") {
+          chunk <- chunk |> dplyr::mutate_at(columnName, as.character)
+        } else {
+          errorMsg <- paste0(
+            columnName,
+            " is of type ",
+            class(pkValuesInDb[[columnName]]),
+            " which cannot be converted between data frames pkValuesInDb and chunk"
+          )
+          stop(errorMsg)
+        }
       }
     }
   }
