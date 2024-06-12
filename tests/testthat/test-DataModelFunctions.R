@@ -87,4 +87,3 @@ test_that("format chunk handles int/numeric type conversions ok", {
   checkmate::expect_data_frame(chunk)
   checkmate::expect_numeric(chunk$id)
 })
-
