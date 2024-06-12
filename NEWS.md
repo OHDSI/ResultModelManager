@@ -1,3 +1,10 @@
+# ResultModelManager 0.5.8
+
+Bug fixes:
+
+1. Fixed bug in uploads where empty tables are used to determine uploads (and can fail)
+
+
 # ResultModelManager 0.5.7
 
 Bug fixes:
