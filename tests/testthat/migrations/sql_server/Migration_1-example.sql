@@ -1,6 +1,4 @@
-/*
-The follow is intended to be an example sql migration only
-*/
+--The follow is intended to be an example sql migration only
 {DEFAULT @foo = foo}
 
 CREATE TABLE @database_schema.package_version(
