@@ -38,8 +38,7 @@
 #' @export
 #'
 #' @importFrom readr read_csv
-#' @return
-#'  string containing the sql for the table
+#' @return string containing the sql for the table
 generateSqlSchema <- function(csvFilepath = NULL,
                               schemaDefinition = NULL,
                               sqlOutputPath = NULL,

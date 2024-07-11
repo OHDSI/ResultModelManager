@@ -6,7 +6,7 @@
 \alias{ResultModelManager-package}
 \title{ResultModelManager: Result Model Manager}
 \description{
-Database data model management utilities for OHDSI packages.
+Database data model management utilities for packages in the Observational Health Data Sciences Initiative.
 }
 \author{
 \strong{Maintainer}: Jamie Gilbert \email{gilbert@ohdsi.org}
