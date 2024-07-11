@@ -28,7 +28,7 @@
 #' Schema generator
 #' @description
 #' Take a csv schema definition and create a basic sql script with it.
-#'
+#' returns string containing the sql for the table
 #' @param csvFilepath                   Path to schema file. Csv file must have the columns:
 #'                                      "table_name", "column_name", "data_type", "is_required", "primary_key"
 #' @param schemaDefinition              A schemaDefintiion data.frame` with the columns:
@@ -38,7 +38,6 @@
 #' @export
 #'
 #' @importFrom readr read_csv
-#' @return string containing the sql for the table
 generateSqlSchema <- function(csvFilepath = NULL,
                               schemaDefinition = NULL,
                               sqlOutputPath = NULL,

@@ -22,9 +22,7 @@ tableName, columnName, dataType, isRequired, primaryKey}
 
 \item{overwrite}{Boolean - overwrite existing file?}
 }
-\value{
-string containing the sql for the table
-}
 \description{
 Take a csv schema definition and create a basic sql script with it.
+returns string containing the sql for the table
 }
