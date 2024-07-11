@@ -809,19 +809,20 @@ loadResultsDataModelSpecifications <- function(filePath) {
 #' Another assumption of this function is that we're only attempting to
 #' recast to a character data type and not try to handle different type
 #' conversions.
+#' @noRd
 formatChunk <- function(pkValuesInDb, chunk) {
   for (columnName in names(pkValuesInDb)) {
-    if (class(pkValuesInDb[[columnName]]) == "integer") {
+    if (inherits(pkValuesInDb[[columnName]], "integer")) {
       pkValuesInDb[[columnName]] <- as.numeric(pkValuesInDb[[columnName]])
     }
 
-    if (class(chunk[[columnName]]) == "integer") {
+    if (inherits(chunk[[columnName]], "integer")) {
       chunk[[columnName]] <- as.numeric(chunk[[columnName]])
     }
 
 
     if (class(pkValuesInDb[[columnName]]) != class(chunk[[columnName]])) {
-      if (class(pkValuesInDb[[columnName]]) == "character") {
+      if (inherits(pkValuesInDb[[columnName]], "character")) {
         chunk <- chunk |> dplyr::mutate_at(columnName, as.character)
       } else {
         errorMsg <- paste0(

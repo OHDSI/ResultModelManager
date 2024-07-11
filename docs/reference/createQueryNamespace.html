@@ -5,7 +5,7 @@ Note - currently not supported is having multiple table prefixes for multiple ta
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
-    
+
 
     <div class="container template-reference-topic">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -19,7 +19,7 @@ Note - currently not supported is having multiple table prefixes for multiple ta
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.8</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.9</span>
       </span>
     </div>
 
@@ -30,7 +30,7 @@ Note - currently not supported is having multiple table prefixes for multiple ta
 <li class="dropdown">
   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
-     
+
     <span class="caret"></span>
   </a>
   <ul class="dropdown-menu" role="menu"><li>
@@ -65,13 +65,13 @@ Note - currently not supported is having multiple table prefixes for multiple ta
   </div><!--/.container -->
 </div><!--/.navbar -->
 
-      
+
 
       </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Create query namespace</h1>
-    
+
     <div class="hidden name"><code>createQueryNamespace.Rd</code></div>
     </div>
 
@@ -96,39 +96,41 @@ Allows construction with various options not handled by QueryNamespace$new</p>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>connectionDetails</dt>
+
+
+<dl><dt id="arg-connectiondetails">connectionDetails<a class="anchor" aria-label="anchor" href="#arg-connectiondetails"></a></dt>
 <dd><p>An object of type <code>connectionDetails</code> as created using the
 <code><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></code> function in the
 DatabaseConnector package.</p></dd>
 
 
-<dt>connectionHandler</dt>
+<dt id="arg-connectionhandler">connectionHandler<a class="anchor" aria-label="anchor" href="#arg-connectionhandler"></a></dt>
 <dd><p>ResultModelManager ConnectionHandler or PooledConnectionHandler instance</p></dd>
 
 
-<dt>usePooledConnection</dt>
+<dt id="arg-usepooledconnection">usePooledConnection<a class="anchor" aria-label="anchor" href="#arg-usepooledconnection"></a></dt>
 <dd><p>Use Pooled database connection instead of standard DatabaseConnector single
 connection.</p></dd>
 
 
-<dt>tableSpecification</dt>
+<dt id="arg-tablespecification">tableSpecification<a class="anchor" aria-label="anchor" href="#arg-tablespecification"></a></dt>
 <dd><p>Table specfication data.frame</p></dd>
 
 
-<dt>resultModelSpecificationPath</dt>
+<dt id="arg-resultmodelspecificationpath">resultModelSpecificationPath<a class="anchor" aria-label="anchor" href="#arg-resultmodelspecificationpath"></a></dt>
 <dd><p>(optional) csv file or files for tableSpecifications - must conform to table spec
 format.</p></dd>
 
 
-<dt>tablePrefix</dt>
+<dt id="arg-tableprefix">tablePrefix<a class="anchor" aria-label="anchor" href="#arg-tableprefix"></a></dt>
 <dd><p>String to prefix table names with - default is empty string</p></dd>
 
 
-<dt>snakeCaseToCamelCase</dt>
+<dt id="arg-snakecasetocamelcase">snakeCaseToCamelCase<a class="anchor" aria-label="anchor" href="#arg-snakecasetocamelcase"></a></dt>
 <dd><p>convert snakecase results to camelCase field names (TRUE by default)</p></dd>
 
 
-<dt>...</dt>
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Elipsis - use for any additional string keys to replace</p></dd>
 
 </dl></div>
@@ -145,15 +147,15 @@ format.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.9.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
       </footer></div>
 
-  
 
 
-  
+
+
 
   </body></html>
 

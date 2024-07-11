@@ -3,6 +3,7 @@
 ^\.idea$
 ^renv$
 ^renv\.lock$
+sql
 extras
 man-roxygen
 license_header_stub.txt

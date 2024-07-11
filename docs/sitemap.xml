@@ -1,102 +1,37 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>/404.html</loc>
-  </url>
-  <url>
-    <loc>/LICENSE-text.html</loc>
-  </url>
-  <url>
-    <loc>/articles/CreatingMigrations.html</loc>
-  </url>
-  <url>
-    <loc>/articles/ExampleProject.html</loc>
-  </url>
-  <url>
-    <loc>/articles/PackageDesign.html</loc>
-  </url>
-  <url>
-    <loc>/articles/UploadFunctionality.html</loc>
-  </url>
-  <url>
-    <loc>/articles/UsingAnExportManager.html</loc>
-  </url>
-  <url>
-    <loc>/articles/UsingConnectionHandlers.html</loc>
-  </url>
-  <url>
-    <loc>/articles/UsingQueryNamespaces.html</loc>
-  </url>
-  <url>
-    <loc>/articles/creating-migrations.html</loc>
-  </url>
-  <url>
-    <loc>/articles/design-specifications.html</loc>
-  </url>
-  <url>
-    <loc>/articles/index.html</loc>
-  </url>
-  <url>
-    <loc>/authors.html</loc>
-  </url>
-  <url>
-    <loc>/index.html</loc>
-  </url>
-  <url>
-    <loc>/news/index.html</loc>
-  </url>
-  <url>
-    <loc>/pull_request_template.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ConnectionHandler.html</loc>
-  </url>
-  <url>
-    <loc>/reference/DataMigrationManager.html</loc>
-  </url>
-  <url>
-    <loc>/reference/PooledConnectionHandler.html</loc>
-  </url>
-  <url>
-    <loc>/reference/QueryNamespace.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ResultExportManager.html</loc>
-  </url>
-  <url>
-    <loc>/reference/ResultModelManager-package.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createQueryNamespace.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createResultExportManager.html</loc>
-  </url>
-  <url>
-    <loc>/reference/createResultsDataModel.html</loc>
-  </url>
-  <url>
-    <loc>/reference/deleteAllRowsForDatabaseId.html</loc>
-  </url>
-  <url>
-    <loc>/reference/deleteAllRowsForPrimaryKey.html</loc>
-  </url>
-  <url>
-    <loc>/reference/generateSqlSchema.html</loc>
-  </url>
-  <url>
-    <loc>/reference/grantTablePermissions.html</loc>
-  </url>
-  <url>
-    <loc>/reference/index.html</loc>
-  </url>
-  <url>
-    <loc>/reference/loadResultsDataModelSpecifications.html</loc>
-  </url>
-  <url>
-    <loc>/reference/unzipResults.html</loc>
-  </url>
-  <url>
-    <loc>/reference/uploadResults.html</loc>
-  </url>
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/articles/CreatingMigrations.html</loc></url>
+<url><loc>/articles/ExampleProject.html</loc></url>
+<url><loc>/articles/PackageDesign.html</loc></url>
+<url><loc>/articles/UploadFunctionality.html</loc></url>
+<url><loc>/articles/UsingAnExportManager.html</loc></url>
+<url><loc>/articles/UsingConnectionHandlers.html</loc></url>
+<url><loc>/articles/UsingQueryNamespaces.html</loc></url>
+<url><loc>/articles/creating-migrations.html</loc></url>
+<url><loc>/articles/design-specifications.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/news/index.html</loc></url>
+<url><loc>/pull_request_template.html</loc></url>
+<url><loc>/reference/ConnectionHandler.html</loc></url>
+<url><loc>/reference/DataMigrationManager.html</loc></url>
+<url><loc>/reference/PooledConnectionHandler.html</loc></url>
+<url><loc>/reference/QueryNamespace.html</loc></url>
+<url><loc>/reference/ResultExportManager.html</loc></url>
+<url><loc>/reference/ResultModelManager-package.html</loc></url>
+<url><loc>/reference/createQueryNamespace.html</loc></url>
+<url><loc>/reference/createResultExportManager.html</loc></url>
+<url><loc>/reference/createResultsDataModel.html</loc></url>
+<url><loc>/reference/deleteAllRowsForDatabaseId.html</loc></url>
+<url><loc>/reference/deleteAllRowsForPrimaryKey.html</loc></url>
+<url><loc>/reference/formatChunk.html</loc></url>
+<url><loc>/reference/generateSqlSchema.html</loc></url>
+<url><loc>/reference/grantTablePermissions.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/loadResultsDataModelSpecifications.html</loc></url>
+<url><loc>/reference/unzipResults.html</loc></url>
+<url><loc>/reference/uploadResults.html</loc></url>
 </urlset>
+

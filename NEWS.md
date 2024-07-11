@@ -1,3 +1,9 @@
+# ResultModelManager 0.5.9
+
+Changes:
+
+1. Changes made to make package CRAN compliant
+
 # ResultModelManager 0.5.8
 
 Bug fixes:
