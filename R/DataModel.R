@@ -494,7 +494,7 @@ uploadTable <- function(tableName,
 #' Upload results to the database server.
 #'
 #' @description
-#' Requires the results data model tables have been created using following the specifications, @seealso [generateSqlSchema()] function.
+#' Requires the results data model tables have been created using following the specifications, generateSqlSchema function.
 #'
 #' Results files should be in the snake_case format for table headers and not camelCase
 #'
