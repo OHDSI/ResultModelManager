@@ -39,7 +39,7 @@ checkAndFixColumnNames <-
 
     # Set all fields to requried if optional isn't specified
     if (!"optional" %in% colnames(tableSpecs)) {
-      tableSpecs$otpional <- "no"
+      tableSpecs$optional <- "no"
     }
 
     optionalNames <- tableSpecs %>%
