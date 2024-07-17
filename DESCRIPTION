@@ -25,7 +25,8 @@ Imports:
   dbplyr,
   rlang,
   lubridate,
-  fastmap
+  fastmap,
+  withr
 Suggests:
   testthat (>= 3.0.0),
   RSQLite,

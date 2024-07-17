@@ -4,6 +4,8 @@ Changes:
 
 1. Changes made to make package CRAN compliant
 
+2. `PooledConnectionHandler` now uses 
+
 # ResultModelManager 0.5.8
 
 Bug fixes:
