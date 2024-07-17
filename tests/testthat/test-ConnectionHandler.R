@@ -85,6 +85,6 @@ test_that("Database Connector Class works", {
 test_that("Pooled connector Class works", {
   genericTests(PooledConnectionHandler,
     classes = c("PooledConnectionHandler", "ConnectionHandler"),
-    connectionClass = "Pool"
+    connectionClass = "DatabaseConnectorDbiConnection"
   )
 })

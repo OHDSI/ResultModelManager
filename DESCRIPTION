@@ -32,7 +32,6 @@ Suggests:
   RSQLite,
   duckdb,
   RPostgres,
-  withr,
   knitr,
   rmarkdown,
   keyring,
