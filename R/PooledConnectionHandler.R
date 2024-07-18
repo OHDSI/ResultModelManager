@@ -16,10 +16,11 @@
 
 
 requiredPackage <- function(packageName) {
-  packages <- utils::installed.packages()
-  packages <- as.data.frame(packages)
-  if (!packageName %in% packages$Package) {
-    utils::install.packages(packageName)
+  packageLoc <- tryCatch(find.package("foo"), errorr = function(...) {
+    return(NULL)
+  })
+  if (is.null(packageLoc)) {
+    stop(paste("Package", packageName, "is required please use install.packages to install"))
   }
 }
 

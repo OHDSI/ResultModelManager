@@ -20,16 +20,30 @@
 #' Given a results specification and ConnectionHandler instance - this class allow queries to be namespaced within
 #' any tables specified within a list of pre-determined tables. This allows the encapsulation of queries, using specific
 #' table names in a consistent manner that is striaghtforward to maintain over time.
-#'
 #' @examples
-#' \dontrun{
-#' library(ResultModelManager)
-#' connectionHandler <- ConnectionHandler$new(connectionDetails = )
 #'
+#' library(ResultModelManager)
+#'
+#' # Create some junk test data
+#' connectionDetails <- DatabaseConnector::createConnectionDetails(server = ":memory:", dbms = "sqlite")
+#'
+#' conn <- DatabaseConnector::connect(connectionDetails)
+#' DatabaseConnector::insertTable(
+#'   tableName = "cd_cohort",
+#'   data = data.frame(
+#'     cohort_id = c(1, 2, 3),
+#'     cohort_name = c("cohort one", "cohort two", "cohort three"),
+#'     json = "{}",
+#'     sql = "SELECT 1"
+#'   )
+#' )
+#' DatabaseConnector::disconnect(conn)
+#'
+#' connectionHandler <- ConnectionHandler$new(connectionDetails = connectionDetails)
 #' tableSpecification <- data.frame(
 #'   tableName = "cohort",
 #'   columnName = c(
-#'     "cohort_definition_id",
+#'     "cohort_id",
 #'     "cohort_name",
 #'     "json",
 #'     "sql"
@@ -49,8 +63,7 @@
 #' print(cohortNamespace$render(sql))
 #' # Returns query result
 #' result <- cohortNamespace$querySql(sql, cohort_id = 1)
-#' }
-#' @importFrom fastmap fastmap
+#'
 QueryNamespace <- R6::R6Class(
   classname = "QueryNamespace",
   private = list(

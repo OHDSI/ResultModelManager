@@ -6,7 +6,15 @@
 \alias{ResultModelManager-package}
 \title{ResultModelManager: Result Model Manager}
 \description{
-Database data model management utilities for R packages in the Observational Health Data Sciences and Informatics program.
+ResultModelManager (RMM) is a database data model management utilities for R packages in the Observational Health Data Sciences and Informatics program \url{https://ohdsi.org}. RMM provides utility functions to allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/OHDSI/ResultModelManager}
+  \item Report bugs at \url{https://github.com/OHDSI/ResultModelManager/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Jamie Gilbert \email{gilbert@ohdsi.org}
