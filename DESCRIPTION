@@ -3,9 +3,9 @@ Title: Result Model Manager
 Version: 0.5.9
 Authors@R:
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
-Description: ResultModelManager (RMM) is a database data model management utilities for R packages in the
-	Observational Health Data Sciences and Informatics program <https://ohdsi.org>. RMM provides utility functions to
-	allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.
+Description: Database data model management utilities for R packages in the Observational Health Data Sciences and
+    Informatics program <https://ohdsi.org>. 'ResultModelManager' provides utility functions to allow package
+    maintainers to migrate existing SQL database models, export and import results in consistent patterns.
 URL: https://github.com/OHDSI/ResultModelManager
 BugReports: https://github.com/OHDSI/ResultModelManager/issues
 License: Apache License (== 2.0)
