@@ -4,7 +4,8 @@ Changes:
 
 1. Changes made to make package CRAN compliant
 
-2. `PooledConnectionHandler` now uses 
+2. `PooledConnectionHandler` now uses withr::defer to automatically returned pooled connections returned with 
+`getConnection`
 
 # ResultModelManager 0.5.8
 
