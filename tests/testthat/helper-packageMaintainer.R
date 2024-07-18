@@ -19,6 +19,7 @@
 runPackageMaintenance <- function() {
   remotes::install_github("OHDSI/OhdsiRTools")
   packageName <- "ResultModelManager"
+  devtools::document()
   OhdsiRTools::checkUsagePackage(packageName)
   OhdsiRTools::updateCopyrightYearFolder()
   styler::style_pkg()

@@ -79,6 +79,12 @@
 <li>
   <a href="https://ohdsi.github.io/ResultModelManager" class="external-link"><img src='https://ohdsi.github.io/Hades/images/hadesMini.png' width=80 height=17 style='vertical-align: top;'></a>
 </li>
+<li>
+  <a href="https://github.com/OHDSI/ResultModelManager/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
       </ul>
 </div>
 <!--/.nav-collapse -->
@@ -96,9 +102,9 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2024-07-11</h4>
+            <h4 data-toc-skip class="date">2024-07-18</h4>
       
-
+      <small class="dont-index">Source: <a href="https://github.com/OHDSI/ResultModelManager/blob/HEAD/vignettes/ExampleProject.Rmd" class="external-link"><code>vignettes/ExampleProject.Rmd</code></a></small>
       <div class="hidden name"><code>ExampleProject.Rmd</code></div>
 
     </div>
@@ -253,7 +259,7 @@ fields in terms of type and name.</p>
 <code class="sourceCode R"><span><span class="co"># note - the table prefix and schema parameters are not neeeded when we do this</span></span>
 <span><span class="va">qns</span><span class="op">$</span><span class="fu">executeSql</span><span class="op">(</span><span class="va">sql</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   |                                                                              |                                                                      |   0%  |                                                                              |===================================                                   |  50%  |                                                                              |======================================================================| 100%</span></span></code></pre>
-<pre><code><span><span class="co">## Executing SQL took 0.0112 secs</span></span></code></pre>
+<pre><code><span><span class="co">## Executing SQL took 0.00729 secs</span></span></code></pre>
 <p>Alternatively, we can just use <code>DatabaseConnector</code>
 functions directly.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">

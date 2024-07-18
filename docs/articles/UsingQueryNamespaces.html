@@ -79,6 +79,12 @@
 <li>
   <a href="https://ohdsi.github.io/ResultModelManager" class="external-link"><img src='https://ohdsi.github.io/Hades/images/hadesMini.png' width=80 height=17 style='vertical-align: top;'></a>
 </li>
+<li>
+  <a href="https://github.com/OHDSI/ResultModelManager/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
       </ul>
 </div>
 <!--/.nav-collapse -->
@@ -96,9 +102,9 @@
                         <h4 data-toc-skip class="author">James P.
 Gilbert</h4>
             
-            <h4 data-toc-skip class="date">2024-07-11</h4>
+            <h4 data-toc-skip class="date">2024-07-18</h4>
       
-
+      <small class="dont-index">Source: <a href="https://github.com/OHDSI/ResultModelManager/blob/HEAD/vignettes/UsingQueryNamespaces.Rmd" class="external-link"><code>vignettes/UsingQueryNamespaces.Rmd</code></a></small>
       <div class="hidden name"><code>UsingQueryNamespaces.Rmd</code></div>
 
     </div>
@@ -128,7 +134,7 @@ programming language than <code>dplyr</code> calls allow.</p>
 <p>The most basic usage is to create a specification with a single table
 that conforms to a valid data model specification</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">ResultModelManager</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/OHDSI/ResultModelManager" class="external-link">ResultModelManager</a></span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Loading required package: R6</span></span></code></pre>
 <pre><code><span><span class="co">## Loading required package: DatabaseConnector</span></span></code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -159,7 +165,7 @@ table:</p>
 <span><span class="co"># note - the table prefix and schema parameters are not neeeded</span></span>
 <span><span class="va">qns</span><span class="op">$</span><span class="fu">executeSql</span><span class="op">(</span><span class="va">sql</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%</span></span></code></pre>
-<pre><code><span><span class="co">## Executing SQL took 0.00652 secs</span></span></code></pre>
+<pre><code><span><span class="co">## Executing SQL took 0.00645 secs</span></span></code></pre>
 <p>We can then query the table with sql that automatically replaces the
 table names:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">

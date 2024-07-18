@@ -28,6 +28,7 @@
 #' @import R6
 #' @importFrom DBI dbIsValid
 #' @importFrom SqlRender render translate
+#' @importFrom dbplyr in_schema
 #'
 #' @export ConnectionHandler
 ConnectionHandler <- R6::R6Class(

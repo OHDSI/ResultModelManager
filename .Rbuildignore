@@ -35,3 +35,4 @@ compare_versions
 LICENSE
 .git
 ..Rcheck
+errorReportSql.txt

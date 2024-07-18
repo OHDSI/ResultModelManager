@@ -59,6 +59,12 @@
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://ohdsi.github.io/ResultModelManager" class="external-link"><img src='https://ohdsi.github.io/Hades/images/hadesMini.png' width=80 height=17 style='vertical-align: top;'></a>
 </li>
+<li>
+  <a href="https://github.com/OHDSI/ResultModelManager/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -69,13 +75,14 @@
   <div class="col-md-9 contents">
     <div class="page-header">
       <h1 data-toc-skip>Changelog <small></small></h1>
-
+      <small>Source: <a href="https://github.com/OHDSI/ResultModelManager/blob/HEAD/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.9" id="resultmodelmanager-059">ResultModelManager 0.5.9<a class="anchor" aria-label="anchor" href="#resultmodelmanager-059"></a></h2>
 <p>Changes:</p>
-<ol style="list-style-type: decimal"><li>Changes made to make package CRAN compliant</li>
+<ol style="list-style-type: decimal"><li><p>Changes made to make package CRAN compliant</p></li>
+<li><p><code>PooledConnectionHandler</code> now uses withr::defer to automatically returned pooled connections returned with <code>getConnection</code></p></li>
 </ol></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="0.5.8" id="resultmodelmanager-058">ResultModelManager 0.5.8<a class="anchor" aria-label="anchor" href="#resultmodelmanager-058"></a></h2>

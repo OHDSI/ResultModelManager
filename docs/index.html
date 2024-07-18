@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="Result Model Manager">
-<meta property="og:description" content="Database data model management utilities for OHDSI packages.">
+<meta property="og:description" content="ResultModelManager (RMM) is a database data model management utilities for R packages in the Observational Health Data Sciences and Informatics program &lt;https://ohdsi.org&gt;. RMM provides utility functions to allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -80,6 +80,12 @@
 <li>
   <a href="https://ohdsi.github.io/ResultModelManager" class="external-link"><img src='https://ohdsi.github.io/Hades/images/hadesMini.png' width=80 height=17 style='vertical-align: top;'></a>
 </li>
+<li>
+  <a href="https://github.com/OHDSI/ResultModelManager/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
       </ul>
 </div>
 <!--/.nav-collapse -->
@@ -96,13 +102,13 @@
 <div class="section level1">
 <div class="page-header"><h1 id="resultmodelmanager">ResultModelManager<a class="anchor" aria-label="anchor" href="#resultmodelmanager"></a>
 </h1></div>
-<p><a href="https://github.com/OHDSI/ResultModelManager/actions?query=workflow%3AR-CMD-check" class="external-link"><img src="https://github.com/OHDSI/ResultModelManager/workflows/R-CMD-check/badge.svg" alt="Build Status"></a> <a href="https://codecov.io/github/OHDSI/ResultModelManager?branch=main" class="external-link"><img src="https://app.codecov.io/github/OHDSI/ResultModelManager/coverage.svg?branch=main" alt="codecov.io"></a></p>
+<p><a href="https://github.com/OHDSI/ResultModelManager/actions?query=workflow%3AR-CMD-check" class="external-link"><img src="https://github.com/OHDSI/ResultModelManager/workflows/R-CMD-check/badge.svg" alt="Build Status"></a> <a href="https://app.codecov.io/github/OHDSI/ResultModelManager?branch=main" class="external-link"><img src="https://codecov.io/github/OHDSI/ResultModelManager/coverage.svg?branch=main" alt="codecov.io"></a></p>
 <p>ResultModelManager (RMM) <a href="https://ohdsi.github.io/Hades/" class="external-link">HADES</a>.</p>
 </div>
 <div class="section level1">
 <h1 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h1>
-<p>RMM is an R package designed to handle common ohdsi results data management functions by providing a common API for data model migrations and definitions</p>
+<p>RMM is a database data model management utilities for R packages in the <a href="https://ohdsi.org" class="external-link">Observational Health Data Sciences and Informatics program</a>. RMM provides utility functions to allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.</p>
 </div>
 <div class="section level1">
 <h1 id="system-requirements">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements"></a>
@@ -118,6 +124,11 @@
 </ol>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"OHDSI/ResultModelManager"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level1">
+<h1 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
+</h1>
+<p>See articles: - <a href="https://ohdsi.github.io/ResultModelManager/articles/CreatingMigrations.html" class="external-link">Creating migrations</a> - <a href="https://ohdsi.github.io/ResultModelManager/articles/ExampleProject.html" class="external-link">Example Project</a> - <a href="https://ohdsi.github.io/ResultModelManager/articles/UploadFunctionality.html" class="external-link">Upload functionality</a> - <a href="https://ohdsi.github.io/ResultModelManager/articles/UsingConnectionHandlers.html" class="external-link">Connection handler</a> - <a href="https://ohdsi.github.io/ResultModelManager/articles/UsingQueryNamespaces.html" class="external-link">Using query namespaces</a></p>
 </div>
 <div class="section level1">
 <h1 id="support">Support<a class="anchor" aria-label="anchor" href="#support"></a>
@@ -155,6 +166,8 @@
     <div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://github.com/OHDSI/ResultModelManager/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/OHDSI/ResultModelManager/issues" class="external-link">Report a bug</a></li>
 <li><a href="http://forums.ohdsi.org" class="external-link">Ask a question</a></li>
 </ul>
 </div>

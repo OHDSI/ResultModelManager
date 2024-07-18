@@ -20,15 +20,21 @@
 #' Given a results specification and ConnectionHandler instance - this class allow queries to be namespaced within
 #' any tables specified within a list of pre-determined tables. This allows the encapsulation of queries, using specific
 #' table names in a consistent manner that is striaghtforward to maintain over time.
+#' @importFrom fastmap fastmap
 #' @examples
 #'
 #' library(ResultModelManager)
 #'
 #' # Create some junk test data
-#' connectionDetails <- DatabaseConnector::createConnectionDetails(server = ":memory:", dbms = "sqlite")
+#' connectionDetails <-
+#'   DatabaseConnector::createConnectionDetails(
+#'     server = "test_db.sqlite",
+#'     dbms = "sqlite"
+#'   )
 #'
 #' conn <- DatabaseConnector::connect(connectionDetails)
 #' DatabaseConnector::insertTable(
+#'   connection = conn,
 #'   tableName = "cd_cohort",
 #'   data = data.frame(
 #'     cohort_id = c(1, 2, 3),
@@ -53,7 +59,7 @@
 #' )
 #'
 #' cohortNamespace <- QueryNamespace$new(
-#'   connnectionHandler = connnectionHandler,
+#'   connectionHandler = connectionHandler,
 #'   tableSpecification = tableSpecification,
 #'   result_schema = "main",
 #'   tablePrefix = "cd_"
@@ -62,8 +68,9 @@
 #' # Returns : "SELECT * FROM main.cd_cohort WHERE cohort_id = @cohort_id"
 #' print(cohortNamespace$render(sql))
 #' # Returns query result
-#' result <- cohortNamespace$querySql(sql, cohort_id = 1)
-#'
+#' result <- cohortNamespace$queryDb(sql, cohort_id = 1)
+#' # cleanup test data
+#' unlink("test_db.sqlite")
 QueryNamespace <- R6::R6Class(
   classname = "QueryNamespace",
   private = list(

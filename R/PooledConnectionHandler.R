@@ -16,9 +16,13 @@
 
 
 requiredPackage <- function(packageName) {
-  packageLoc <- tryCatch(find.package("foo"), errorr = function(...) {
-    return(NULL)
-  })
+  packageLoc <- tryCatch(
+    find.package(packageName),
+    errorr = function(...) {
+      return(NULL)
+    }
+  )
+
   if (is.null(packageLoc)) {
     stop(paste("Package", packageName, "is required please use install.packages to install"))
   }
@@ -83,6 +87,7 @@ requiredPackage <- function(packageName) {
 #'
 #' @importFrom pool dbPool poolClose
 #' @importFrom DBI dbIsValid
+#' @importFrom withr defer
 #'
 #' @export PooledConnectionHandler
 PooledConnectionHandler <- R6::R6Class(

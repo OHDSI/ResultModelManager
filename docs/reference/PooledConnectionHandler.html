@@ -60,6 +60,12 @@ Useful for long running applications that serve multiple concurrent requests."><
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://ohdsi.github.io/ResultModelManager" class="external-link"><img src='https://ohdsi.github.io/Hades/images/hadesMini.png' width=80 height=17 style='vertical-align: top;'></a>
 </li>
+<li>
+  <a href="https://github.com/OHDSI/ResultModelManager/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
       </ul></div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -70,7 +76,7 @@ Useful for long running applications that serve multiple concurrent requests."><
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Pooled Connection Handler</h1>
-
+    <small class="dont-index">Source: <a href="https://github.com/OHDSI/ResultModelManager/blob/HEAD/R/PooledConnectionHandler.R" class="external-link"><code>R/PooledConnectionHandler.R</code></a></small>
     <div class="hidden name"><code>PooledConnectionHandler.Rd</code></div>
     </div>
 
@@ -92,6 +98,7 @@ Useful for long running applications that serve multiple concurrent requests.</p
 
 <ul><li><p><a href="#method-PooledConnectionHandler-new"><code>PooledConnectionHandler$new()</code></a></p></li>
 <li><p><a href="#method-PooledConnectionHandler-initConnection"><code>PooledConnectionHandler$initConnection()</code></a></p></li>
+<li><p><a href="#method-PooledConnectionHandler-getConnection"><code>PooledConnectionHandler$getConnection()</code></a></p></li>
 <li><p><a href="#method-PooledConnectionHandler-dbms"><code>PooledConnectionHandler$dbms()</code></a></p></li>
 <li><p><a href="#method-PooledConnectionHandler-closeConnection"><code>PooledConnectionHandler$closeConnection()</code></a></p></li>
 <li><p><a href="#method-PooledConnectionHandler-queryFunction"><code>PooledConnectionHandler$queryFunction()</code></a></p></li>
@@ -100,7 +107,6 @@ Useful for long running applications that serve multiple concurrent requests.</p
 </ul></div><p><details><summary>Inherited methods</summary><ul><li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbIsValid"><a href="ConnectionHandler.html#method-dbIsValid"><code>ResultModelManager::ConnectionHandler$dbIsValid()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeSql"><a href="ConnectionHandler.html#method-executeSql"><code>ResultModelManager::ConnectionHandler$executeSql()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="finalize"><a href="ConnectionHandler.html#method-finalize"><code>ResultModelManager::ConnectionHandler$finalize()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="getConnection"><a href="ConnectionHandler.html#method-getConnection"><code>ResultModelManager::ConnectionHandler$getConnection()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="queryDb"><a href="ConnectionHandler.html#method-queryDb"><code>ResultModelManager::ConnectionHandler$queryDb()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="renderTranslateSql"><a href="ConnectionHandler.html#method-renderTranslateSql"><code>ResultModelManager::ConnectionHandler$renderTranslateSql()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="tbl"><a href="ConnectionHandler.html#method-tbl"><code>ResultModelManager::ConnectionHandler$tbl()</code></a></span></li>
@@ -147,17 +153,35 @@ initialize pooled db connection</p></dd>
 </div><p></p><hr><a id="method-PooledConnectionHandler-initConnection"></a><div class="section">
 <h3 id="method-initconnection-">Method <code>initConnection()</code><a class="anchor" aria-label="anchor" href="#method-initconnection-"></a></h3>
 <p>Overrides ConnectionHandler Call
-get dbms</p><div class="section">
+Get Connection</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PooledConnectionHandler</span><span class="op">$</span><span class="fu">initConnection</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
+</div><p></p><hr><a id="method-PooledConnectionHandler-getConnection"></a><div class="section">
+<h3 id="method-getconnection-">Method <code><a href="https://rdrr.io/r/base/showConnections.html" class="external-link">getConnection()</a></code><a class="anchor" aria-label="anchor" href="#method-getconnection-"></a></h3>
+<p>Returns a connection from the pool
+When the desired frame exits, the connection will be returned to the pool</p><div class="section">
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PooledConnectionHandler</span><span class="op">$</span><span class="fu">getConnection</span><span class="op">(</span>.deferedFrame <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sys.parent.html" class="external-link">parent.frame</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>.deferedFrame</code></dt>
+<dd><p>defaults to the parent frame of the calling block.
+get dbms</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-PooledConnectionHandler-dbms"></a><div class="section">
 <h3 id="method-dbms-">Method <code>dbms()</code><a class="anchor" aria-label="anchor" href="#method-dbms-"></a></h3>
 <p>Get the dbms type of the connection
 Close Connection</p><div class="section">
-<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PooledConnectionHandler</span><span class="op">$</span><span class="fu">dbms</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -166,7 +190,7 @@ Close Connection</p><div class="section">
 <h3 id="method-closeconnection-">Method <code>closeConnection()</code><a class="anchor" aria-label="anchor" href="#method-closeconnection-"></a></h3>
 <p>Overrides ConnectionHandler Call
 query Function</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PooledConnectionHandler</span><span class="op">$</span><span class="fu">closeConnection</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -174,7 +198,7 @@ query Function</p><div class="section">
 </div><p></p><hr><a id="method-PooledConnectionHandler-queryFunction"></a><div class="section">
 <h3 id="method-queryfunction-">Method <code>queryFunction()</code><a class="anchor" aria-label="anchor" href="#method-queryfunction-"></a></h3>
 <p>Overrides ConnectionHandler Call. Does not translate or render sql.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PooledConnectionHandler</span><span class="op">$</span><span class="fu">queryFunction</span><span class="op">(</span></span>
 <span>  <span class="va">sql</span>,</span>
 <span>  snakeCaseToCamelCase <span class="op">=</span> <span class="va">self</span><span class="op">$</span><span class="va">snakeCaseToCamelCase</span></span>
@@ -182,7 +206,7 @@ query Function</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>sql query string</p></dd>
 
@@ -198,12 +222,12 @@ query Function</p></dd>
 </div><p></p><hr><a id="method-PooledConnectionHandler-executeFunction"></a><div class="section">
 <h3 id="method-executefunction-">Method <code>executeFunction()</code><a class="anchor" aria-label="anchor" href="#method-executefunction-"></a></h3>
 <p>Overrides ConnectionHandler Call. Does not translate or render sql.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PooledConnectionHandler</span><span class="op">$</span><span class="fu">executeFunction</span><span class="op">(</span><span class="va">sql</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>sql query string</p></dd>
 
@@ -214,12 +238,12 @@ query Function</p></dd>
 </div><p></p><hr><a id="method-PooledConnectionHandler-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">PooledConnectionHandler</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
