@@ -13,10 +13,15 @@ table names in a consistent manner that is striaghtforward to maintain over time
 library(ResultModelManager)
 
 # Create some junk test data
-connectionDetails <- DatabaseConnector::createConnectionDetails(server = ":memory:", dbms = "sqlite")
+connectionDetails <-
+  DatabaseConnector::createConnectionDetails(
+    server = "test_db.sqlite",
+    dbms = "sqlite"
+  )
 
 conn <- DatabaseConnector::connect(connectionDetails)
 DatabaseConnector::insertTable(
+  connection = conn,
   tableName = "cd_cohort",
   data = data.frame(
     cohort_id = c(1, 2, 3),
@@ -41,7 +46,7 @@ tableSpecification <- data.frame(
 )
 
 cohortNamespace <- QueryNamespace$new(
-  connnectionHandler = connnectionHandler,
+  connectionHandler = connectionHandler,
   tableSpecification = tableSpecification,
   result_schema = "main",
   tablePrefix = "cd_"
@@ -50,8 +55,9 @@ sql <- "SELECT * FROM @result_schema.@cohort WHERE cohort_id = @cohort_id"
 # Returns : "SELECT * FROM main.cd_cohort WHERE cohort_id = @cohort_id"
 print(cohortNamespace$render(sql))
 # Returns query result
-result <- cohortNamespace$querySql(sql, cohort_id = 1)
-
+result <- cohortNamespace$queryDb(sql, cohort_id = 1)
+# cleanup test data
+unlink("test_db.sqlite")
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}

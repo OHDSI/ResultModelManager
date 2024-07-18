@@ -13,7 +13,7 @@ generateSqlSchema(
 }
 \arguments{
 \item{csvFilepath}{Path to schema file. Csv file must have the columns:
-"table_name", "column_name", "data_type", "is_required", "primary_key"}
+"table_name", "column_name", "data_type", "primary_key"}
 
 \item{schemaDefinition}{A schemaDefintiion data.frame` with the columns:
 tableName, columnName, dataType, isRequired, primaryKey}
