@@ -1,13 +1,14 @@
 ResultModelManager
 ==================
 [![Build Status](https://github.com/OHDSI/ResultModelManager/workflows/R-CMD-check/badge.svg)](https://github.com/OHDSI/ResultModelManager/actions?query=workflow%3AR-CMD-check)
-[![codecov.io](https://app.codecov.io/github/OHDSI/ResultModelManager/coverage.svg?branch=main)](https://codecov.io/github/OHDSI/ResultModelManager?branch=main)
+[![codecov.io](https://codecov.io/github/OHDSI/ResultModelManager/coverage.svg?branch=main)](https://app.codecov.io/github/OHDSI/ResultModelManager?branch=main)
 
 ResultModelManager (RMM) [HADES](https://ohdsi.github.io/Hades/).
 
 Introduction
 ============
-RMM is an R package designed to handle common ohdsi results data management functions by providing a common API for data model migrations and definitions
+RMM is a database data model management utilities for R packages in the [Observational Health Data Sciences and Informatics program](https://ohdsi.org). RMM provides utility functions to
+allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.
 
 
 System Requirements
@@ -25,6 +26,17 @@ Installation
   ```r
   remotes::install_github("OHDSI/ResultModelManager")
 ```
+
+Usage
+=====
+
+See articles:
+- [Creating migrations](https://ohdsi.github.io/ResultModelManager/articles/CreatingMigrations.html)
+- [Example Project](https://ohdsi.github.io/ResultModelManager/articles/ExampleProject.html)
+- [Upload functionality](https://ohdsi.github.io/ResultModelManager/articles/UploadFunctionality.html)
+- [Connection handler](https://ohdsi.github.io/ResultModelManager/articles/UsingConnectionHandlers.html)
+- [Using query namespaces](https://ohdsi.github.io/ResultModelManager/articles/UsingQueryNamespaces.html)
+
 
 Support
 =======

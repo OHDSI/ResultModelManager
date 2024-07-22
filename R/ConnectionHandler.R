@@ -28,6 +28,7 @@
 #' @import R6
 #' @importFrom DBI dbIsValid
 #' @importFrom SqlRender render translate
+#' @importFrom dbplyr in_schema
 #'
 #' @export ConnectionHandler
 ConnectionHandler <- R6::R6Class(
@@ -186,8 +187,7 @@ ConnectionHandler <- R6::R6Class(
           if (self$dbms() %in% c("postgresql", "redshift")) {
             DatabaseConnector::dbExecute(self$getConnection(), "ABORT;")
           }
-          print(sql)
-          stop(error)
+          stop(paste0(sql, "\n\n", error))
         }
       )
 
@@ -209,8 +209,7 @@ ConnectionHandler <- R6::R6Class(
           if (self$dbms() %in% c("postgresql", "redshift")) {
             self$executeFunction("ABORT;")
           }
-          print(sql)
-          stop(error)
+          stop(paste0(sql, "\n\n", error))
         }
       )
 

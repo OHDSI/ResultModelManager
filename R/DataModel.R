@@ -39,7 +39,7 @@ checkAndFixColumnNames <-
 
     # Set all fields to requried if optional isn't specified
     if (!"optional" %in% colnames(tableSpecs)) {
-      tableSpecs$otpional <- "no"
+      tableSpecs$optional <- "no"
     }
 
     optionalNames <- tableSpecs %>%
@@ -494,7 +494,7 @@ uploadTable <- function(tableName,
 #' Upload results to the database server.
 #'
 #' @description
-#' Requires the results data model tables have been created using following the specifications, @seealso \code{\link{generateSqlSchema}} function.
+#' Requires the results data model tables have been created using following the specifications, generateSqlSchema function.
 #'
 #' Results files should be in the snake_case format for table headers and not camelCase
 #'
@@ -809,19 +809,20 @@ loadResultsDataModelSpecifications <- function(filePath) {
 #' Another assumption of this function is that we're only attempting to
 #' recast to a character data type and not try to handle different type
 #' conversions.
+#' @noRd
 formatChunk <- function(pkValuesInDb, chunk) {
   for (columnName in names(pkValuesInDb)) {
-    if (class(pkValuesInDb[[columnName]]) == "integer") {
+    if (inherits(pkValuesInDb[[columnName]], "integer")) {
       pkValuesInDb[[columnName]] <- as.numeric(pkValuesInDb[[columnName]])
     }
 
-    if (class(chunk[[columnName]]) == "integer") {
+    if (inherits(chunk[[columnName]], "integer")) {
       chunk[[columnName]] <- as.numeric(chunk[[columnName]])
     }
 
 
     if (class(pkValuesInDb[[columnName]]) != class(chunk[[columnName]])) {
-      if (class(pkValuesInDb[[columnName]]) == "character") {
+      if (inherits(pkValuesInDb[[columnName]], "character")) {
         chunk <- chunk |> dplyr::mutate_at(columnName, as.character)
       } else {
         errorMsg <- paste0(

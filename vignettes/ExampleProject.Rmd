@@ -19,7 +19,6 @@ specification <- data.frame(
   tableName = c("covariate_definition", "covariate_definition", "covariate_result", "covariate_result", "covariate_result"),
   columnName = c("covariate_id", "covariate_name", "cohort_definition_id", "covariate_id", "covariate_mean"),
   dataType = c("int", "varchar", "int", "bigint", "numeric"),
-  isRequired = c("Yes", "Yes", "Yes", "Yes", "Yes"),
   primaryKey = c("Yes", "No", "Yes", "Yes", "No"),
   optional = c("No", "No", "No", "No", "No")
 )

@@ -62,7 +62,7 @@ Use with care. If interactive this will require further input.}
 \item{specifications}{A tibble data frame object with specifications.}
 }
 \description{
-Requires the results data model tables have been created using following the specifications, @seealso \code{\link{generateSqlSchema}} function.
+Requires the results data model tables have been created using following the specifications, generateSqlSchema function.
 
 Results files should be in the snake_case format for table headers and not camelCase
 

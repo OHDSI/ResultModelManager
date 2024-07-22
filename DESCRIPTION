@@ -1,14 +1,18 @@
 Package: ResultModelManager
 Title: Result Model Manager
-Version: 0.5.8
+Version: 0.5.9
 Authors@R:
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
-Description: Database data model management utilities for OHDSI packages.
+Description: Database data model management utilities for R packages in the Observational Health Data Sciences and
+    Informatics program <https://ohdsi.org>. 'ResultModelManager' provides utility functions to allow package
+    maintainers to migrate existing SQL database models, export and import results in consistent patterns.
+URL: https://github.com/OHDSI/ResultModelManager
+BugReports: https://github.com/OHDSI/ResultModelManager/issues
 License: Apache License (== 2.0)
 Encoding: UTF-8
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Depends:
   R (>= 4.1.0),
   R6,
@@ -25,13 +29,13 @@ Imports:
   dbplyr,
   rlang,
   lubridate,
-  fastmap
+  fastmap,
+  withr
 Suggests:
   testthat (>= 3.0.0),
   RSQLite,
   duckdb,
   RPostgres,
-  withr,
   knitr,
   rmarkdown,
   keyring,

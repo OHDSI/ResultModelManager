@@ -13,6 +13,7 @@ test_that("Grant permissions", {
   )
 
   skip_if_results_db_not_available()
+  testthat::skip_on_cran()
 
   sql <- generateSqlSchema(schemaDefinition = tableSpecification)
 

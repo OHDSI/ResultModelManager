@@ -67,10 +67,12 @@ test_that("Migrations manager runs in folder mode", {
 })
 
 test_that("Add migration and execute", {
+  testthat::skip_on_cran() # Uses a file on disk
+  mpath <- file.path("migrations", "sql_server", "Migration_3-test-add.sql")
   write("
   {DEFAULT @moo = moo}
-  CREATE TABLE @database_schema.@table_prefix@moo (id INT);", file.path("migrations", "sql_server", "Migration_3-test-add.sql"))
-  on.exit(unlink(file.path("migrations", "sql_server", "Migration_3-test-add.sql")))
+  CREATE TABLE @database_schema.@table_prefix@moo (id INT);", mpath)
+  on.exit(unlink(mpath))
   manager <- DataMigrationManager$new(
     connectionDetails = connectionDetails,
     databaseSchema = "main",
@@ -87,6 +89,7 @@ test_that("Add migration and execute", {
 
 
 test_that("Add invalid filename", {
+  testthat::skip_on_cran() # uses file on disk
   unlink(connectionDetails$server())
   write("", file.path("migrations", "sql_server", "foo.sql"))
   on.exit(unlink(file.path("migrations", "sql_server", "foo.sql")))

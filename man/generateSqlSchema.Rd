@@ -13,7 +13,7 @@ generateSqlSchema(
 }
 \arguments{
 \item{csvFilepath}{Path to schema file. Csv file must have the columns:
-"table_name", "column_name", "data_type", "is_required", "primary_key"}
+"table_name", "column_name", "data_type", "primary_key"}
 
 \item{schemaDefinition}{A schemaDefintiion data.frame` with the columns:
 tableName, columnName, dataType, isRequired, primaryKey}
@@ -22,9 +22,7 @@ tableName, columnName, dataType, isRequired, primaryKey}
 
 \item{overwrite}{Boolean - overwrite existing file?}
 }
-\value{
-string containing the sql for the table
-}
 \description{
 Take a csv schema definition and create a basic sql script with it.
+returns string containing the sql for the table
 }
