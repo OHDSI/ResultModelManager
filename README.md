@@ -23,8 +23,14 @@ Installation
 
 2. In R, use the following commands to download and install ResultModelManager:
 
-  ```r
-  remotes::install_github("OHDSI/ResultModelManager")
+```r
+install.packages("ResultModelManager")
+```
+
+or, to install the development version:
+
+```r
+remotes::install_github("ResultModelManager", ref = 'develop')
 ```
 
 Usage

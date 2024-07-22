@@ -36,3 +36,4 @@ LICENSE
 .git
 ..Rcheck
 errorReportSql.txt
+^CRAN-SUBMISSION$
