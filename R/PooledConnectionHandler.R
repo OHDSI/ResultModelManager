@@ -37,20 +37,6 @@ requiredPackage <- function(packageName) {
       dbname = cd$server()
     )
   },
-  "postgresql" = function(cd) {
-    requiredPackage("RPostgres")
-    host <- strsplit(cd$server(), "/")[[1]][1]
-    dbname <- strsplit(cd$server(), "/")[[1]][2]
-    list(
-      drv = RPostgres::Postgres(),
-      dbname = dbname,
-      host = host,
-      user = cd$user(),
-      port = cd$port(),
-      password = cd$password(),
-      options = "sslmode=require"
-    )
-  },
   "duckdb" = function(cd) {
     requiredPackage("duckdb")
     list(
