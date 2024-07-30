@@ -110,7 +110,7 @@ checkAndFixDataTypes <-
           table <- dplyr::mutate_at(table, i, as.numeric)
         }
       } else if (expectedType == "int") {
-        if (observedTypes[i] != "integer") {
+        if (!observedTypes[i] %in% c("integer", "numeric")) {
           ParallelLogger::logDebug(
             sprintf(
               "Column %s in table %s in results folder %s is of type %s, but was expecting %s. Attempting to convert.",
@@ -121,7 +121,7 @@ checkAndFixDataTypes <-
               expectedType
             )
           )
-          table <- dplyr::mutate_at(table, i, as.integer)
+          table <- dplyr::mutate_at(table, i, as.numeric)
         }
       } else if (expectedType == "varchar") {
         if (observedTypes[i] != "character") {
@@ -423,12 +423,14 @@ uploadTable <- function(tableName,
                         purgeSiteDataBeforeUploading,
                         warnOnMissingTable) {
   csvFileName <- paste0(tableName, ".csv")
+  specifications <- specifications %>%
+        dplyr::filter(.data$tableName == !!tableName)
+
   if (csvFileName %in% list.files(resultsFolder)) {
     rlang::inform(paste0("Uploading file: ", csvFileName, " to table: ", tableName))
 
     primaryKey <- specifications %>%
-      dplyr::filter(.data$tableName == !!tableName &
-                      tolower(.data$primaryKey) == "yes") %>%
+      dplyr::filter(tolower(.data$primaryKey) == "yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -443,8 +445,7 @@ uploadTable <- function(tableName,
     env$purgeSiteDataBeforeUploading <- purgeSiteDataBeforeUploading
     if (purgeSiteDataBeforeUploading && "database_id" %in% primaryKey) {
       type <- specifications %>%
-        dplyr::filter(.data$tableName == !!tableName &
-                        .data$columnName == "database_id") %>%
+        dplyr::filter(.data$columnName == "database_id") %>%
         dplyr::select("dataType") %>%
         dplyr::pull()
       # Remove the existing data for the databaseId
@@ -477,22 +478,25 @@ uploadTable <- function(tableName,
       env$primaryKeyValuesInDb <- primaryKeyValuesInDb
     }
 
+    # Remove data size or types
     types <- sub(" ", "", sub("\\(.*\\)", "", specifications$dataType))
-    # Create a named vector of column types
-    colTypesVec <- setNames(types, specifications$columnName)
 
     # Convert the types to readr's col_types format
-    convertType <- function(type) {
-      switch(type,
-             varchar = "c",
-             bigint = "n",
-             integer = "n",
-             int = "n",
-             date = "D",
-             "?") # default to guess if type not matched
-    }
+    convertType <- Vectorize(
+      function(type) {
+        switch(type,
+               varchar = "c",
+               bigint = "n",
+               int = "n",
+               date = "D",
+               "?") # default to guess if type not matched
+      }
+    )
 
-    colTypes <- paste0(sapply(colTypesVec, convertType), collapse = "")
+    types <- convertType(types)
+    # Create a named vector of column types
+    names(types) <- specifications$columnName
+    colTypes <- do.call(readr::cols, as.list(types))
 
     readr::read_csv_chunked(
       file = file.path(resultsFolder, csvFileName),
