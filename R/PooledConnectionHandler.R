@@ -82,7 +82,7 @@ PooledConnectionHandler <- R6::R6Class(
   inherit = ConnectionHandler,
   private = list(
     dbConnectArgs = NULL,
-    .checkedOutConnectionPath <- "RMMcheckedOutConnection"
+    .checkedOutConnectionPath = "RMMcheckedOutConnection"
   ),
   public = list(
     #' @param connectionDetails             DatabaseConnector::connectionDetails class
