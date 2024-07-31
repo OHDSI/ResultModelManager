@@ -136,6 +136,8 @@ PooledConnectionHandler <- R6::R6Class(
     #' @description
     #' Returns a connection from the pool
     #' When the desired frame exits, the connection will be returned to the pool
+    #' The connection is stored as an attribute within the calling frame (e.g. the same function) to prevent multiple
+    #' connections being spawned, which limits performance.
     #' @param .deferedFrame  defaults to the parent frame of the calling block.
     getConnection = function(.deferedFrame = parent.frame(n = 2)) {
       checkmate::assertEnvironment(.deferedFrame)

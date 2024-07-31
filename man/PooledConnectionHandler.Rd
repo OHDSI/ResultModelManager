@@ -83,6 +83,8 @@ Get Connection
 \subsection{Method \code{getConnection()}}{
 Returns a connection from the pool
 When the desired frame exits, the connection will be returned to the pool
+The connection is stored as an attribute within the calling frame (e.g. the same function) to prevent multiple
+connections being spawned, which limits performance.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$getConnection(.deferedFrame = parent.frame(n = 2))}\if{html}{\out{</div>}}
 }
