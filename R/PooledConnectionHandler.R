@@ -71,7 +71,7 @@ requiredPackage <- function(packageName) {
 #' @description
 #' Transparently works the same way as a standard connection handler but stores pooled connections.
 #' Useful for long running applications that serve multiple concurrent requests.
-#'
+#' Note that a side effect of using this is that each call to this increments the .GlobalEnv attribute `RMMPooledHandlerCount`
 #' @importFrom pool dbPool poolClose
 #' @importFrom DBI dbIsValid
 #' @importFrom withr defer
@@ -82,7 +82,7 @@ PooledConnectionHandler <- R6::R6Class(
   inherit = ConnectionHandler,
   private = list(
     dbConnectArgs = NULL,
-    .checkedOutConnectionPath = "RMMcheckedOutConnection"
+    .handlerId = 1
   ),
   public = list(
     #' @param connectionDetails             DatabaseConnector::connectionDetails class
@@ -114,6 +114,9 @@ PooledConnectionHandler <- R6::R6Class(
       private$dbConnectArgs <- dbConnectArgs
       self$connectionDetails <- connectionDetails
       self$snakeCaseToCamelCase <- snakeCaseToCamelCase
+      handlerCount <- attr(.GlobalEnv, "RMMPooledHandlerCount", exact = TRUE)
+      private$.handlerId <- ifelse(is.null(handlerCount), 1, handlerCount + 1)
+
       if (loadConnection) {
         self$initConnection()
       }
@@ -132,25 +135,31 @@ PooledConnectionHandler <- R6::R6Class(
       self$isActive <- TRUE
     },
 
+    #' Used for getting a checked out connection from a given environment (if one exists)
+    #' @param .deferedFrame  defaults to the parent frame of the calling block.
+    getCheckedOutConnectionPath = function() {
+      return(paste0("RMMcheckedOutConnection", private$.handlerId))
+    },
+
     #' Get Connection
     #' @description
     #' Returns a connection from the pool
     #' When the desired frame exits, the connection will be returned to the pool
-    #' The connection is stored as an attribute within the calling frame (e.g. the same function) to prevent multiple
+    #' As a side effect, the connection is stored as an attribute within the calling frame (e.g. the same function) to prevent multiple
     #' connections being spawned, which limits performance.
     #' @param .deferedFrame  defaults to the parent frame of the calling block.
     getConnection = function(.deferedFrame = parent.frame(n = 2)) {
       checkmate::assertEnvironment(.deferedFrame)
-      if (is.null(attr(.deferedFrame, private$.checkedOutConnectionPath))) {
-         attr(.deferedFrame, private$.checkedOutConnectionPath) <- pool::poolCheckout(super$getConnection())
+      if (is.null(attr(.deferedFrame, self$getCheckedOutConnectionPath(), exact = TRUE))) {
+         attr(.deferedFrame, self$getCheckedOutConnectionPath()) <- pool::poolCheckout(super$getConnection())
 
          withr::defer({
-           pool::poolReturn(attr(.deferedFrame, private$.checkedOutConnectionPath))
-           attr(.deferedFrame, private$.checkedOutConnectionPath) <- NULL
+           pool::poolReturn(attr(.deferedFrame, self$getCheckedOutConnectionPath(), exact = TRUE))
+           attr(.deferedFrame, self$getCheckedOutConnectionPath()) <- NULL
          }, envir = .deferedFrame)
       }
 
-      return(attr(.deferedFrame, private$.checkedOutConnectionPath))
+      return(attr(.deferedFrame, self$getCheckedOutConnectionPath(), exact = TRUE))
     },
 
     #' get dbms

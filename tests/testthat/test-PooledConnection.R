@@ -23,8 +23,8 @@ test_that("internal connection handlers", {
 })
 
 test_that("Maintained connection consistency", {
-  testthat::expect_null(attr(parent.frame(n = 1), "RMMcheckedOutConnection"))
+  testthat::expect_null(attr(parent.frame(n = 1), "RMMcheckedOutConnection1"))
   pch <- PooledConnectionHandler$new(testDatabaseConnectionDetails)
   conn <- pch$getConnection()
-  testthat::expect_identical(conn, attr(parent.frame(n = 1), "RMMcheckedOutConnection"))
+  testthat::expect_identical(conn, attr(parent.frame(n = 1), "RMMcheckedOutConnection1"))
 })
