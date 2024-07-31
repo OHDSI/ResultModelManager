@@ -135,7 +135,7 @@ PooledConnectionHandler <- R6::R6Class(
     #' Returns a connection from the pool
     #' When the desired frame exits, the connection will be returned to the pool
     #' @param .deferedFrame  defaults to the parent frame of the calling block.
-    getConnection = function(.deferedFrame = parent.frame(n = 2)) {
+    getConnection = function(.deferedFrame = parent.frame(n = 1)) {
       conn <- pool::poolCheckout(super$getConnection())
       withr::defer(pool::poolReturn(conn), envir = .deferedFrame)
       return(conn)
