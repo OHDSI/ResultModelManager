@@ -28,6 +28,7 @@ requiredPackage <- function(packageName) {
   }
 }
 
+
 # map a ConnectionDetails objects and translates them to DBI pool args
 .DBCToDBIArgs <- list(
   "sqlite" = function(cd) {
@@ -80,7 +81,8 @@ PooledConnectionHandler <- R6::R6Class(
   classname = "PooledConnectionHandler",
   inherit = ConnectionHandler,
   private = list(
-    dbConnectArgs = NULL
+    dbConnectArgs = NULL,
+    .checkedOutConnectionPath <- "RMMcheckedOutConnection"
   ),
   public = list(
     #' @param connectionDetails             DatabaseConnector::connectionDetails class
@@ -135,10 +137,18 @@ PooledConnectionHandler <- R6::R6Class(
     #' Returns a connection from the pool
     #' When the desired frame exits, the connection will be returned to the pool
     #' @param .deferedFrame  defaults to the parent frame of the calling block.
-    getConnection = function(.deferedFrame = parent.frame(n = 1)) {
-      conn <- pool::poolCheckout(super$getConnection())
-      withr::defer(pool::poolReturn(conn), envir = .deferedFrame)
-      return(conn)
+    getConnection = function(.deferedFrame = parent.frame(n = 2)) {
+      checkmate::assertEnvironment(.deferedFrame)
+      if (is.null(attr(.deferedFrame, private$.checkedOutConnectionPath))) {
+         attr(.deferedFrame, private$.checkedOutConnectionPath) <- pool::poolCheckout(super$getConnection())
+
+         withr::defer({
+           pool::poolReturn(attr(.deferedFrame, private$.checkedOutConnectionPath))
+           attr(.deferedFrame, private$.checkedOutConnectionPath) <- NULL
+         }, envir = .deferedFrame)
+      }
+
+      return(attr(.deferedFrame, private$.checkedOutConnectionPath))
     },
 
     #' get dbms
