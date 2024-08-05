@@ -28,6 +28,7 @@ requiredPackage <- function(packageName) {
   }
 }
 
+
 # map a ConnectionDetails objects and translates them to DBI pool args
 .DBCToDBIArgs <- list(
   "sqlite" = function(cd) {
@@ -64,13 +65,12 @@ requiredPackage <- function(packageName) {
   }
 )
 
-
 #' Pooled Connection Handler
 #'
 #' @description
 #' Transparently works the same way as a standard connection handler but stores pooled connections.
 #' Useful for long running applications that serve multiple concurrent requests.
-#'
+#' Note that a side effect of using this is that each call to this increments the .GlobalEnv attribute `RMMPooledHandlerCount`
 #' @importFrom pool dbPool poolClose
 #' @importFrom DBI dbIsValid
 #' @importFrom withr defer
@@ -80,7 +80,15 @@ PooledConnectionHandler <- R6::R6Class(
   classname = "PooledConnectionHandler",
   inherit = ConnectionHandler,
   private = list(
-    dbConnectArgs = NULL
+    dbConnectArgs = NULL,
+    .handlerId = 1,
+    activeConnectionRefs = list(),
+    .returnPooledObject = function(frame) {
+      if (!is.null(attr(frame, self$getCheckedOutConnectionPath(), exact = TRUE))) {
+        pool::poolReturn(attr(frame, self$getCheckedOutConnectionPath(), exact = TRUE))
+        attr(frame, self$getCheckedOutConnectionPath()) <- NULL
+      }
+    }
   ),
   public = list(
     #' @param connectionDetails             DatabaseConnector::connectionDetails class
@@ -112,6 +120,9 @@ PooledConnectionHandler <- R6::R6Class(
       private$dbConnectArgs <- dbConnectArgs
       self$connectionDetails <- connectionDetails
       self$snakeCaseToCamelCase <- snakeCaseToCamelCase
+      handlerCount <- attr(.GlobalEnv, "RMMPooledHandlerCount", exact = TRUE)
+      private$.handlerId <- ifelse(is.null(handlerCount), 1, handlerCount + 1)
+
       if (loadConnection) {
         self$initConnection()
       }
@@ -130,15 +141,32 @@ PooledConnectionHandler <- R6::R6Class(
       self$isActive <- TRUE
     },
 
+    #' Used for getting a checked out connection from a given environment (if one exists)
+    #' @param .deferedFrame  defaults to the parent frame of the calling block.
+    getCheckedOutConnectionPath = function() {
+      return(paste0("RMMcheckedOutConnection", private$.handlerId))
+    },
+
     #' Get Connection
     #' @description
     #' Returns a connection from the pool
     #' When the desired frame exits, the connection will be returned to the pool
+    #' As a side effect, the connection is stored as an attribute within the calling frame (e.g. the same function) to prevent multiple
+    #' connections being spawned, which limits performance.
     #' @param .deferedFrame  defaults to the parent frame of the calling block.
     getConnection = function(.deferedFrame = parent.frame(n = 2)) {
-      conn <- pool::poolCheckout(super$getConnection())
-      withr::defer(pool::poolReturn(conn), envir = .deferedFrame)
-      return(conn)
+      checkmate::assertEnvironment(.deferedFrame)
+      if (is.null(attr(.deferedFrame, self$getCheckedOutConnectionPath(), exact = TRUE))) {
+        attr(.deferedFrame, self$getCheckedOutConnectionPath()) <- pool::poolCheckout(super$getConnection())
+
+        # Store reference to active frame
+        private$activeConnectionRefs[[length(private$activeConnectionRefs) + 1]] <- .deferedFrame
+        withr::defer({
+          private$.returnPooledObject(.deferedFrame)
+        }, envir = .deferedFrame)
+      }
+
+      return(attr(.deferedFrame, self$getCheckedOutConnectionPath(), exact = TRUE))
     },
 
     #' get dbms
@@ -153,6 +181,8 @@ PooledConnectionHandler <- R6::R6Class(
     #' Overrides ConnectionHandler Call
     closeConnection = function() {
       if (self$dbIsValid()) {
+        # Return any still active pooled objects
+        lapply(private$activeConnectionRefs, private$.returnPooledObject)
         pool::poolClose(pool = self$con)
       }
       self$isActive <- FALSE

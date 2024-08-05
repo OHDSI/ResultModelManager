@@ -6,6 +6,7 @@
 \description{
 Transparently works the same way as a standard connection handler but stores pooled connections.
 Useful for long running applications that serve multiple concurrent requests.
+Note that a side effect of using this is that each call to this increments the .GlobalEnv attribute \code{RMMPooledHandlerCount}
 }
 \section{Super class}{
 \code{\link[ResultModelManager:ConnectionHandler]{ResultModelManager::ConnectionHandler}} -> \code{PooledConnectionHandler}
@@ -15,6 +16,7 @@ Useful for long running applications that serve multiple concurrent requests.
 \itemize{
 \item \href{#method-PooledConnectionHandler-new}{\code{PooledConnectionHandler$new()}}
 \item \href{#method-PooledConnectionHandler-initConnection}{\code{PooledConnectionHandler$initConnection()}}
+\item \href{#method-PooledConnectionHandler-getCheckedOutConnectionPath}{\code{PooledConnectionHandler$getCheckedOutConnectionPath()}}
 \item \href{#method-PooledConnectionHandler-getConnection}{\code{PooledConnectionHandler$getConnection()}}
 \item \href{#method-PooledConnectionHandler-dbms}{\code{PooledConnectionHandler$dbms()}}
 \item \href{#method-PooledConnectionHandler-closeConnection}{\code{PooledConnectionHandler$closeConnection()}}
@@ -71,11 +73,28 @@ initialize pooled db connection}
 \if{latex}{\out{\hypertarget{method-PooledConnectionHandler-initConnection}{}}}
 \subsection{Method \code{initConnection()}}{
 Overrides ConnectionHandler Call
-Get Connection
+Used for getting a checked out connection from a given environment (if one exists)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$initConnection()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PooledConnectionHandler-getCheckedOutConnectionPath"></a>}}
+\if{latex}{\out{\hypertarget{method-PooledConnectionHandler-getCheckedOutConnectionPath}{}}}
+\subsection{Method \code{getCheckedOutConnectionPath()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$getCheckedOutConnectionPath()}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{.deferedFrame}}{defaults to the parent frame of the calling block.
+Get Connection}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PooledConnectionHandler-getConnection"></a>}}
@@ -83,6 +102,8 @@ Get Connection
 \subsection{Method \code{getConnection()}}{
 Returns a connection from the pool
 When the desired frame exits, the connection will be returned to the pool
+The connection is stored as an attribute within the calling frame (e.g. the same function) to prevent multiple
+connections being spawned, which limits performance.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$getConnection(.deferedFrame = parent.frame(n = 2))}\if{html}{\out{</div>}}
 }

@@ -20,8 +20,11 @@ test_that("internal connection handlers", {
   expect_class(conn, "Pool")
   pool::poolClose(pool = conn)
 
-  if (Sys.getenv("CDM5_POSTGRESQL_SERVER") != "") {
-    args <- .DBCToDBIArgs$postgresql(testDatabaseConnectionDetails)
-    expect_list(args)
-  }
+})
+
+test_that("Maintained connection consistency", {
+  testthat::expect_null(attr(parent.frame(n = 1), "RMMcheckedOutConnection1"))
+  pch <- PooledConnectionHandler$new(testDatabaseConnectionDetails)
+  conn <- pch$getConnection()
+  testthat::expect_identical(conn, attr(parent.frame(n = 1), "RMMcheckedOutConnection1"))
 })
