@@ -65,7 +65,6 @@ requiredPackage <- function(packageName) {
   }
 )
 
-
 #' Pooled Connection Handler
 #'
 #' @description
@@ -82,7 +81,14 @@ PooledConnectionHandler <- R6::R6Class(
   inherit = ConnectionHandler,
   private = list(
     dbConnectArgs = NULL,
-    .handlerId = 1
+    .handlerId = 1,
+    activeConnectionRefs = list(),
+    .returnPooledObject = function(frame) {
+      if (!is.null(attr(frame, self$getCheckedOutConnectionPath(), exact = TRUE))) {
+        pool::poolReturn(attr(frame, self$getCheckedOutConnectionPath(), exact = TRUE))
+        attr(frame, self$getCheckedOutConnectionPath()) <- NULL
+      }
+    }
   ),
   public = list(
     #' @param connectionDetails             DatabaseConnector::connectionDetails class
@@ -151,12 +157,13 @@ PooledConnectionHandler <- R6::R6Class(
     getConnection = function(.deferedFrame = parent.frame(n = 2)) {
       checkmate::assertEnvironment(.deferedFrame)
       if (is.null(attr(.deferedFrame, self$getCheckedOutConnectionPath(), exact = TRUE))) {
-         attr(.deferedFrame, self$getCheckedOutConnectionPath()) <- pool::poolCheckout(super$getConnection())
+        attr(.deferedFrame, self$getCheckedOutConnectionPath()) <- pool::poolCheckout(super$getConnection())
 
-         withr::defer({
-           pool::poolReturn(attr(.deferedFrame, self$getCheckedOutConnectionPath(), exact = TRUE))
-           attr(.deferedFrame, self$getCheckedOutConnectionPath()) <- NULL
-         }, envir = .deferedFrame)
+        # Store reference to active frame
+        private$activeConnectionRefs[[length(private$activeConnectionRefs) + 1]] <- .deferedFrame
+        withr::defer({
+          private$.returnPooledObject(.deferedFrame)
+        }, envir = .deferedFrame)
       }
 
       return(attr(.deferedFrame, self$getCheckedOutConnectionPath(), exact = TRUE))
@@ -174,6 +181,8 @@ PooledConnectionHandler <- R6::R6Class(
     #' Overrides ConnectionHandler Call
     closeConnection = function() {
       if (self$dbIsValid()) {
+        # Return any still active pooled objects
+        lapply(private$activeConnectionRefs, private$.returnPooledObject)
         pool::poolClose(pool = self$con)
       }
       self$isActive <- FALSE
