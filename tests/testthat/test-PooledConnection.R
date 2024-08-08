@@ -28,3 +28,13 @@ test_that("Maintained connection consistency", {
   conn <- pch$getConnection()
   testthat::expect_identical(conn, attr(parent.frame(n = 1), "RMMcheckedOutConnection1"))
 })
+
+test_that("Abort Connections", {
+  skip_if_results_db_not_available()
+  pch <- PooledConnectionHandler$new(testDatabaseConnectionDetails)
+  expect_error(pch$queryDb("BROKEN"))
+  expect_equal(pch$queryDb("SELECT 1 as c")$c, 1)
+  expect_error(pch$executeSql("MORE BROKEN"))
+  pch$executeSql("CREATE TABLE #@rnd (id int); DROP TABLE #@rnd;", rnd = testSchema)
+})
+
