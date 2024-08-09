@@ -19,13 +19,14 @@ test_that("internal connection handlers", {
   conn <- do.call(pool::dbPool, args)
   expect_class(conn, "Pool")
   pool::poolClose(pool = conn)
-
 })
 
 test_that("Maintained connection consistency", {
   testthat::expect_null(attr(parent.frame(n = 1), "RMMcheckedOutConnection1"))
   pch <- PooledConnectionHandler$new(testDatabaseConnectionDetails)
   conn <- pch$getConnection()
+  # This test is a proxy for when the frame exits the pooled object will be returned
+  # Note, this is not guaranteed
   testthat::expect_identical(conn, attr(parent.frame(n = 1), "RMMcheckedOutConnection1"))
 })
 
@@ -37,4 +38,3 @@ test_that("Abort Connections", {
   expect_error(pch$executeSql("MORE BROKEN"))
   pch$executeSql("CREATE TABLE #@rnd (id int); DROP TABLE #@rnd;", rnd = testSchema)
 })
-
