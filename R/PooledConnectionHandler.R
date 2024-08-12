@@ -127,6 +127,20 @@ PooledConnectionHandler <- R6::R6Class(
         self$initConnection()
       }
     },
+
+    #' db Is Valid
+    #' @description
+    #' Masks call to DBI::dbIsValid. Returns False if connection is NULL
+    #' @returns boolean TRUE if connection is valid
+    dbIsValid = function() {
+      browser()
+      if (is.null(self$con)) {
+        return(FALSE)
+      }
+      return(DBI::dbIsValid(dbObj = self$con))
+    },
+
+
     #' initialize pooled db connection
     #' @description
     #' Overrides ConnectionHandler Call
