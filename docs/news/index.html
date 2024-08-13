@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">ResultModelManager</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.5.10</span>
       </span>
     </div>
 
@@ -79,7 +79,13 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.5.9" id="resultmodelmanager-059">ResultModelManager 0.5.9<a class="anchor" aria-label="anchor" href="#resultmodelmanager-059"></a></h2>
+<h2 class="page-header" data-toc-text="0.5.10" id="resultmodelmanager-0510">ResultModelManager 0.5.10<a class="anchor" aria-label="anchor" href="#resultmodelmanager-0510"></a></h2>
+<p>Bug fixes:</p>
+<ol style="list-style-type: decimal"><li><p>Resolved issue where failed queries were being aborted inside the wrong connection in PooledConnectionHandler</p></li>
+<li><p>Refactored pooled connection handler to better ensure checkout connections are returned</p></li>
+</ol></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.5.9" id="resultmodelmanager-059">ResultModelManager 0.5.9<small>2024-07-21</small><a class="anchor" aria-label="anchor" href="#resultmodelmanager-059"></a></h2>
 <p>Changes:</p>
 <ol style="list-style-type: decimal"><li><p>Changes made to make package CRAN compliant</p></li>
 <li><p><code>PooledConnectionHandler</code> now uses withr::defer to automatically returned pooled connections returned with <code>getConnection</code></p></li>
