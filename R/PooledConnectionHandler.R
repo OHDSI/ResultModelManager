@@ -217,8 +217,9 @@ PooledConnectionHandler <- R6::R6Class(
     queryDb = function(sql, snakeCaseToCamelCase = self$snakeCaseToCamelCase, overrideRowLimit = FALSE, ...) {
       # Limit row count is intended for web applications that may cause a denial of service if they consume too many
       # resources.
-      if (!self$isActive)
+      if (!self$isActive) {
         self$initConnection()
+      }
 
       sql <- .limitRowCount(sql, overrideRowLimit)
       sql <- self$renderTranslateSql(sql, ...)
@@ -245,8 +246,9 @@ PooledConnectionHandler <- R6::R6Class(
     #' @param sql                                   sql query string
     #' @param ...                                   Additional query parameters
     executeSql = function(sql, ...) {
-      if (!self$isActive)
+      if (!self$isActive) {
         self$initConnection()
+      }
 
       sql <- self$renderTranslateSql(sql, ...)
       conn <- pool::poolCheckout(self$con)
