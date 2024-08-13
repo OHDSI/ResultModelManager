@@ -139,7 +139,7 @@ Close Connection
 \if{html}{\out{<a id="method-PooledConnectionHandler-closeConnection"></a>}}
 \if{latex}{\out{\hypertarget{method-PooledConnectionHandler-closeConnection}{}}}
 \subsection{Method \code{closeConnection()}}{
-Overrides ConnectionHandler Call
+Overrides ConnectionHandler Call - closes all active connections called with getConnection
 queryDb
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$closeConnection()}\if{html}{\out{</div>}}
