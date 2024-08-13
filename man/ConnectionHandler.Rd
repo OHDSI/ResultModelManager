@@ -241,7 +241,8 @@ Does not translate or render sql.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$queryFunction(
   sql,
-  snakeCaseToCamelCase = self$snakeCaseToCamelCase
+  snakeCaseToCamelCase = self$snakeCaseToCamelCase,
+  connection = self$getConnection()
 )}\if{html}{\out{</div>}}
 }
 
@@ -250,7 +251,9 @@ Does not translate or render sql.
 \describe{
 \item{\code{sql}}{sql query string}
 
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+
+\item{\code{connection}}{(Optional) connection object
 execute Function}
 }
 \if{html}{\out{</div>}}
@@ -263,13 +266,15 @@ execute Function}
 exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
 Does not translate or render sql.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$executeFunction(sql)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$executeFunction(sql, connection = self$getConnection())}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{sql}}{sql query string}
+
+\item{\code{connection}}{connection object}
 }
 \if{html}{\out{</div>}}
 }
