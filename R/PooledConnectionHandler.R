@@ -189,7 +189,7 @@ PooledConnectionHandler <- R6::R6Class(
 
     #' Close Connection
     #' @description
-    #' Overrides ConnectionHandler Call
+    #' Overrides ConnectionHandler Call - closes all active connections called with getConnection
     closeConnection = function() {
       if (self$dbIsValid()) {
         # Return any still active pooled objects
@@ -217,6 +217,9 @@ PooledConnectionHandler <- R6::R6Class(
     queryDb = function(sql, snakeCaseToCamelCase = self$snakeCaseToCamelCase, overrideRowLimit = FALSE, ...) {
       # Limit row count is intended for web applications that may cause a denial of service if they consume too many
       # resources.
+      if (!self$isActive)
+        self$initConnection()
+
       sql <- .limitRowCount(sql, overrideRowLimit)
       sql <- self$renderTranslateSql(sql, ...)
       conn <- pool::poolCheckout(self$con)
@@ -242,6 +245,9 @@ PooledConnectionHandler <- R6::R6Class(
     #' @param sql                                   sql query string
     #' @param ...                                   Additional query parameters
     executeSql = function(sql, ...) {
+      if (!self$isActive)
+        self$initConnection()
+
       sql <- self$renderTranslateSql(sql, ...)
       conn <- pool::poolCheckout(self$con)
       on.exit(pool::poolReturn(conn))
