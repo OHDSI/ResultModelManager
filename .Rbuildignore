@@ -37,3 +37,4 @@ LICENSE
 ..Rcheck
 errorReportSql.txt
 ^CRAN-SUBMISSION$
+^cran-comments\.md$
