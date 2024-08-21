@@ -3,9 +3,14 @@
 \name{PooledConnectionHandler}
 \alias{PooledConnectionHandler}
 \title{Pooled Connection Handler}
+\value{
+boolean TRUE if connection is valid
+executeSql
+}
 \description{
 Transparently works the same way as a standard connection handler but stores pooled connections.
 Useful for long running applications that serve multiple concurrent requests.
+Note that a side effect of using this is that each call to this increments the .GlobalEnv attribute \code{RMMPooledHandlerCount}
 }
 \section{Super class}{
 \code{\link[ResultModelManager:ConnectionHandler]{ResultModelManager::ConnectionHandler}} -> \code{PooledConnectionHandler}
@@ -15,21 +20,22 @@ Useful for long running applications that serve multiple concurrent requests.
 \itemize{
 \item \href{#method-PooledConnectionHandler-new}{\code{PooledConnectionHandler$new()}}
 \item \href{#method-PooledConnectionHandler-initConnection}{\code{PooledConnectionHandler$initConnection()}}
+\item \href{#method-PooledConnectionHandler-getCheckedOutConnectionPath}{\code{PooledConnectionHandler$getCheckedOutConnectionPath()}}
 \item \href{#method-PooledConnectionHandler-getConnection}{\code{PooledConnectionHandler$getConnection()}}
 \item \href{#method-PooledConnectionHandler-dbms}{\code{PooledConnectionHandler$dbms()}}
 \item \href{#method-PooledConnectionHandler-closeConnection}{\code{PooledConnectionHandler$closeConnection()}}
+\item \href{#method-PooledConnectionHandler-queryDb}{\code{PooledConnectionHandler$queryDb()}}
+\item \href{#method-PooledConnectionHandler-executeSql}{\code{PooledConnectionHandler$executeSql()}}
 \item \href{#method-PooledConnectionHandler-queryFunction}{\code{PooledConnectionHandler$queryFunction()}}
 \item \href{#method-PooledConnectionHandler-executeFunction}{\code{PooledConnectionHandler$executeFunction()}}
 \item \href{#method-PooledConnectionHandler-clone}{\code{PooledConnectionHandler$clone()}}
 }
 }
 \if{html}{\out{
-<details><summary>Inherited methods</summary>
+<details open><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbIsValid"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbIsValid'><code>ResultModelManager::ConnectionHandler$dbIsValid()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="executeSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-executeSql'><code>ResultModelManager::ConnectionHandler$executeSql()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="finalize"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-finalize'><code>ResultModelManager::ConnectionHandler$finalize()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="queryDb"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-queryDb'><code>ResultModelManager::ConnectionHandler$queryDb()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="renderTranslateSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-renderTranslateSql'><code>ResultModelManager::ConnectionHandler$renderTranslateSql()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="tbl"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-tbl'><code>ResultModelManager::ConnectionHandler$tbl()</code></a></span></li>
 </ul>
@@ -71,11 +77,28 @@ initialize pooled db connection}
 \if{latex}{\out{\hypertarget{method-PooledConnectionHandler-initConnection}{}}}
 \subsection{Method \code{initConnection()}}{
 Overrides ConnectionHandler Call
-Get Connection
+Used for getting a checked out connection from a given environment (if one exists)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$initConnection()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PooledConnectionHandler-getCheckedOutConnectionPath"></a>}}
+\if{latex}{\out{\hypertarget{method-PooledConnectionHandler-getCheckedOutConnectionPath}{}}}
+\subsection{Method \code{getCheckedOutConnectionPath()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$getCheckedOutConnectionPath()}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{.deferedFrame}}{defaults to the parent frame of the calling block.
+Get Connection}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PooledConnectionHandler-getConnection"></a>}}
@@ -83,6 +106,11 @@ Get Connection
 \subsection{Method \code{getConnection()}}{
 Returns a connection from the pool
 When the desired frame exits, the connection will be returned to the pool
+As a side effect, the connection is stored as an attribute within the calling frame (e.g. the same function) to prevent multiple
+connections being spawned, which limits performance.
+
+If you call this somewhere you need to think about returning the object or you may create a connection that
+is never returned to the pool.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$getConnection(.deferedFrame = parent.frame(n = 2))}\if{html}{\out{</div>}}
 }
@@ -111,12 +139,65 @@ Close Connection
 \if{html}{\out{<a id="method-PooledConnectionHandler-closeConnection"></a>}}
 \if{latex}{\out{\hypertarget{method-PooledConnectionHandler-closeConnection}{}}}
 \subsection{Method \code{closeConnection()}}{
-Overrides ConnectionHandler Call
-query Function
+Overrides ConnectionHandler Call - closes all active connections called with getConnection
+queryDb
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$closeConnection()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PooledConnectionHandler-queryDb"></a>}}
+\if{latex}{\out{\hypertarget{method-PooledConnectionHandler-queryDb}{}}}
+\subsection{Method \code{queryDb()}}{
+query database and return the resulting data.frame
+
+If environment variable LIMIT_ROW_COUNT is set Returned rows are limited to this value (no default)
+Limit row count is intended for web applications that may cause a denial of service if they consume too many
+resources.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$queryDb(
+  sql,
+  snakeCaseToCamelCase = self$snakeCaseToCamelCase,
+  overrideRowLimit = FALSE,
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{sql}}{sql query string}
+
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+
+\item{\code{overrideRowLimit}}{(Optional) Boolean. In some cases, where row limit is enforced on the system
+You may wish to ignore it.}
+
+\item{\code{...}}{Additional query parameters}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-PooledConnectionHandler-executeSql"></a>}}
+\if{latex}{\out{\hypertarget{method-PooledConnectionHandler-executeSql}{}}}
+\subsection{Method \code{executeSql()}}{
+execute set of database queries
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$executeSql(sql, ...)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{sql}}{sql query string}
+
+\item{\code{...}}{Additional query parameters
+query Function}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-PooledConnectionHandler-queryFunction"></a>}}
@@ -126,7 +207,8 @@ Overrides ConnectionHandler Call. Does not translate or render sql.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$queryFunction(
   sql,
-  snakeCaseToCamelCase = self$snakeCaseToCamelCase
+  snakeCaseToCamelCase = self$snakeCaseToCamelCase,
+  connection
 )}\if{html}{\out{</div>}}
 }
 
@@ -137,6 +219,8 @@ Overrides ConnectionHandler Call. Does not translate or render sql.
 
 \item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
 query Function}
+
+\item{\code{connection}}{db connection assumes pooling is handled outside of call}
 }
 \if{html}{\out{</div>}}
 }
@@ -147,13 +231,15 @@ query Function}
 \subsection{Method \code{executeFunction()}}{
 Overrides ConnectionHandler Call. Does not translate or render sql.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$executeFunction(sql)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{PooledConnectionHandler$executeFunction(sql, connection)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{sql}}{sql query string}
+
+\item{\code{connection}}{DatabaseConnector connection. Assumes pooling is handled outside of call}
 }
 \if{html}{\out{</div>}}
 }

@@ -1,6 +1,6 @@
 Package: ResultModelManager
 Title: Result Model Manager
-Version: 0.5.9
+Version: 0.5.10
 Authors@R:
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
 Description: Database data model management utilities for R packages in the Observational Health Data Sciences and
@@ -35,7 +35,6 @@ Suggests:
   testthat (>= 3.0.0),
   RSQLite,
   duckdb,
-  RPostgres,
   knitr,
   rmarkdown,
   keyring,

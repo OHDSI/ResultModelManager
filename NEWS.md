@@ -1,3 +1,23 @@
+# ResultModelManager 0.5.10
+
+Changes:
+
+1. Using readr column types to work around issues with inconsistent type conversion between DBI and JDBC drivers.
+
+Bug fixes:
+
+1. Resolved issue where failed queries were being aborted inside the wrong connection
+in PooledConnectionHandler
+
+2. Refactored pooled connection handler to better ensure checkout connections are returned
+
+
+# ResultModelManager 0.5.9
+
+Changes:
+
+1. More tidy cleanup of PooledConnectionHandlers to prevent leaked connections.
+
 # ResultModelManager 0.5.9
 
 Changes:
