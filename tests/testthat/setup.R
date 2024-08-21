@@ -80,4 +80,6 @@ if (Sys.getenv("CDM5_POSTGRESQL_SERVER") != "") {
     },
     testthat::teardown_env()
   )
+} else {
+  testDatabaseConnectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sqlite", server = ":memory:")
 }
