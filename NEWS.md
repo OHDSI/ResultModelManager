@@ -1,3 +1,9 @@
+# ResultModelManager 0.5.11
+
+Changes:
+
+1. Refactor of tests to accommodate cran
+
 # ResultModelManager 0.5.10
 
 Changes:

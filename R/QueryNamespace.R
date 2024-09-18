@@ -219,7 +219,10 @@ QueryNamespace <- R6::R6Class(
     #' @description
     #' Close connections etc
     finalize = function() {
-      private$connectionHandler$finalize()
+      if (!is.null(private$connectionHandler)) {
+        private$connectionHandler$finalize()
+        private$connectionHandler <- NULL
+      }
       invisible(NULL)
     }
   )
