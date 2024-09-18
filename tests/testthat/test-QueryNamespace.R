@@ -24,7 +24,6 @@ test_that("Errors", {
 
 
 test_that("test setConnectionHandler and getConnectionHandler functions", {
-
   cohortNamespace <- QueryNamespace$new(
     connectionHandler = connectionHandler,
     tableSpecification = tableSpecification,

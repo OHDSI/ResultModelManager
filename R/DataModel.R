@@ -472,7 +472,7 @@ uploadTable <- function(tableName,
         table_name = env$tableName
       )
       primaryKeyValuesInDb <-
-        DatabaseConnector::querySql(connection, sql)
+        DatabaseConnector::querySql(connection, sql, integer64AsNumeric = TRUE)
       colnames(primaryKeyValuesInDb) <-
         tolower(colnames(primaryKeyValuesInDb))
       env$primaryKeyValuesInDb <- primaryKeyValuesInDb
