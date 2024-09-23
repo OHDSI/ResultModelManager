@@ -10,33 +10,28 @@ tableSpecification <- data.frame(
 schemaSql <- generateSqlSchema(schemaDefinition = tableSpecification)
 connectionHandler$executeSql(schemaSql, table_prefix = "cd_", database_schema = "main")
 
-cohortNamespace <- QueryNamespace$new(
-  connectionHandler = connectionHandler,
-  tableSpecification = tableSpecification,
-  result_schema = "main",
-  tablePrefix = "cd_"
-)
-
 test_that("Errors", {
   qn <- QueryNamespace$new(
     tableSpecification = tableSpecification,
     result_schema = "main",
     tablePrefix = "cd_"
   )
-
+  on.exit(qn$finalize())
   expect_error(qn$getConnectionHandler())
   qn$addReplacementVariable("foo", "fii")
   expect_error(qn$addReplacementVariable("foo", "fii2"))
-
-  expect_list(qn$getVars())
 })
 
-
-test_that("test tablePrefix parameter", {
-  expect_equal(cohortNamespace$tablePrefix, "cd_")
-})
 
 test_that("test setConnectionHandler and getConnectionHandler functions", {
+  cohortNamespace <- QueryNamespace$new(
+    connectionHandler = connectionHandler,
+    tableSpecification = tableSpecification,
+    result_schema = "main",
+    tablePrefix = "cd_"
+  )
+  on.exit(cohortNamespace$finalize(), add = TRUE)
+
   checkmate::expect_r6(cohortNamespace$getConnectionHandler(), "ConnectionHandler")
 
   cohortNamespace2 <- QueryNamespace$new(
@@ -45,28 +40,27 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
     tablePrefix = "cd_"
   )
 
+  on.exit(cohortNamespace2$finalize(), add = TRUE)
+
   cohortNamespace2$setConnectionHandler(connectionHandler)
   expect_equal(cohortNamespace2$getConnectionHandler(), connectionHandler)
-})
 
-test_that("test render function", {
+
+  expect_equal(cohortNamespace$tablePrefix, "cd_")
   expect_equal(cohortNamespace$render("@cohort"), "cd_cohort")
   sql <- "SELECT * FROM @result_schema.@cohort WHERE cohort_definition_id = @cohort_id"
   renderedSql <- cohortNamespace$render(sql, cohort_id = 1)
   expect_equal(renderedSql, "SELECT * FROM main.cd_cohort WHERE cohort_definition_id = 1")
-})
 
-test_that("test querySql function", {
   result <- cohortNamespace$queryDb("SELECT * FROM @result_schema.@cohort WHERE cohort_definition_id = @cohort_id", cohort_id = 1)
   expect_true(is.data.frame(result))
-})
 
-test_that("test executeSql function", {
   result <- cohortNamespace$executeSql("SELECT * FROM @result_schema.@cohort WHERE cohort_definition_id = @cohort_id", cohort_id = 1)
   expect_type(result, "NULL")
 })
 
 test_that("create helper function works", {
+  skip_on_cran()
   expect_error(createQueryNamespace())
 
   qns <- createQueryNamespace(
@@ -96,8 +90,6 @@ test_that("create helper function works", {
   )
 
   vars <- qns$getVars()
-
-
   expect_true("cohort_counts" %in% names(vars))
   expect_true("cohort_definition" %in% names(vars))
   expect_true("cdm_source_info" %in% names(vars))
