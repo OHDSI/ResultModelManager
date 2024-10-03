@@ -44,6 +44,8 @@
 #' Install psycopg2-binary python package into the specified python virtualenv
 #' @family {python}
 #' @param envname python virtual environment name. Can be set with system environment variable "RMM_PYTHON_ENV", default is rmm-uploads
+#' @param method method paramter for reticulate::py_install (defualt is auto)
+#' @param ... Extra parameters for reticulate::py_install
 #' @export
 install_psycopg2 <- function(envname = Sys.getenv("RMM_PYTHON_ENV", unset = "rmm-uploads"), method = "auto", ...) {
   if (!interactive())
@@ -135,7 +137,10 @@ pyPgUploadEnabled <- function() {
 #'                                          password = "s",
 #'                                          user = "me",
 #'                                          database = "some_db")
-#'  ResultModelManager::pyUploadCsv(connection, table = "my_table", filepath = "my_massive_csv.csv", schema = "my_schema")
+#'  ResultModelManager::pyUploadCsv(connection,
+#'                                  table = "my_table",
+#'                                  filepath = "my_massive_csv.csv",
+#'                                  schema = "my_schema")
 #' }
 #' @export
 pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints = FALSE) {

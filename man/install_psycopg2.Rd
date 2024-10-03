@@ -12,6 +12,10 @@ install_psycopg2(
 }
 \arguments{
 \item{envname}{python virtual environment name. Can be set with system environment variable "RMM_PYTHON_ENV", default is rmm-uploads}
+
+\item{method}{method paramter for reticulate::py_install (defualt is auto)}
+
+\item{...}{Extra parameters for reticulate::py_install}
 }
 \description{
 Install psycopg2-binary python package into the specified python virtualenv
