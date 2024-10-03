@@ -1,6 +1,6 @@
 test_that("test python postgres connection works", {
   skip_on_cran()
-  skip_if(Sys.getenv("CDM5_POSTGRESQL_SERVER") == "" || Sys.getenv("RMM_USE_PYTHON_UPLOADS") != "TRUE")
+  skip_if(Sys.getenv("CDM5_POSTGRESQL_SERVER") == "")
   expect_true(pyPgUploadEnabled())
   # Should not throw error
   enablePythonUploads()
@@ -16,8 +16,8 @@ test_that("test python postgres connection works", {
 
 test_that("test python upload table from csv works", {
   skip_on_cran()
-  skip_if(Sys.getenv("CDM5_POSTGRESQL_SERVER") == "" || Sys.getenv("RMM_USE_PYTHON_UPLOADS") != "TRUE")
-
+  skip_if(Sys.getenv("CDM5_POSTGRESQL_SERVER") == "")
+  enablePythonUploads()
   tfile <- tempfile(fileext = ".csv")
   pyConnection <- .createPyConnection(testDatabaseConnection)
   on.exit({
