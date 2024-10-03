@@ -99,7 +99,7 @@ enablePythonUploads <- function(...) {
 
   # Check package installed
   if (!pyPostgresInstalled) {
-    install_psycopg2(envname = envname, ...)
+    install_psycopg2(...)
   }
 
   Sys.setenv("RMM_USE_PYTHON_UPLOADS" = "TRUE")
