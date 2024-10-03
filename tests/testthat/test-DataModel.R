@@ -81,24 +81,27 @@ test_that("results are uploaded", {
       warnOnMissingTable = FALSE
     )
     # Repeat to purge data
-    uploadResults(
-      connectionDetails = testDatabaseConnectionDetails,
-      schema = testSchema,
-      databaseIdentifierFile = "database.csv",
-      resultsFolder = tempDir,
-      specifications = specifications,
-      purgeSiteDataBeforeUploading = i != 2,
-      runCheckAndFixCommands = TRUE,
-      forceOverWriteOfSpecifications = i == 2,
-      warnOnMissingTable = FALSE
-    )
+
+    withr::with_envvar(new = c("RMM_USE_PYTHON_UPLOADS" = "TRUE"), {
+      uploadResults(
+        connectionDetails = testDatabaseConnectionDetails,
+        schema = testSchema,
+        databaseIdentifierFile = "database.csv",
+        resultsFolder = tempDir,
+        specifications = specifications,
+        purgeSiteDataBeforeUploading = i != 2,
+        runCheckAndFixCommands = TRUE,
+        forceOverWriteOfSpecifications = i == 2,
+        warnOnMissingTable = FALSE
+      )
+    })
     unlink(x = tempDir, recursive = TRUE, force = TRUE)
   }
 
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-        primaryKey == "Yes") %>%
+                      primaryKey == "Yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -145,7 +148,7 @@ test_that("appending results rows using primary keys works", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-        primaryKey == "Yes") %>%
+                      primaryKey == "Yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -200,7 +203,7 @@ test_that("deleting results rows using data primary key works", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-        primaryKey == "Yes") %>%
+                      primaryKey == "Yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 
@@ -240,7 +243,7 @@ test_that("deleting results rows by database id works", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications %>%
       dplyr::filter(tableName == !!tableName &
-        primaryKey == "Yes") %>%
+                      primaryKey == "Yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
 

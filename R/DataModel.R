@@ -48,7 +48,8 @@ checkAndFixColumnNames <-
 
     expectedNames <- tableSpecs %>%
       dplyr::select("columnName") %>%
-      dplyr::anti_join(dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
+      dplyr::anti_join(
+        dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
         by = "columnName"
       ) %>%
       dplyr::arrange("columnName") %>%
@@ -181,7 +182,7 @@ checkAndFixDuplicateRows <-
            specifications) {
     primaryKeys <- specifications %>%
       dplyr::filter(.data$tableName == !!tableName &
-        tolower(.data$primaryKey) == "yes") %>%
+                      tolower(.data$primaryKey) == "yes") %>%
       dplyr::select("columnName") %>%
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
@@ -194,7 +195,7 @@ checkAndFixDuplicateRows <-
           sum(duplicatedRows)
         )
       )
-      return(table[!duplicatedRows, ])
+      return(table[!duplicatedRows,])
     } else {
       return(table)
     }
@@ -220,7 +221,7 @@ appendNewRows <-
     if (nrow(data) > 0) {
       primaryKeys <- specifications %>%
         dplyr::filter(.data$tableName == !!tableName &
-          tolower(.data$primaryKey) == "yes") %>%
+                        tolower(.data$primaryKey) == "yes") %>%
         dplyr::select("columnName") %>%
         dplyr::pull()
       newData <- newData %>%
@@ -250,10 +251,10 @@ formatDouble <- function(x) {
 
 .truncateTable <- function(tableName, connection, schema, tablePrefix) {
   DatabaseConnector::renderTranslateExecuteSql(connection,
-    "TRUNCATE TABLE @schema.@table_prefix@table;",
-    table_prefix = tablePrefix,
-    schema = schema,
-    table = tableName
+                                               "TRUNCATE TABLE @schema.@table_prefix@table;",
+                                               table_prefix = tablePrefix,
+                                               schema = schema,
+                                               table = tableName
   )
   invisible(NULL)
 }
@@ -273,7 +274,7 @@ formatDouble <- function(x) {
 }
 
 
-uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connection, runCheckAndFixCommands, forceOverWriteOfSpecifications) {
+uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connection, pythonConnection, runCheckAndFixCommands, forceOverWriteOfSpecifications) {
   ParallelLogger::logInfo(
     "- Preparing to upload rows ",
     pos,
@@ -354,8 +355,8 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
     primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
     duplicates <-
       dplyr::inner_join(env$primaryKeyValuesInDb,
-        primaryKeyValuesInChunk,
-        by = env$primaryKey
+                        primaryKeyValuesInChunk,
+                        by = env$primaryKey
       )
 
     if (nrow(duplicates) != 0) {
@@ -386,23 +387,33 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
       # Remove duplicates we already dealt with:
       env$primaryKeyValuesInDb <-
         env$primaryKeyValuesInDb %>%
-        dplyr::anti_join(duplicates, by = env$primaryKey)
+          dplyr::anti_join(duplicates, by = env$primaryKey)
     }
   }
   if (nrow(chunk) == 0) {
     ParallelLogger::logInfo("- No data left to insert")
   } else {
     insertTableStatus <- tryCatch(expr = {
-      DatabaseConnector::insertTable(
-        connection = connection,
-        tableName = env$tableName,
-        databaseSchema = env$schema,
-        data = chunk,
-        dropTableIfExists = FALSE,
-        createTable = FALSE,
-        tempTable = FALSE,
-        progressBar = TRUE
-      )
+      if (!is.null(pythonConnection)) {
+        tryCatch({
+          .pgWriteDataFrame(chunk, pyConnection = pythonConnection, table = env$tableName, schema = env$schema)
+        }, error = function(error) {
+          # rollback write of data
+          pythonConnection$rollback()
+          stop(error)
+        })
+      } else {
+        DatabaseConnector::insertTable(
+          connection = connection,
+          tableName = env$tableName,
+          databaseSchema = env$schema,
+          data = chunk,
+          dropTableIfExists = FALSE,
+          createTable = FALSE,
+          tempTable = FALSE,
+          progressBar = TRUE
+        )
+      }
     }, error = function(e) e)
     if (inherits(insertTableStatus, "error")) {
       stop(insertTableStatus$message)
@@ -421,7 +432,8 @@ uploadTable <- function(tableName,
                         runCheckAndFixCommands,
                         forceOverWriteOfSpecifications,
                         purgeSiteDataBeforeUploading,
-                        warnOnMissingTable) {
+                        warnOnMissingTable,
+                        pythonConnection) {
   csvFileName <- paste0(tableName, ".csv")
   specifications <- specifications %>%
     dplyr::filter(.data$tableName == !!tableName)
@@ -485,11 +497,11 @@ uploadTable <- function(tableName,
     convertType <- Vectorize(
       function(type) {
         switch(type,
-          varchar = "c",
-          bigint = "n",
-          int = "n",
-          date = "D",
-          "?"
+               varchar = "c",
+               bigint = "n",
+               int = "n",
+               date = "D",
+               "?"
         ) # default to guess if type not matched
       }
     )
@@ -501,7 +513,7 @@ uploadTable <- function(tableName,
 
     readr::read_csv_chunked(
       file = file.path(resultsFolder, csvFileName),
-      callback = function(chunk, pos) uploadChunk(chunk, pos, env, specifications, resultsFolder, connection, runCheckAndFixCommands, forceOverWriteOfSpecifications),
+      callback = function(chunk, pos) uploadChunk(chunk, pos, env, specifications, resultsFolder, connection, pythonConnection, runCheckAndFixCommands, forceOverWriteOfSpecifications),
       chunk_size = 1e7,
       col_types = colTypes,
       guess_max = 1e6,
@@ -593,10 +605,10 @@ uploadResults <- function(connection = NULL,
     ParallelLogger::logInfo("Removing all records for tables within specification")
 
     invisible(lapply(unique(specifications$tableName),
-      .truncateTable,
-      connection = connection,
-      schema = schema,
-      tablePrefix = tablePrefix
+                     .truncateTable,
+                     connection = connection,
+                     schema = schema,
+                     tablePrefix = tablePrefix
     ))
   }
 
@@ -627,6 +639,12 @@ uploadResults <- function(connection = NULL,
   }
 
   for (tableName in unique(specifications$tableName)) {
+    pythonConnection <- NULL
+    if (DatabaseConnector::dbms(connection) == "postgresql" && pyPgUploadEnabled()) {
+      pythonConnection <- .createPyConnection(connection)
+      on.exit(pythonConnection$close(), add = TRUE)
+    }
+
     uploadTable(
       tableName,
       connection,
@@ -638,8 +656,13 @@ uploadResults <- function(connection = NULL,
       runCheckAndFixCommands,
       forceOverWriteOfSpecifications,
       purgeSiteDataBeforeUploading,
-      warnOnMissingTable
+      warnOnMissingTable,
+      pythonConnection = pythonConnection
     )
+
+    if (!is.null(pythonConnection)) {
+      pythonConnection$commit()
+    }
   }
 
   delta <- Sys.time() - start
@@ -660,6 +683,7 @@ uploadResults <- function(connection = NULL,
 #' @export
 deleteAllRowsForPrimaryKey <-
   function(connection, schema, tableName, keyValues) {
+
     createSqlStatement <- function(i) {
       sql <- paste0(
         "DELETE FROM ",
@@ -668,7 +692,7 @@ deleteAllRowsForPrimaryKey <-
         tableName,
         "\nWHERE ",
         paste(paste0(
-          colnames(keyValues), " = '", keyValues[i, ], "'"
+          colnames(keyValues), " = '", keyValues[i,], "'"
         ), collapse = " AND "),
         ";"
       )
@@ -743,9 +767,9 @@ deleteAllRowsForDatabaseId <-
         database_id = databaseId
       )
       DatabaseConnector::executeSql(connection,
-        sql,
-        progressBar = FALSE,
-        reportOverallTime = FALSE
+                                    sql,
+                                    progressBar = FALSE,
+                                    reportOverallTime = FALSE
       )
     }
   }

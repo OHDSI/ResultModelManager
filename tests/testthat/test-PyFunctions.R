@@ -70,6 +70,7 @@ test_that("test python upload table from csv works", {
                                                            table = table,
                                                            snakeCaseToCamelCase = TRUE)
   expect_equal(nrow(testData), nrow(resultData))
+  expect_equal(sum(resultData$id), sum(testData$id))
   expect_true(all(c("id", "testString") %in% names(resultData)))
 })
 
@@ -82,27 +83,29 @@ test_that("upload data.frame via string buffer", {
   expect_true(pyPgUploadEnabled())
 
   table <- paste0("test_", sample(1:10000, 1))
-  sql <- "CREATE TABLE @schema.@table (id int, test_string varchar)"
+  sql <- "CREATE TABLE @schema.@table (id int, test_string varchar, my_data date)"
   DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, sql, schema = testSchema, table = table)
 
   pyConnection <- .createPyConnection(testDatabaseConnection)
   on.exit(pyConnection$close(), add = TRUE)
-  buffer <- rawConnection(raw(0), "r+")
+  testData <- data.frame(id = 1:100, test_string = 'some crazy vaLUEøˆßÍÍÅ¸¸„„¸Å,,,"', my_date = as.Date("01/01/2010"))
 
-  on.exit(close(buffer), add = TRUE)
-  testData <- data.frame(id = 1:100, test_string = 'some crazy vaLUEs;;a,.\t\n∑åˆø')
-  readr::write_csv(testData, buffer)
-  nchars <- seek(buffer, 0)
-  result <- .pyEnv$upload_buffer_to_db(connection = pyConnection,
-                                       csv_content = readChar(buffer, nchars = nchars),
-                                       table = table,
-                                       schema = testSchema)
+  # Note small buffer write size tests if buffering is functioning correctly
+  .pgWriteDataFrame(data = testData,
+                    pyConnection = pyConnection,
+                    table = table,
+                    schema = testSchema,
+                    bufferWriteSize = 10)
+  pyConnection$commit()
 
   resultData <- DatabaseConnector::renderTranslateQuerySql(connection = testDatabaseConnection,
                                                            "SELECT * FROM @schema.@table",
                                                            schema = testSchema,
                                                            table = table,
                                                            snakeCaseToCamelCase = TRUE)
-  expect_equal(nrow(testData), nrow(resultData))
+  expect_equal(nrow(resultData), nrow(testData))
+  expect_equal(sum(resultData$id), sum(testData$id))
   expect_true(all(c("id", "testString") %in% names(resultData)))
+
+  pyUploadDataFrame(testData, testDatabaseConnection, schema = testSchema, table = table)
 })

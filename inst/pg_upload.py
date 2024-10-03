@@ -41,7 +41,7 @@ def upload_table(connection,
     return status
 
 
-def upload_buffer_to_db(connection, csv_content, schema: str, table: str):
+def upload_buffer_to_db(connection, csv_content, schema: str, table: str, commit: bool = False):
     # Create a StringIO buffer from the CSV content
     copy_string = f"COPY {schema}.{table} FROM STDIN NULL AS '' DELIMITER ',' CSV HEADER;"
     # Upload the CSV data to the database table
@@ -51,6 +51,5 @@ def upload_buffer_to_db(connection, csv_content, schema: str, table: str):
             curr.copy_expert(copy_string, buffer)
 
     # Commit the transaction
-    connection.commit()
-    status = dict(status=1, message="upload success")
-    return status
+    if commit:
+        connection.commit()

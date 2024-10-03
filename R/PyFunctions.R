@@ -167,3 +167,77 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
 
   invisible()
 }
+
+
+.pgWriteDataFrame <- function(data, pyConnection, table, schema, bufferWriteSize = 1e4) {
+  buffer <- rawConnection(raw(0), "r+")
+  on.exit(close(buffer), add = TRUE)
+  offset <- 1
+
+  # Read data chunk by chunk and write to a string buffer
+  stdata <- data[offset:min(offset + bufferWriteSize - 1, nrow(data)),]
+  while (nrow(stdata) > 0) {
+    readr::write_csv(stdata, buffer)
+    nchars <- seek(buffer, 0)
+    # Note this use of multiple buffers is inefficient
+    charContent <- readChar(buffer, nchars = nchars)
+    .pyEnv$upload_buffer_to_db(connection = pyConnection,
+                               table = table,
+                               csv_content = charContent,
+                               schema = schema)
+
+    offset <- offset + bufferWriteSize
+    stdata <- data.frame()
+
+    if (offset < nrow(data))
+      stdata <- data[offset:min(offset + bufferWriteSize - 1, nrow(data)),]
+    seek(buffer, 0)
+  }
+}
+
+
+#' Py Upload data.frame
+#' @description
+#' Wrapper to python function to upload a data.frame using Postgres Copy functionality
+#' @param data data.frame
+#' @param connection DatabaseConnector connection instance
+#' @param table Table in database
+#' @param schema database schema containing table reference
+#' @examples
+#' \dontrun{
+#'   connection <- DabaseConnector::connect(dbms = "postgreql",
+#'                                          server = "myserver.com",
+#'                                          port = 5432,
+#'                                          password = "s",
+#'                                          user = "me",
+#'                                          database = "some_db")
+#'
+#'  ResultModelManager::pyUploadDataFrame(connection,
+#'                                        table = "my_table",
+#'                                        data.frame(id=1:100, value = "some_value"),
+#'                                        schema = "my_schema")
+#' }
+#' @export
+pyUploadDataFrame <- function(data, connection, table, schema) {
+  stopifnot(pyPgUploadEnabled())
+  checkmate::assertDataFrame(data)
+  checkmate::assertString(table)
+  checkmate::assertString(schema)
+  DatabaseConnector::dbIsValid(connection)
+  checkmate::assertTRUE(DatabaseConnector::dbms(connection) == 'postgresql')
+
+  pyConnection <- .createPyConnection(connection)
+  on.exit(pyConnection$close(), add = TRUE)
+
+  tryCatch({
+    .pgWriteDataFrame(data, pyConnection, table, schema)
+  }, error = function(error) {
+    # rollback write of data
+    pyConnection$rollback()
+    stop(error)
+  })
+
+  # User must handle error on commits
+  pyConnection$commit()
+  invisible()
+}
