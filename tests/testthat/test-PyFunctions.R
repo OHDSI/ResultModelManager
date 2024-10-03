@@ -1,9 +1,10 @@
 test_that("test python postgres connection works", {
   skip_on_cran()
   skip_if(Sys.getenv("CDM5_POSTGRESQL_SERVER") == "")
-  expect_true(pyPgUploadEnabled())
   # Should not throw error
   enablePythonUploads()
+  expect_true(pyPgUploadEnabled())
+
 
   pyConnection <- .createPyConnection(testDatabaseConnection)
   on.exit(pyConnection$close(), add = TRUE)
