@@ -25,3 +25,7 @@ NULL
 
 # Add custom assertions
 assertSpecificationColumns <- checkmate::makeAssertionFunction(checkSpecificationColumns)
+
+.onLoad <- function(libname, pkgname) {
+  .loadPsycopg2Functions()
+}
