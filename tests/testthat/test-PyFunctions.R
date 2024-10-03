@@ -15,6 +15,7 @@ test_that("test python postgres connection works", {
   expect_equal(res[[1]], 1)
 })
 
+
 test_that("test python upload table from csv works", {
   skip_on_cran()
   skip_if(Sys.getenv("CDM5_POSTGRESQL_SERVER") == "")
@@ -62,6 +63,40 @@ test_that("test python upload table from csv works", {
   # Test exported function
   DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, "TRUNCATE TABLE @schema.@table;", schema = testSchema, table = table)
   pyUploadCsv(testDatabaseConnection, schema = testSchema, table = table, filepath = tfile)
+
+  resultData <- DatabaseConnector::renderTranslateQuerySql(connection = testDatabaseConnection,
+                                                           "SELECT * FROM @schema.@table",
+                                                           schema = testSchema,
+                                                           table = table,
+                                                           snakeCaseToCamelCase = TRUE)
+  expect_equal(nrow(testData), nrow(resultData))
+  expect_true(all(c("id", "testString") %in% names(resultData)))
+})
+
+
+test_that("upload data.frame via string buffer", {
+  skip_on_cran()
+  skip_if(Sys.getenv("CDM5_POSTGRESQL_SERVER") == "")
+  # Should not throw error
+  enablePythonUploads()
+  expect_true(pyPgUploadEnabled())
+
+  table <- paste0("test_", sample(1:10000, 1))
+  sql <- "CREATE TABLE @schema.@table (id int, test_string varchar)"
+  DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, sql, schema = testSchema, table = table)
+
+  pyConnection <- .createPyConnection(testDatabaseConnection)
+  on.exit(pyConnection$close(), add = TRUE)
+  buffer <- rawConnection(raw(0), "r+")
+
+  on.exit(close(buffer), add = TRUE)
+  testData <- data.frame(id = 1:100, test_string = 'some crazy vaLUEs;;a,.\t\n∑åˆø')
+  readr::write_csv(testData, buffer)
+  nchars <- seek(buffer, 0)
+  result <- .pyEnv$upload_buffer_to_db(connection = pyConnection,
+                                       csv_content = readChar(buffer, nchars = nchars),
+                                       table = table,
+                                       schema = testSchema)
 
   resultData <- DatabaseConnector::renderTranslateQuerySql(connection = testDatabaseConnection,
                                                            "SELECT * FROM @schema.@table",
