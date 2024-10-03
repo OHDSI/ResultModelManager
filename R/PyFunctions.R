@@ -42,7 +42,6 @@
 #' install psycopg2
 #' @description
 #' Install psycopg2-binary python package into the specified python virtualenv
-#' @family {python}
 #' @param envname python virtual environment name. Can be set with system environment variable "RMM_PYTHON_ENV", default is rmm-uploads
 #' @param method method paramter for reticulate::py_install (defualt is auto)
 #' @param ... Extra parameters for reticulate::py_install
@@ -53,14 +52,14 @@ install_psycopg2 <- function(envname = Sys.getenv("RMM_PYTHON_ENV", unset = "rmm
 
   if (!reticulate::virtualenv_exists(envname)) {
     msg <- paste("No virtualenv configured. Create virtualenv", envname, " (set with envrionment valirable \"RMM_PYTHON_ENV\")")
-    createnv <- askYesNo(msg)
+    createnv <- utils::askYesNo(msg)
     if (createnv)
       reticulate::virtualenv_create(envname)
     else
       stop("Virtual env does not exist")
   }
 
-  installBinary <- askYesNo("Install psycopg2-binary python package into virtualenv?")
+  installBinary <- utils::askYesNo("Install psycopg2-binary python package into virtualenv?")
   if (!installBinary)
     stop("Virtual env does not exist")
 
@@ -73,18 +72,17 @@ install_psycopg2 <- function(envname = Sys.getenv("RMM_PYTHON_ENV", unset = "rmm
 #' @description
 #' Step by step install to enable python uploads
 #' @param  ... parameters to pass to py_install
-#' @family {python}
 #' @export
 enablePythonUploads <- function(...) {
   if (pyPgUploadEnabled())
     return(invisible(NULL))
 
   # Check reticulate is installed
-  reticulateVersion <- tryCatch(packageVersion("reticulate"), error = function(e) { return(NULL) })
+  reticulateVersion <- tryCatch(utils::packageVersion("reticulate"), error = function(e) { return(NULL) })
   installed <- !is.null(reticulateVersion)
   if (!installed && interactive()) {
-    if (isTRUE(askYesNo("reticulate is required for this functionality - would you like to enable it?"))) {
-      install.packages("reticulate")
+    if (isTRUE(utils::askYesNo("reticulate is required for this functionality - would you like to enable it?"))) {
+      utils::install.packages("reticulate")
       installed <- TRUE
     }
   }
@@ -111,10 +109,9 @@ enablePythonUploads <- function(...) {
 
 
 #' are python postgresql uploads enabled?
-#' @family {python}
 #' @export
 pyPgUploadEnabled <- function() {
-  reticulateVersion <- tryCatch(packageVersion("reticulate"), error = function(e) { return(NULL) })
+  reticulateVersion <- tryCatch(utils::packageVersion("reticulate"), error = function(e) { return(NULL) })
   pySetupComplete <- FALSE
   if (!is.null(reticulateVersion)) {
     pySetupComplete <- reticulate::py_module_available("psycopg2")
@@ -125,6 +122,7 @@ pyPgUploadEnabled <- function() {
 #' Py Upload CSV
 #' @description
 #' Wrapper to python function to upload a csv using Postgres Copy functionality
+#' @param connection DatabaseConnector connection instance
 #' @param table Table in database
 #' @param filepath path to csv
 #' @param schema database schema containing table reference

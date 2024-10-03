@@ -12,9 +12,3 @@ enablePythonUploads(...)
 \description{
 Step by step install to enable python uploads
 }
-\seealso{
-Other {python}: 
-\code{\link{install_psycopg2}()},
-\code{\link{pyPgUploadEnabled}()}
-}
-\concept{{python}}

@@ -9,9 +9,3 @@ pyPgUploadEnabled()
 \description{
 are python postgresql uploads enabled?
 }
-\seealso{
-Other {python}: 
-\code{\link{enablePythonUploads}()},
-\code{\link{install_psycopg2}()}
-}
-\concept{{python}}

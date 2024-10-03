@@ -20,9 +20,3 @@ install_psycopg2(
 \description{
 Install psycopg2-binary python package into the specified python virtualenv
 }
-\seealso{
-Other {python}: 
-\code{\link{enablePythonUploads}()},
-\code{\link{pyPgUploadEnabled}()}
-}
-\concept{{python}}

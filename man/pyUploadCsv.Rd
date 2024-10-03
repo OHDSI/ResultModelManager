@@ -7,6 +7,8 @@
 pyUploadCsv(connection, table, filepath, schema, disableConstraints = FALSE)
 }
 \arguments{
+\item{connection}{DatabaseConnector connection instance}
+
 \item{table}{Table in database}
 
 \item{filepath}{path to csv}
