@@ -54,7 +54,7 @@ Please consult the [reticulate documentation](https://rstudio.github.io/reticula
 By default, this functionality will not be enabled when uploading tables and the function `pyUploadCsv` will fail.
 To enable, and directly upload a csv, try the following example code.
 
-```{r, eval = FALSE}
+```{r eval = FALSE}
 ResultModelManager::enablePythonUploads()
 connectionDetails <- DabaseConnector::createConnectionDetails(dbms = "postgreql",
                                                               server = "myserver.com",
@@ -86,7 +86,7 @@ will be a major bottleneck.
 A much more sensible approach is to use a string buffer.
 Thankfully, the author of this package has provided such an interface!
 
-```{r eval=FALSE}
+```{r eval=F}
 ResultModelManager::pyUploadDataframe(connection,
                                       table = "my_table",
                                       filepath = "my_massive_csv.csv",
@@ -97,7 +97,7 @@ Note - that this approach is actually already implemented for you when you use `
 That's right - if you call `ResultModelManager::enablePythonUploads()` (and you are using postgres) you will be able
 to upload your large R `data.frames` to postgres!
 
-```{r, eval=FALSE}
+```{r eval=F}
 ResultModelManager::enablePythonUploads()
 
 ResultModelManager::uploadResults(
