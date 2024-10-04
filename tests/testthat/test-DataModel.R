@@ -81,20 +81,17 @@ test_that("results are uploaded", {
       warnOnMissingTable = FALSE
     )
     # Repeat to purge data
-
-    withr::with_envvar(new = c("RMM_USE_PYTHON_UPLOADS" = "TRUE"), {
-      uploadResults(
-        connectionDetails = testDatabaseConnectionDetails,
-        schema = testSchema,
-        databaseIdentifierFile = "database.csv",
-        resultsFolder = tempDir,
-        specifications = specifications,
-        purgeSiteDataBeforeUploading = i != 2,
-        runCheckAndFixCommands = TRUE,
-        forceOverWriteOfSpecifications = i == 2,
-        warnOnMissingTable = FALSE
-      )
-    })
+    uploadResults(
+      connectionDetails = testDatabaseConnectionDetails,
+      schema = testSchema,
+      databaseIdentifierFile = "database.csv",
+      resultsFolder = tempDir,
+      specifications = specifications,
+      purgeSiteDataBeforeUploading = i != 2,
+      runCheckAndFixCommands = TRUE,
+      forceOverWriteOfSpecifications = i == 2,
+      warnOnMissingTable = FALSE
+    )
     unlink(x = tempDir, recursive = TRUE, force = TRUE)
   }
 

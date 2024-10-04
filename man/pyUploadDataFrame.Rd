@@ -16,7 +16,7 @@ pyUploadDataFrame(data, connection, table, schema)
 \item{schema}{database schema containing table reference}
 }
 \description{
-Wrapper to python function to upload a csv using Postgres Copy functionality
+Wrapper to python function to upload a data.frame using Postgres Copy functionality
 }
 \examples{
 \dontrun{
@@ -26,9 +26,10 @@ Wrapper to python function to upload a csv using Postgres Copy functionality
                                          password = "s",
                                          user = "me",
                                          database = "some_db")
- ResultModelManager::pyUploadCsv(connection,
-                                 table = "my_table",
-                                 filepath = "my_massive_csv.csv",
-                                 schema = "my_schema")
+
+ ResultModelManager::pyUploadDataFrame(connection,
+                                       table = "my_table",
+                                       data.frame(id=1:100, value = "some_value"),
+                                       schema = "my_schema")
 }
 }
