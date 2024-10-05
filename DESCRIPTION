@@ -43,5 +43,6 @@ Suggests:
   remotes,
   styler,
   Andromeda,
+  rJava,
   reticulate
 Config/testthat/edition: 3
