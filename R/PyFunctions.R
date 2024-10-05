@@ -16,8 +16,31 @@
 
 .createPyConnection <- function(connection) {
   stopifnot(DatabaseConnector::dbms(connection) == "postgresql")
-  hostServerDb <- strsplit(attr(connection, "server")(), "/")[[1]]
+
+  server <- attr(connection, "server")()
   port <- attr(connection, "port")()
+  if (is.null(server)) {
+    # NOTE - taken directly from DatabaseConnector R/RStudio.R - getServer.default
+    # This should be patched to make pulling it out more straightforward
+    databaseMetaData <- rJava::.jcall(
+      connection@jConnection,
+      "Ljava/sql/DatabaseMetaData;",
+      "getMetaData"
+    )
+    server <- rJava::.jcall(databaseMetaData, "Ljava/lang/String;", "getURL")
+    server <- strsplit(server, "//")[[1]][2]
+  }
+
+  hostServerDb <- strsplit(server, "/")[[1]]
+
+  if (is.null(port)) {
+    port <- strsplit(hostServerDb[1], ":")[[1]][2]
+  }
+
+  if (is.na(port)) {
+    port <- "5432"
+  }
+
   user <- attr(connection, "user")()
   password <- attr(connection, "password")()
 
@@ -26,7 +49,7 @@
   pgConnection <- psycopg2$connect(dbname = hostServerDb[2],
                                    user = user,
                                    password = password,
-                                   host = hostServerDb[1],
+                                   host = strsplit(hostServerDb[1], ":")[[1]][1],
                                    port = port)
   return(pgConnection)
 }
@@ -107,6 +130,17 @@ enablePythonUploads <- function(...) {
   return(invisible(NULL))
 }
 
+#' Disable python uploads
+#' @description
+#' This will stop the use of python in uploaResults - not that this will only work for this R session. If you have set
+#' `RMM_USE_PYTHON_UPLOADS` in your .Renviron this will reset the next time you start your R session.
+#'
+#' @export
+disablePythonUploads <- function() {
+  Sys.setenv("RMM_USE_PYTHON_UPLOADS" = "")
+  invisible(NULL)
+}
+
 
 #' are python postgresql uploads enabled?
 #' @export
@@ -169,28 +203,27 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
 }
 
 
-.pgWriteDataFrame <- function(data, pyConnection, table, schema, bufferWriteSize = 1e4) {
-  buffer <- rawConnection(raw(0), "r+")
+.pgWriteDataFrame <- function(data, pyConnection, table, schema, bufferWriteSize = 1e6) {
+  fd <- raw(0)
+  buffer <- rawConnection(fd, "r+")
   on.exit(close(buffer), add = TRUE)
   offset <- 1
-
   # Read data chunk by chunk and write to a string buffer
-  stdata <- data[offset:min(offset + bufferWriteSize - 1, nrow(data)),]
-  while (nrow(stdata) > 0) {
-    readr::write_csv(stdata, buffer)
+  stdata <- data[offset:min(offset + bufferWriteSize, nrow(data)),]
+
+  while (offset < nrow(data)) {
+    readr::write_delim(stdata, buffer, delim = "\t", na = '$$$$$', quote = "all", escape = "double", col_names = FALSE)
     nchars <- seek(buffer, 0)
-    # Note this use of multiple buffers is inefficient
+    # Note this use of multiple buffers is inefficient but without R being able to write to a python buffer, the
     charContent <- readChar(buffer, nchars = nchars)
-    .pyEnv$upload_buffer_to_db(connection = pyConnection,
-                               table = table,
-                               csv_content = charContent,
-                               schema = schema)
+    .pyEnv$upload_buffer(connection = pyConnection,
+                         table = table,
+                         csv_content = charContent,
+                         schema = schema,
+                         colnames = paste0(colnames(stdata), collapse = ","))
 
     offset <- offset + bufferWriteSize
-    stdata <- data.frame()
-
-    if (offset < nrow(data))
-      stdata <- data[offset:min(offset + bufferWriteSize - 1, nrow(data)),]
+    stdata <- data[offset:min(offset + bufferWriteSize, nrow(data)),]
     seek(buffer, 0)
   }
 }

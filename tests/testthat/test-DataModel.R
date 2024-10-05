@@ -70,6 +70,7 @@ test_that("results are uploaded", {
       resultsFolder = tempDir
     )
 
+    disablePythonUploads()
     uploadResults(
       connectionDetails = testDatabaseConnectionDetails,
       schema = testSchema,
@@ -118,6 +119,7 @@ test_that("results are uploaded", {
   }
 
   # Test uploading after truncate
+  enablePythonUploads()
   uploadResults(
     connectionDetails = testDatabaseConnectionDetails,
     schema = testSchema,
@@ -129,7 +131,7 @@ test_that("results are uploaded", {
     runCheckAndFixCommands = TRUE,
     warnOnMissingTable = FALSE
   )
-
+  disablePythonUploads()
   expect_false(.removeDataUserCheck("N"))
   expect_false(.removeDataUserCheck("n"))
   expect_false(.removeDataUserCheck(""))

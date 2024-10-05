@@ -1,5 +1,6 @@
 from typing import Dict, Any
-import io
+from io import StringIO
+
 
 def upload_table(connection,
                  table: str,
@@ -41,15 +42,14 @@ def upload_table(connection,
     return status
 
 
-def upload_buffer_to_db(connection, csv_content, schema: str, table: str, commit: bool = False):
+def upload_buffer(connection, csv_content, schema: str, table: str, colnames: str, commit: bool = False):
     # Create a StringIO buffer from the CSV content
-    copy_string = f"COPY {schema}.{table} FROM STDIN NULL AS '' DELIMITER ',' CSV HEADER;"
+    copy_cmd = f"COPY {schema}.{table} ({colnames}) FROM STDIN CSV NULL AS '$$$$$' DELIMITER E'\\t' ESCAPE '\\';"
     # Upload the CSV data to the database table
     with connection.cursor() as curr:
         # Use the COPY command
-        with io.StringIO(csv_content) as buffer:
-            curr.copy_expert(copy_string, buffer)
-
+        with StringIO(csv_content) as buffer:
+            curr.copy_expert(copy_cmd, buffer)
     # Commit the transaction
     if commit:
         connection.commit()

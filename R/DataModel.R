@@ -637,14 +637,12 @@ uploadResults <- function(connection = NULL,
       )
     }
   }
-
+  pythonConnection <- NULL
+  if (DatabaseConnector::dbms(connection) == "postgresql" && pyPgUploadEnabled()) {
+    pythonConnection <- .createPyConnection(connection)
+    on.exit(pythonConnection$close(), add = TRUE)
+  }
   for (tableName in unique(specifications$tableName)) {
-    pythonConnection <- NULL
-    if (DatabaseConnector::dbms(connection) == "postgresql" && pyPgUploadEnabled()) {
-      pythonConnection <- .createPyConnection(connection)
-      on.exit(pythonConnection$close(), add = TRUE)
-    }
-
     uploadTable(
       tableName,
       connection,
