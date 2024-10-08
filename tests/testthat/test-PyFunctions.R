@@ -13,6 +13,24 @@ test_that("test python postgres connection works", {
   curr$execute("SELECT 1")
   res <- curr$fetchone()
   expect_equal(res[[1]], 1)
+
+
+  server <- Sys.getenv("CDM5_POSTGRESQL_SERVER")
+  hostServerDb <- strsplit(server, "/")[[1]]
+  # Test with connection string
+  testDatabaseConnection2 <- DatabaseConnector::connect(
+    dbms = "postgresql",
+    connectionString = paste0("jdbc:postgresql://", hostServerDb[1], ":5432/", hostServerDb[2]),
+    user = Sys.getenv("CDM5_POSTGRESQL_USER"),
+    password = utils::URLdecode(Sys.getenv("CDM5_POSTGRESQL_PASSWORD"))
+  )
+
+  on.exit(DatabaseConnector::disconnect(testDatabaseConnection2), add = TRUE)
+  pyConnection2 <- .createPyConnection(testDatabaseConnection2)
+  on.exit(pyConnection2$close(), add = TRUE)
+
+  if(!interactive())
+    expect_error(install_psycopg2(), "Session is not interactive. This is not how you want to install psycopg2")
 })
 
 
