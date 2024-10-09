@@ -1,7 +1,7 @@
 # ResultModelManager 0.6.0
 
 Changes:
-1. Added optional wrapper functions for python based 
+1. Added optional wrapper functions for python based upload of csv files
 
 
 # ResultModelManager 0.5.11
