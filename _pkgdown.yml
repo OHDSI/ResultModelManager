@@ -1,5 +1,6 @@
 template:
-  params:
+  bootstrap: 5
+  bslib:
     bootswatch: cosmo
 
 home:

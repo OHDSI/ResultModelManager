@@ -1,3 +1,9 @@
+# ResultModelManager 0.6.0
+
+Changes:
+1. Added optional wrapper functions for python based 
+
+
 # ResultModelManager 0.5.11
 
 Changes:
