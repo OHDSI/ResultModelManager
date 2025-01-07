@@ -160,7 +160,7 @@ ResultExportManager <- R6::R6Class(
       private$databaseId <- databaseId
 
       #
-      if (is.null(self$databaseId)) {
+      if (is.null(private$databaseId)) {
         dbIdCount <- private$tableSpecification |>
           dplyr::filter(.data$columnName == "database_id") |>
           dplyr::count()
@@ -323,7 +323,7 @@ ResultExportManager <- R6::R6Class(
       rows <- rows |> dplyr::select(dplyr::any_of(exportColumns))
 
       if ("database_id" %in% exportColumns && !"datbase_id" %in% colnames(rows)) {
-        rows$database_id <- self$databaseId
+        rows$database_id <- private$databaseId
       }
 
       colsNotPresent <- exportColumns[!exportColumns %in% colnames(r2)]
