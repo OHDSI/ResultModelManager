@@ -46,6 +46,7 @@ Create a class for exporting results from a study in a standard, consistend mann
   tableSpecification,
   exportDir,
   minCellCount = getOption("ohdsi.minCellCount", default = 5),
+  validateTypes = FALSE,
   databaseId = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -60,8 +61,11 @@ Create a class for exporting results from a study in a standard, consistend mann
 \item{\code{minCellCount}}{Minimum cell count - reccomended that you set with
 options("ohdsi.minCellCount" = count) in all R projects. Default is 5}
 
-\item{\code{databaseId}}{database identifier - required when exporting according to many specs
+\item{\code{validateTypes}}{Test if row values strictly conform to types - optional, not currently reccomended
+outside of development
 get table spec}
+
+\item{\code{databaseId}}{database identifier - required when exporting according to many specs}
 }
 \if{html}{\out{</div>}}
 }

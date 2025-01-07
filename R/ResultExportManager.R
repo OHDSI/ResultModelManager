@@ -33,18 +33,19 @@ ResultExportManager <- R6::R6Class(
     tables = NULL,
     tableSpecification = NULL,
     databaseId = NULL,
+    validateTypes = FALSE,
     connection = NULL,
     minCellCount = 5,
     .colTypeValidators = list(
-      "numeric" = checkmate::checkNumeric,
-      "int" = checkmate::checkIntegerish,
-      "varchar" = checkmate::checkCharacter,
+      "numeric" = checkmate::testNumeric,
+      "int" = checkmate::testIntegerish,
+      "varchar" = checkmate::testCharacter,
       "bigint" = function(x, ...) {
-        all(checkmate::checkNumeric(x = x, ...) & x %% 1 == 0)
+        all(checkmate::testNumeric(x = x, ...) & x %% 1 == 0)
       },
-      "float" = checkmate::checkNumeric,
-      "character" = checkmate::checkCharacter,
-      "date" = checkmate::checkDate
+      "float" = checkmate::testNumeric,
+      "character" = checkmate::testCharacter,
+      "date" = checkmate::testDate
     ),
     getPrimaryKeyCache = function(exportTableName) {
       file.path(tempdir(), paste0(private$databaseId, "-", Sys.getpid(), "-", exportTableName, ".csv"))
@@ -134,11 +135,15 @@ ResultExportManager <- R6::R6Class(
     #' @param minCellCount              Minimum cell count - reccomended that you set with
     #'                                  options("ohdsi.minCellCount" = count) in all R projects. Default is 5
     #' @param databaseId                database identifier - required when exporting according to many specs
+    #' @param validateTypes             Test if row values strictly conform to types - optional, not currently reccomended
+    #'                                  outside of development
     initialize = function(tableSpecification,
                           exportDir,
                           minCellCount = getOption("ohdsi.minCellCount", default = 5),
+                          validateTypes = FALSE,
                           databaseId = NULL) {
       self$exportDir <- exportDir
+      self$validateTypes <- validateTypes
       # Check table spec is valid
       assertSpecificationColumns(colnames(tableSpecification))
       private$tableSpecification <- tableSpecification
@@ -298,11 +303,12 @@ ResultExportManager <- R6::R6Class(
         stop("Table not found in specifications")
       }
 
-      validRows <- self$checkRowTypes(rows, exportTableName)
-      if (!all(isTRUE(validRows))) {
-        stop(paste(validRows[!isTRUE(validRows)], collapse = "\n"))
+      if (self$validateTypes) {
+        validRows <- self$checkRowTypes(rows, exportTableName)
+        if (!all(isTRUE(validRows))) {
+          stop(paste(validRows[!isTRUE(validRows)], collapse = "\n"))
+        }
       }
-
       # Convert < minCellCount to -minCellCount
       rows <- self$getMinColValues(rows, exportTableName)
       validPkeys <- self$checkPrimaryKeys(rows, exportTableName, invalidateCache = !append)
