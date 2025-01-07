@@ -3,6 +3,9 @@
 Changes:
 1. Added optional wrapper functions for python based upload of csv files
 
+Bug Fixes:
+
+1. Fixed big in type check issue in ResultExportManager
 
 # ResultModelManager 0.5.11
 

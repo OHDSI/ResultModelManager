@@ -40,7 +40,7 @@ ResultExportManager <- R6::R6Class(
       "int" = checkmate::checkIntegerish,
       "varchar" = checkmate::checkCharacter,
       "bigint" = function(x, ...) {
-        checkmate::checkNumeric(x = x, ...) && x %% 1 == 0
+        all(checkmate::checkNumeric(x = x, ...) & x %% 1 == 0)
       },
       "float" = checkmate::checkNumeric,
       "character" = checkmate::checkCharacter,
