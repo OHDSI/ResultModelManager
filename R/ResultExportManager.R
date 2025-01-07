@@ -326,7 +326,7 @@ ResultExportManager <- R6::R6Class(
         rows$database_id <- private$databaseId
       }
 
-      colsNotPresent <- exportColumns[!exportColumns %in% colnames(r2)]
+      colsNotPresent <- exportColumns[!exportColumns %in% colnames(rows)]
 
       if (length(colsNotPresent)) {
         warning("Expected columns not found in exported data frame", paste(colsNotPresent, collapse = " "))
