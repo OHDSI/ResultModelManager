@@ -143,7 +143,7 @@ ResultExportManager <- R6::R6Class(
                           validateTypes = FALSE,
                           databaseId = NULL) {
       self$exportDir <- exportDir
-      self$validateTypes <- validateTypes
+      private$validateTypes <- validateTypes
       # Check table spec is valid
       assertSpecificationColumns(colnames(tableSpecification))
       private$tableSpecification <- tableSpecification
@@ -303,7 +303,7 @@ ResultExportManager <- R6::R6Class(
         stop("Table not found in specifications")
       }
 
-      if (self$validateTypes) {
+      if (private$validateTypes) {
         validRows <- self$checkRowTypes(rows, exportTableName)
         if (!all(isTRUE(validRows))) {
           stop(paste(validRows[!isTRUE(validRows)], collapse = "\n"))
