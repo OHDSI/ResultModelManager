@@ -214,8 +214,7 @@ test_that("deleting results rows using data primary key works", {
         schema = testSchema,
         tableName = tableName,
         keyValues = dplyr::tibble(
-          database_id = "test1", analysis3_id =
-            "6542456"
+          database_id = "test1", analysis3_id = 6542456
         )
       )
 
@@ -226,7 +225,7 @@ test_that("deleting results rows using data primary key works", {
         schema = testSchema,
         table_name = tableName,
         database_id = "test1",
-        analysis3_id = "6542456"
+        analysis3_id = 6542456
       )
       databaseIdCount <-
         DatabaseConnector::querySql(connection = testDatabaseConnection, sql = sql)[, 1]

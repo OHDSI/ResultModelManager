@@ -681,35 +681,61 @@ uploadResults <- function(connection = NULL,
 #' @export
 deleteAllRowsForPrimaryKey <-
   function(connection, schema, tableName, keyValues) {
+    if (nrow(keyValues) == 0)
+      return(NULL)
 
-    createSqlStatement <- function(i) {
-      sql <- paste0(
-        "DELETE FROM ",
-        schema,
-        ".",
-        tableName,
-        "\nWHERE ",
-        paste(paste0(
-          colnames(keyValues), " = '", keyValues[i,], "'"
-        ), collapse = " AND "),
-        ";"
-      )
-      return(sql)
+    refTable <- paste0("temp_", tableName, "_del")
+    DatabaseConnector::insertTable(
+      connection = connection,
+      tableName = refTable,
+      tempTable = TRUE,
+      data = keyValues,
+      createTable = TRUE,
+      dropTableIfExists = TRUE)
+
+    joinKeys <- "t.@key_ref = @ref_table.@key_ref"
+    joinKeys <- sapply(colnames(keyValues), function(keyRef) {
+      SqlRender::render(joinKeys, key_ref = keyRef, ref_table = refTable)
+    }) |>
+      paste(collapse = " AND ")
+
+    dbms <- DatabaseConnector::dbms(connection)
+
+    if (dbms == "sqlite") {
+      deleteSql <- SqlRender::render(
+        "DELETE FROM @schema.@table_name t
+        WHERE EXISTS (
+            SELECT 1
+            FROM @ref_table
+            WHERE @join_keys
+        );",
+        schema = schema,
+        join_keys = joinKeys,
+        table_name = tableName,
+        ref_table = refTable)
+    } else if (dbms == "postgresql") {
+      deleteSql <- SqlRender::render(
+        "DELETE FROM @schema.@table_name t
+        USING @ref_table
+        WHERE @join_keys",
+        schema = schema,
+        join_keys = joinKeys,
+        table_name = tableName,
+        ref_table = refTable)
+    } else {
+      # Not supported but will let user do it anyway
+      deleteSql <- SqlRender::render(
+        "DELETE t
+        FROM @schema.@table_name t
+        INNER JOIN #@ref_table ON @join_keys;",
+        join_keys = joinKeys,
+        schema = schema,
+        table_name = tableName,
+        ref_table = refTable) |>
+        SqlRender::translate(targetDialect = dbms)
     }
 
-    batchSize <- 1000
-    for (start in seq(1, nrow(keyValues), by = batchSize)) {
-      end <- min(start + batchSize - 1, nrow(keyValues))
-      sql <- sapply(start:end, createSqlStatement)
-      sql <- paste(sql, collapse = "\n")
-      DatabaseConnector::executeSql(
-        connection,
-        sql,
-        progressBar = FALSE,
-        reportOverallTime = FALSE,
-        runAsBatch = TRUE
-      )
-    }
+    DatabaseConnector::executeSql(connection, deleteSql)
   }
 
 
