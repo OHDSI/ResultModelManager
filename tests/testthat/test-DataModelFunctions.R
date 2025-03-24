@@ -87,3 +87,76 @@ test_that("format chunk handles int/numeric type conversions ok", {
   checkmate::expect_data_frame(chunk)
   checkmate::expect_numeric(chunk$id)
 })
+
+
+test_that("Delete primary key rows function", {
+  sql <- "
+  DROP TABLE IF EXISTS @schema.@test_table;
+  CREATE TABLE @schema.@test_table (id int, id_2 int);
+  INSERT INTO @schema.@test_table (id, id_2) VALUES (1, 2);
+  INSERT INTO @schema.@test_table (id, id_2) VALUES (3, 4);
+  INSERT INTO @schema.@test_table (id, id_2) VALUES (5, 6);
+  INSERT INTO @schema.@test_table (id, id_2) VALUES (7, 8);
+  "
+  testTable <- "test_delete_table"
+  DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, sql, schema = testSchema, test_table = testTable)
+
+  # Delete nothing
+  deleteAllRowsForPrimaryKey(
+    connection = testDatabaseConnection,
+    schema = testSchema,
+    tableName = testTable,
+    keyValues = data.frame()
+  )
+
+  # Delete nothing
+  deleteAllRowsForPrimaryKey(
+    connection = testDatabaseConnection,
+    schema = testSchema,
+    tableName = testTable,
+    keyValues = data.frame(ID = c(1), ID_2 = (99)) # one key is valid, one is not
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
+                                                       "SELECT * FROM @schema.@test_table",
+                                                       schema = testSchema,
+                                                       test_table = testTable)
+  expect_equal(nrow(result), 4)
+
+
+  deleteRows <- data.frame(
+    ID = c(1, 3),
+    ID_2 = c(2, 4)
+  )
+
+  keptRows <- data.frame(
+    ID = c(5, 7),
+    ID_2 = c(6, 8)
+  )
+
+  deleteAllRowsForPrimaryKey(
+    connection = testDatabaseConnection,
+    schema = testSchema,
+    tableName = testTable,
+    keyValues = deleteRows
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
+                                                       "SELECT * FROM @schema.@test_table",
+                                                       schema = testSchema,
+                                                       test_table = testTable)
+  expect_identical(result, keptRows)
+
+  deleteAllRowsForPrimaryKey(
+    connection = testDatabaseConnection,
+    schema = testSchema,
+    tableName = testTable,
+    keyValues = keptRows
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
+                                                       "SELECT * FROM @schema.@test_table",
+                                                       schema = testSchema,
+                                                       test_table = testTable)
+  expect_equal(nrow(result), 0)
+})
