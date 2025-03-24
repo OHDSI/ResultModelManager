@@ -136,7 +136,7 @@ PooledConnectionHandler <- R6::R6Class(
         warning("Closing existing connection")
         self$closeConnection()
       }
-      ParallelLogger::logInfo("Initalizing pooled connection")
+      ParallelLogger::logInfo("Initializing pooled connection")
       self$con <- do.call(pool::dbPool, private$dbConnectArgs)
 
       self$isActive <- TRUE
