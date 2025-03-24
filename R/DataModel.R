@@ -693,9 +693,9 @@ deleteAllRowsForPrimaryKey <-
       createTable = TRUE,
       dropTableIfExists = TRUE)
 
-    joinKeys <- "t.@key_ref = @ref_table.@key_ref"
+    joinKeys <- "@table_name.@key_ref = @ref_table.@key_ref"
     joinKeys <- sapply(colnames(keyValues), function(keyRef) {
-      SqlRender::render(joinKeys, key_ref = keyRef, ref_table = refTable)
+      SqlRender::render(joinKeys, key_ref = keyRef, ref_table = refTable, table_name = tableName)
     }) |>
       paste(collapse = " AND ")
 
@@ -703,9 +703,9 @@ deleteAllRowsForPrimaryKey <-
 
     if (dbms == "sqlite") {
       deleteSql <- SqlRender::render(
-        "DELETE FROM @schema.@table_name t
+        "DELETE FROM @schema.@table_name
         WHERE EXISTS (
-            SELECT 1
+            SELECT *
             FROM @ref_table
             WHERE @join_keys
         );",
@@ -715,7 +715,7 @@ deleteAllRowsForPrimaryKey <-
         ref_table = refTable)
     } else if (dbms == "postgresql") {
       deleteSql <- SqlRender::render(
-        "DELETE FROM @schema.@table_name t
+        "DELETE FROM @schema.@table_name
         USING @ref_table
         WHERE @join_keys",
         schema = schema,
@@ -726,7 +726,7 @@ deleteAllRowsForPrimaryKey <-
       # Not supported but will let user do it anyway
       deleteSql <- SqlRender::render(
         "DELETE t
-        FROM @schema.@table_name t
+        FROM @schema.@table_name
         INNER JOIN #@ref_table ON @join_keys;",
         join_keys = joinKeys,
         schema = schema,
