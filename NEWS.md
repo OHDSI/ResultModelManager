@@ -6,6 +6,7 @@ Changes:
 Bug Fixes:
 
 1. Fixed big in type check issue in ResultExportManager
+2. Fixed bad deletion of existing primary key rows. Also improved efficiency of delete by using a join
 
 # ResultModelManager 0.5.11
 

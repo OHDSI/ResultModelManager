@@ -2,6 +2,9 @@ ResultModelManager
 ==================
 [![Build Status](https://github.com/OHDSI/ResultModelManager/workflows/R-CMD-check/badge.svg)](https://github.com/OHDSI/ResultModelManager/actions?query=workflow%3AR-CMD-check)
 [![codecov.io](https://codecov.io/github/OHDSI/ResultModelManager/coverage.svg?branch=main)](https://app.codecov.io/github/OHDSI/ResultModelManager?branch=main)
+[![CRAN_Status_Badge](https://www.r-pkg.org/badges/version/ResultModelManager)](https://cran.r-project.org/package=ResultModelManager)
+[![CRAN_Status_Badge](https://cranlogs.r-pkg.org/badges/ResultModelManager)](https://cran.r-project.org/package=ResultModelManager)
+
 
 ResultModelManager (RMM) [HADES](https://ohdsi.github.io/Hades/).
 
