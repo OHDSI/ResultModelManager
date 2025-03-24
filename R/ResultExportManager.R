@@ -322,7 +322,7 @@ ResultExportManager <- R6::R6Class(
       # Subset to required columns only
       rows <- rows |> dplyr::select(dplyr::any_of(exportColumns))
 
-      if ("database_id" %in% exportColumns && !"datbase_id" %in% colnames(rows)) {
+      if ("database_id" %in% exportColumns && !"database_id" %in% colnames(rows) && nrow(rows) > 0) {
         rows$database_id <- private$databaseId
       }
 
