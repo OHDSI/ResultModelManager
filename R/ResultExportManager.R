@@ -33,18 +33,19 @@ ResultExportManager <- R6::R6Class(
     tables = NULL,
     tableSpecification = NULL,
     databaseId = NULL,
+    validateTypes = FALSE,
     connection = NULL,
     minCellCount = 5,
     .colTypeValidators = list(
-      "numeric" = checkmate::checkNumeric,
-      "int" = checkmate::checkIntegerish,
-      "varchar" = checkmate::checkCharacter,
+      "numeric" = checkmate::testNumeric,
+      "int" = checkmate::testIntegerish,
+      "varchar" = checkmate::testCharacter,
       "bigint" = function(x, ...) {
-        checkmate::checkNumeric(x = x, ...) && x %% 1 == 0
+        all(checkmate::testNumeric(x = x, ...) & x %% 1 == 0)
       },
-      "float" = checkmate::checkNumeric,
-      "character" = checkmate::checkCharacter,
-      "date" = checkmate::checkDate
+      "float" = checkmate::testNumeric,
+      "character" = checkmate::testCharacter,
+      "date" = checkmate::testDate
     ),
     getPrimaryKeyCache = function(exportTableName) {
       file.path(tempdir(), paste0(private$databaseId, "-", Sys.getpid(), "-", exportTableName, ".csv"))
@@ -134,11 +135,15 @@ ResultExportManager <- R6::R6Class(
     #' @param minCellCount              Minimum cell count - reccomended that you set with
     #'                                  options("ohdsi.minCellCount" = count) in all R projects. Default is 5
     #' @param databaseId                database identifier - required when exporting according to many specs
+    #' @param validateTypes             Test if row values strictly conform to types - optional, not currently reccomended
+    #'                                  outside of development
     initialize = function(tableSpecification,
                           exportDir,
                           minCellCount = getOption("ohdsi.minCellCount", default = 5),
+                          validateTypes = FALSE,
                           databaseId = NULL) {
       self$exportDir <- exportDir
+      private$validateTypes <- validateTypes
       # Check table spec is valid
       assertSpecificationColumns(colnames(tableSpecification))
       private$tableSpecification <- tableSpecification
@@ -155,9 +160,9 @@ ResultExportManager <- R6::R6Class(
       private$databaseId <- databaseId
 
       #
-      if (is.null(self$databaseId)) {
-        dbIdCount <- private$tableSpecification %>%
-          dplyr::filter(.data$columnName == "databaseId") %>%
+      if (is.null(private$databaseId)) {
+        dbIdCount <- private$tableSpecification |>
+          dplyr::filter(.data$columnName == "database_id") |>
           dplyr::count()
 
         if (dbIdCount > 0) {
@@ -173,7 +178,7 @@ ResultExportManager <- R6::R6Class(
     #' Get specification of table
     #' @param exportTableName table name
     getTableSpec = function(exportTableName) {
-      private$tableSpecification %>%
+      private$tableSpecification |>
         dplyr::filter(tableName == exportTableName)
     },
 
@@ -185,13 +190,13 @@ ResultExportManager <- R6::R6Class(
     getMinColValues = function(rows, exportTableName) {
       spec <- self$getTableSpec(exportTableName)
       if ("minCellCount" %in% colnames(spec)) {
-        filterCols <- spec %>%
-          dplyr::filter(tolower(.data$minCellCount) == "yes") %>%
-          dplyr::select("columnName") %>%
+        filterCols <- spec |>
+          dplyr::filter(tolower(.data$minCellCount) == "yes") |>
+          dplyr::select("columnName") |>
           dplyr::pull()
 
         if (length(filterCols)) {
-          rows <- rows %>% dplyr::mutate(dplyr::across(
+          rows <- rows |> dplyr::mutate(dplyr::across(
             all_of(filterCols),
             ~ ifelse(. > 0 & . < private$minCellCount, -private$minCellCount, .)
           ))
@@ -209,15 +214,15 @@ ResultExportManager <- R6::R6Class(
       valid <- lapply(spec$columnName, function(colname) {
         nullOk <- FALSE
         if ("optional" %in% colnames(spec)) {
-          nullOk <- spec %>%
-            dplyr::filter(.data$columnName == colname) %>%
-            dplyr::select("optional") %>%
-            dplyr::pull() %>%
+          nullOk <- spec |>
+            dplyr::filter(.data$columnName == colname) |>
+            dplyr::select("optional") |>
+            dplyr::pull() |>
             tolower() == "yes"
         }
 
-        coltype <- spec %>%
-          dplyr::filter(.data$columnName == colname) %>%
+        coltype <- spec |>
+          dplyr::filter(.data$columnName == colname) |>
           dplyr::pull("dataType")
 
         pattern <- "\\((\\d+|max)\\)"
@@ -230,16 +235,16 @@ ResultExportManager <- R6::R6Class(
         }
 
         private$validateColType(coltype, rows[[colname]], dataSize, null.ok = nullOk)
-      }) %>% unlist()
+      }) |> unlist()
       return(all(valid))
     },
 
     #' List tables
     #' @description list all tables in schema
     listTables = function() {
-      tableNames <- private$tableSpecification %>%
-        dplyr::select("tableName") %>%
-        dplyr::pull() %>%
+      tableNames <- private$tableSpecification |>
+        dplyr::select("tableName") |>
+        dplyr::pull() |>
         unique()
 
       return(tableNames)
@@ -256,11 +261,11 @@ ResultExportManager <- R6::R6Class(
     #' @param exportTableName Table name (must be in spec)
     #' @param invalidateCache logical - if starting a fresh export use this to delete cache of primary keys
     checkPrimaryKeys = function(rows, exportTableName, invalidateCache = FALSE) {
-      primaryKeyCols <- self$getTableSpec(exportTableName) %>%
-        dplyr::filter(tolower(.data$primaryKey) == "yes") %>%
+      primaryKeyCols <- self$getTableSpec(exportTableName) |>
+        dplyr::filter(tolower(.data$primaryKey) == "yes") |>
         dplyr::pull("columnName")
 
-      pkdt <- rows %>% dplyr::select(dplyr::all_of(primaryKeyCols))
+      pkdt <- rows |> dplyr::select(dplyr::all_of(primaryKeyCols))
       # Primary keys cannot be null
       if (any(sapply(pkdt, function(x) any(is.null(x), is.na(x))))) {
         logMessage <- "null/na primary keys found"
@@ -291,18 +296,19 @@ ResultExportManager <- R6::R6Class(
     #'
     #' @param rows              Rows to export
     #' @param exportTableName   Table name
-    #' @param append    logical - if true will append the result to a file, otherwise the file will be overwritten
+    #' @param append            logical - if true will append the result to a file, otherwise the file will be overwritten
     exportDataFrame = function(rows, exportTableName, append = FALSE) {
       checkmate::assertDataFrame(rows)
       if (!exportTableName %in% private$tables) {
         stop("Table not found in specifications")
       }
 
-      validRows <- self$checkRowTypes(rows, exportTableName)
-      if (!all(isTRUE(validRows))) {
-        stop(paste(validRows[!isTRUE(validRows)], collapse = "\n"))
+      if (private$validateTypes) {
+        validRows <- self$checkRowTypes(rows, exportTableName)
+        if (!all(isTRUE(validRows))) {
+          stop(paste(validRows[!isTRUE(validRows)], collapse = "\n"))
+        }
       }
-
       # Convert < minCellCount to -minCellCount
       rows <- self$getMinColValues(rows, exportTableName)
       validPkeys <- self$checkPrimaryKeys(rows, exportTableName, invalidateCache = !append)
@@ -311,10 +317,20 @@ ResultExportManager <- R6::R6Class(
         stop("Cannot write data - primary keys already written to cache")
       }
 
-      exportColumns <- self$getTableSpec(exportTableName) %>%
+      exportColumns <- self$getTableSpec(exportTableName) |>
         dplyr::pull("columnName")
       # Subset to required columns only
-      rows <- rows %>% dplyr::select(all_of(exportColumns))
+      rows <- rows |> dplyr::select(dplyr::any_of(exportColumns))
+
+      if ("database_id" %in% exportColumns && !"database_id" %in% colnames(rows) && nrow(rows) > 0) {
+        rows$database_id <- private$databaseId
+      }
+
+      colsNotPresent <- exportColumns[!exportColumns %in% colnames(rows)]
+
+      if (length(colsNotPresent)) {
+        warning("Expected columns not found in exported data frame ", paste(colsNotPresent, collapse = " "))
+      }
 
       # Add database id, if present in spec
       outputFile <- file.path(self$exportDir, paste0(exportTableName, ".csv"))
@@ -399,7 +415,7 @@ ResultExportManager <- R6::R6Class(
       checksums <- data.frame(
         file = exportedFiles,
         checksum = lapply(exportedFiles, digest::digest, algo = "sha256") |> unlist()
-      ) %>% dplyr::filter(.data$file != "mainfest.json")
+      ) |> dplyr::filter(.data$file != "mainfest.json")
 
       # Get any migrations from package that would be expected for data insert to work
       expectedMigrations <- private$getMigrationFiles(migrationsPath, packageName, migrationRegexp)

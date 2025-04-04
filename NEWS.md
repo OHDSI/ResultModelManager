@@ -1,12 +1,12 @@
 # ResultModelManager 0.6.0
 
 Changes:
-
 1. Added optional wrapper functions for python based upload of csv files
 
 Bug Fixes:
 
-1. Fixed bad deletion of existing primary key rows. Also improved efficiency of delete by using a join
+1. Fixed big in type check issue in ResultExportManager
+2. Fixed bad deletion of existing primary key rows. Also improved efficiency of delete by using a join
 
 # ResultModelManager 0.5.11
 
