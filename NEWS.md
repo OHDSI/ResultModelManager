@@ -2,7 +2,7 @@
 
 Changes:
 
-1. Added optional wrapper functions for python based upload of csv files
+1. Added experimental wrapper functions for python based upload of csv files
 
 Bug Fixes:
 

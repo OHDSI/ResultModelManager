@@ -112,7 +112,7 @@ test_that("upload data.frame via string buffer", {
                          my_date = as.Date("1980-05-28"),
                          my_date2 = as.Date("1980-05-30"))
 
-  # Note small buffer write size tests if buffering is functioning correctly
+
   .pgWriteDataFrame(data = testData,
                     pyConnection = pyConnection,
                     table = table,
@@ -134,4 +134,36 @@ test_that("upload data.frame via string buffer", {
   expect_equal(nrow(resultData), nrow(testData))
   expect_equal(sum(resultData$id), sum(testData$id))
   expect_true(all(c("id", "testString2", "testString1", "myDate", "myDate2") %in% names(resultData)))
+})
+
+
+test_that("upload data.frame via string buffer", {
+  # Test very large dataset upload
+  skip_on_cran()
+  skip_if(Sys.getenv("CDM5_POSTGRESQL_SERVER") == "")
+
+  # Note small buffer write size tests if buffering is functioning correctly - not intentded for general use
+  defaultBufferSize <- getOption("rmm.pyBufferSize", default = 1e6)
+  options("rmm.pyBufferSize" = 1e4)
+  on.exit(options("rmm.pyBufferSize" = defaultBufferSize), add = TRUE)
+  testRows <- data.frame(id = seq(1e6), value = runif(1e6))
+
+  enablePythonUploads()
+  expect_true(pyPgUploadEnabled())
+
+  table <- paste0("test_", sample(1:10000, 1))
+  # Test that all rows upload and that they are unique (i.e. no repeat uploads)
+  sql <- "CREATE TABLE @schema.@table (id bigint primary key, value numeric)"
+  DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, sql, schema = testSchema, table = table)
+
+  pyUploadDataFrame(testRows, testDatabaseConnection, schema = testSchema, table = table)
+
+  testRes <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
+                                                       "SELECT count(*) as count, sum(value) as sum FROM @schema.@table",
+                                                       schema = testSchema,
+                                                       table = table,
+                                                        snakeCaseToCamelCase = TRUE)
+
+  expect_equal(testRes$count, nrow(testRows))
+  expect_equal(testRes$sum, sum(testRows$value))
 })

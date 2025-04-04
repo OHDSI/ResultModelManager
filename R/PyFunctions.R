@@ -203,13 +203,15 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
 }
 
 
-.pgWriteDataFrame <- function(data, pyConnection, table, schema, bufferWriteSize = 1e6) {
+.pgWriteDataFrame <- function(data, pyConnection, table, schema, bufferWriteSize = getOption("rmm.pyBufferSize", default = 1e6)) {
+  # Create a raw string buffer to pass data in to
   fd <- raw(0)
   buffer <- rawConnection(fd, "r+")
   on.exit(close(buffer), add = TRUE)
   offset <- 1
   # Read data chunk by chunk and write to a string buffer
-  stdata <- data[offset:min(offset + bufferWriteSize, nrow(data)),]
+  bufferEnd <- min(bufferWriteSize, nrow(data))
+  stdata <- data[offset:bufferEnd,]
 
   while (offset < nrow(data)) {
     readr::write_delim(stdata, buffer, delim = "\t", na = '$$$$$', quote = "all", escape = "double", col_names = FALSE)
@@ -222,8 +224,10 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
                          schema = schema,
                          colnames = paste0(colnames(stdata), collapse = ","))
 
+
     offset <- offset + bufferWriteSize
-    stdata <- data[offset:min(offset + bufferWriteSize, nrow(data)),]
+    bufferEnd <- min((offset - 1) + bufferWriteSize, nrow(data))
+    stdata <- data[offset:bufferEnd,]
     seek(buffer, 0)
   }
 }
