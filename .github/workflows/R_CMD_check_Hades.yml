@@ -133,7 +133,7 @@ jobs:
 
     if: ${{ github.event_name != 'pull_request' && github.ref == 'refs/heads/main' }}
 
-  steps:
+    steps:
 
       - uses: actions/checkout@v4
         with:
