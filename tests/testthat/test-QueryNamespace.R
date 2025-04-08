@@ -16,7 +16,7 @@ test_that("Errors", {
     result_schema = "main",
     tablePrefix = "cd_"
   )
-  on.exit(qn$finalize())
+  on.exit(qn$closeConnection())
   expect_error(qn$getConnectionHandler())
   qn$addReplacementVariable("foo", "fii")
   expect_error(qn$addReplacementVariable("foo", "fii2"))
@@ -30,7 +30,7 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
     result_schema = "main",
     tablePrefix = "cd_"
   )
-  on.exit(cohortNamespace$finalize(), add = TRUE)
+  on.exit(cohortNamespace$closeConnection(), add = TRUE)
 
   checkmate::expect_r6(cohortNamespace$getConnectionHandler(), "ConnectionHandler")
 
@@ -40,7 +40,7 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
     tablePrefix = "cd_"
   )
 
-  on.exit(cohortNamespace2$finalize(), add = TRUE)
+  on.exit(cohortNamespace2$closeConnection(), add = TRUE)
 
   cohortNamespace2$setConnectionHandler(connectionHandler)
   expect_equal(cohortNamespace2$getConnectionHandler(), connectionHandler)

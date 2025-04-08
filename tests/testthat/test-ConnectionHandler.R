@@ -28,7 +28,7 @@ genericTests <- function(connClass, classes, connectionClass) {
   checkmate::expect_class(conn, classes)
   on.exit(
     {
-      conn$finalize()
+      conn$closeConnection()
     },
     add = TRUE
   )
@@ -62,7 +62,7 @@ genericTests <- function(connClass, classes, connectionClass) {
   expect_equal(DatabaseConnector::dbms(testConnection), conn$dbms())
   conceptTbl <- conn$tbl("concept", databaseSchema = "main")
 
-  expect_class(conceptTbl, c("tbl", "tbl_lazy"))
+  checkmate::expect_class(conceptTbl, c("tbl", "tbl_lazy"))
 
   conn$closeConnection()
   expect_false(conn$isActive)

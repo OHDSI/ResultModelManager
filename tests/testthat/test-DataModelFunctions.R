@@ -6,7 +6,7 @@ test_that("results utility functions work", {
 
 test_that("Bad model format", {
   data <- data.frame(databaseId = 1, foo = c(22))
-  expect_character(checkSpecificationColumns(data))
+  checkmate::expect_character(checkSpecificationColumns(data))
 
   junkSpec <- data.frame(
     tableName = "foo",
@@ -90,7 +90,6 @@ test_that("format chunk handles int/numeric type conversions ok", {
 
 
 test_that("Delete primary key rows function", {
-
   skip_if_results_db_not_available()
   sql <- "
   DROP TABLE IF EXISTS @schema.@test_table;
@@ -120,9 +119,10 @@ test_that("Delete primary key rows function", {
   )
 
   result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
-                                                       "SELECT * FROM @schema.@test_table",
-                                                       schema = testSchema,
-                                                       test_table = testTable)
+    "SELECT * FROM @schema.@test_table",
+    schema = testSchema,
+    test_table = testTable
+  )
   expect_equal(nrow(result), 4)
 
 
@@ -144,9 +144,10 @@ test_that("Delete primary key rows function", {
   )
 
   result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
-                                                       "SELECT * FROM @schema.@test_table",
-                                                       schema = testSchema,
-                                                       test_table = testTable)
+    "SELECT * FROM @schema.@test_table",
+    schema = testSchema,
+    test_table = testTable
+  )
   expect_identical(result, keptRows)
 
   deleteAllRowsForPrimaryKey(
@@ -157,15 +158,15 @@ test_that("Delete primary key rows function", {
   )
 
   result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
-                                                       "SELECT * FROM @schema.@test_table",
-                                                       schema = testSchema,
-                                                       test_table = testTable)
+    "SELECT * FROM @schema.@test_table",
+    schema = testSchema,
+    test_table = testTable
+  )
   expect_equal(nrow(result), 0)
 })
 
 
 test_that("Delete primary key rows function SQLITE", {
-
   sqliteConn <- DatabaseConnector::connect(dbms = "sqlite", server = ":memory:")
   on.exit(DatabaseConnector::disconnect(sqliteConn))
 
@@ -197,9 +198,10 @@ test_that("Delete primary key rows function SQLITE", {
   )
 
   result <- DatabaseConnector::renderTranslateQuerySql(sqliteConn,
-                                                       "SELECT * FROM @schema.@test_table",
-                                                       schema = "main",
-                                                       test_table = testTable)
+    "SELECT * FROM @schema.@test_table",
+    schema = "main",
+    test_table = testTable
+  )
   expect_equal(nrow(result), 4)
 
 
@@ -221,9 +223,10 @@ test_that("Delete primary key rows function SQLITE", {
   )
 
   result <- DatabaseConnector::renderTranslateQuerySql(sqliteConn,
-                                                       "SELECT * FROM @schema.@test_table",
-                                                       schema = "main",
-                                                       test_table = testTable)
+    "SELECT * FROM @schema.@test_table",
+    schema = "main",
+    test_table = testTable
+  )
   expect_identical(result, keptRows)
 
   deleteAllRowsForPrimaryKey(
@@ -234,8 +237,9 @@ test_that("Delete primary key rows function SQLITE", {
   )
 
   result <- DatabaseConnector::renderTranslateQuerySql(sqliteConn,
-                                                       "SELECT * FROM @schema.@test_table",
-                                                       schema = "main",
-                                                       test_table = testTable)
+    "SELECT * FROM @schema.@test_table",
+    schema = "main",
+    test_table = testTable
+  )
   expect_equal(nrow(result), 0)
 })

@@ -97,10 +97,10 @@ test_that("results are uploaded", {
   }
 
   for (tableName in unique(specifications$tableName)) {
-    primaryKey <- specifications %>%
+    primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
-      dplyr::select("columnName") %>%
+        primaryKey == "Yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     if ("database_id" %in% primaryKey) {
@@ -145,10 +145,10 @@ test_that("appending results rows using primary keys works", {
   specifications <- getResultsDataModelSpecifications()
 
   for (tableName in unique(specifications$tableName)) {
-    primaryKey <- specifications %>%
+    primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
-      dplyr::select("columnName") %>%
+        primaryKey == "Yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     # append new data into table
@@ -179,16 +179,16 @@ test_that("appending results rows using primary keys works", {
       )
 
       # verify that the duplicate row was not appended (only the single existing row remains)
-      rowCount <- mergedData %>%
-        dplyr::filter(analysis3_id == "6542456") %>%
-        dplyr::count() %>%
+      rowCount <- mergedData |>
+        dplyr::filter(analysis3_id == "6542456") |>
+        dplyr::count() |>
         dplyr::pull()
       expect_true(rowCount == 1)
 
       # verify that the two new rows were appended
-      rowCount <- mergedData %>%
-        dplyr::filter(analysis3_id == "3453111") %>%
-        dplyr::count() %>%
+      rowCount <- mergedData |>
+        dplyr::filter(analysis3_id == "3453111") |>
+        dplyr::count() |>
         dplyr::pull()
       expect_true(rowCount == 2)
     }
@@ -200,10 +200,10 @@ test_that("deleting results rows using data primary key works", {
   specifications <- getResultsDataModelSpecifications()
 
   for (tableName in unique(specifications$tableName)) {
-    primaryKey <- specifications %>%
+    primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
-      dplyr::select("columnName") %>%
+        primaryKey == "Yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     # delete rows from tables with primary key: database_id, analysis3_id
@@ -239,10 +239,10 @@ test_that("deleting results rows by database id works", {
   specifications <- getResultsDataModelSpecifications()
 
   for (tableName in unique(specifications$tableName)) {
-    primaryKey <- specifications %>%
+    primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") %>%
-      dplyr::select("columnName") %>%
+        primaryKey == "Yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     if ("database_id" %in% primaryKey) {

@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -46,11 +46,13 @@
 
   message("Connecting to PostgreSQL (python)...")
   psycopg2 <- reticulate::import("psycopg2", delay_load = TRUE)
-  pgConnection <- psycopg2$connect(dbname = hostServerDb[2],
-                                   user = user,
-                                   password = password,
-                                   host = strsplit(hostServerDb[1], ":")[[1]][1],
-                                   port = port)
+  pgConnection <- psycopg2$connect(
+    dbname = hostServerDb[2],
+    user = user,
+    password = password,
+    host = strsplit(hostServerDb[1], ":")[[1]][1],
+    port = port
+  )
   return(pgConnection)
 }
 
@@ -70,21 +72,24 @@
 #' @param ... Extra parameters for reticulate::py_install
 #' @export
 install_psycopg2 <- function(envname = Sys.getenv("RMM_PYTHON_ENV", unset = "rmm-uploads"), method = "auto", ...) {
-  if (!interactive())
+  if (!interactive()) {
     stop("Session is not interactive. This is not how you want to install psycopg2")
+  }
 
   if (!reticulate::virtualenv_exists(envname)) {
     msg <- paste("No virtualenv configured. Create virtualenv", envname, " (set with envrionment valirable \"RMM_PYTHON_ENV\")")
     createnv <- utils::askYesNo(msg)
-    if (createnv)
+    if (createnv) {
       reticulate::virtualenv_create(envname)
-    else
+    } else {
       stop("Virtual env does not exist")
+    }
   }
 
   installBinary <- utils::askYesNo("Install psycopg2-binary python package into virtualenv?")
-  if (!installBinary)
+  if (!installBinary) {
     stop("Virtual env does not exist")
+  }
 
   reticulate::py_install("psycopg2-binary", envname = envname, method = method, ...)
   invisible(NULL)
@@ -97,11 +102,14 @@ install_psycopg2 <- function(envname = Sys.getenv("RMM_PYTHON_ENV", unset = "rmm
 #' @param  ... parameters to pass to py_install
 #' @export
 enablePythonUploads <- function(...) {
-  if (pyPgUploadEnabled())
+  if (pyPgUploadEnabled()) {
     return(invisible(NULL))
+  }
 
   # Check reticulate is installed
-  reticulateVersion <- tryCatch(utils::packageVersion("reticulate"), error = function(e) { return(NULL) })
+  reticulateVersion <- tryCatch(utils::packageVersion("reticulate"), error = function(...) {
+    return(NULL)
+  })
   installed <- !is.null(reticulateVersion)
   if (!installed && interactive()) {
     if (isTRUE(utils::askYesNo("reticulate is required for this functionality - would you like to enable it?"))) {
@@ -145,7 +153,9 @@ disablePythonUploads <- function() {
 #' are python postgresql uploads enabled?
 #' @export
 pyPgUploadEnabled <- function() {
-  reticulateVersion <- tryCatch(utils::packageVersion("reticulate"), error = function(e) { return(NULL) })
+  reticulateVersion <- tryCatch(utils::packageVersion("reticulate"), error = function(...) {
+    return(NULL)
+  })
   pySetupComplete <- FALSE
   if (!is.null(reticulateVersion)) {
     pySetupComplete <- reticulate::py_module_available("psycopg2")
@@ -163,16 +173,19 @@ pyPgUploadEnabled <- function() {
 #' @param disableConstraints (not reccomended) disable constraints prior to upload to speed up process
 #' @examples
 #' \dontrun{
-#'   connection <- DabaseConnector::connect(dbms = "postgreql",
-#'                                          server = "myserver.com",
-#'                                          port = 5432,
-#'                                          password = "s",
-#'                                          user = "me",
-#'                                          database = "some_db")
-#'  ResultModelManager::pyUploadCsv(connection,
-#'                                  table = "my_table",
-#'                                  filepath = "my_massive_csv.csv",
-#'                                  schema = "my_schema")
+#' connection <- DabaseConnector::connect(
+#'   dbms = "postgreql",
+#'   server = "myserver.com",
+#'   port = 5432,
+#'   password = "s",
+#'   user = "me",
+#'   database = "some_db"
+#' )
+#' ResultModelManager::pyUploadCsv(connection,
+#'   table = "my_table",
+#'   filepath = "my_massive_csv.csv",
+#'   schema = "my_schema"
+#' )
 #' }
 #' @export
 pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints = FALSE) {
@@ -182,16 +195,18 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
   checkmate::assertString(schema)
   checkmate::assertLogical(disableConstraints)
   DatabaseConnector::dbIsValid(connection)
-  checkmate::assertTRUE(DatabaseConnector::dbms(connection) == 'postgresql')
+  checkmate::assertTRUE(DatabaseConnector::dbms(connection) == "postgresql")
 
   pyConnection <- .createPyConnection(connection)
   on.exit(pyConnection$close(), add = TRUE)
 
-  result <- .pyEnv$upload_table(connection = pyConnection,
-                                table = table,
-                                filepath = normalizePath(filepath),
-                                schema = schema,
-                                disable_constraints = disableConstraints)
+  result <- .pyEnv$upload_table(
+    connection = pyConnection,
+    table = table,
+    filepath = normalizePath(filepath),
+    schema = schema,
+    disable_constraints = disableConstraints
+  )
   # Handle errors
   if (result$status == -1) {
     ParallelLogger::logError("Error uploading filepath to table")
@@ -203,27 +218,33 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
 }
 
 
-.pgWriteDataFrame <- function(data, pyConnection, table, schema, bufferWriteSize = 1e6) {
+.pgWriteDataFrame <- function(data, pyConnection, table, schema, bufferWriteSize = getOption("rmm.pyBufferSize", default = 1e6)) {
+  # Create a raw string buffer to pass data in to
   fd <- raw(0)
   buffer <- rawConnection(fd, "r+")
   on.exit(close(buffer), add = TRUE)
   offset <- 1
   # Read data chunk by chunk and write to a string buffer
-  stdata <- data[offset:min(offset + bufferWriteSize, nrow(data)),]
+  bufferEnd <- min(bufferWriteSize, nrow(data))
+  stdata <- data[offset:bufferEnd, ]
 
   while (offset < nrow(data)) {
-    readr::write_delim(stdata, buffer, delim = "\t", na = '$$$$$', quote = "all", escape = "double", col_names = FALSE)
+    readr::write_delim(stdata, buffer, delim = "\t", na = "$$$$$", quote = "all", escape = "double", col_names = FALSE)
     nchars <- seek(buffer, 0)
     # Note this use of multiple buffers is inefficient but without R being able to write to a python buffer, the
     charContent <- readChar(buffer, nchars = nchars)
-    .pyEnv$upload_buffer(connection = pyConnection,
-                         table = table,
-                         csv_content = charContent,
-                         schema = schema,
-                         colnames = paste0(colnames(stdata), collapse = ","))
+    .pyEnv$upload_buffer(
+      connection = pyConnection,
+      table = table,
+      csv_content = charContent,
+      schema = schema,
+      colnames = paste0(colnames(stdata), collapse = ",")
+    )
+
 
     offset <- offset + bufferWriteSize
-    stdata <- data[offset:min(offset + bufferWriteSize, nrow(data)),]
+    bufferEnd <- min((offset - 1) + bufferWriteSize, nrow(data))
+    stdata <- data[offset:bufferEnd, ]
     seek(buffer, 0)
   }
 }
@@ -238,17 +259,20 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
 #' @param schema database schema containing table reference
 #' @examples
 #' \dontrun{
-#'   connection <- DabaseConnector::connect(dbms = "postgreql",
-#'                                          server = "myserver.com",
-#'                                          port = 5432,
-#'                                          password = "s",
-#'                                          user = "me",
-#'                                          database = "some_db")
+#' connection <- DabaseConnector::connect(
+#'   dbms = "postgreql",
+#'   server = "myserver.com",
+#'   port = 5432,
+#'   password = "s",
+#'   user = "me",
+#'   database = "some_db"
+#' )
 #'
-#'  ResultModelManager::pyUploadDataFrame(connection,
-#'                                        table = "my_table",
-#'                                        data.frame(id=1:100, value = "some_value"),
-#'                                        schema = "my_schema")
+#' ResultModelManager::pyUploadDataFrame(connection,
+#'   table = "my_table",
+#'   data.frame(id = 1:100, value = "some_value"),
+#'   schema = "my_schema"
+#' )
 #' }
 #' @export
 pyUploadDataFrame <- function(data, connection, table, schema) {
@@ -257,18 +281,21 @@ pyUploadDataFrame <- function(data, connection, table, schema) {
   checkmate::assertString(table)
   checkmate::assertString(schema)
   DatabaseConnector::dbIsValid(connection)
-  checkmate::assertTRUE(DatabaseConnector::dbms(connection) == 'postgresql')
+  checkmate::assertTRUE(DatabaseConnector::dbms(connection) == "postgresql")
 
   pyConnection <- .createPyConnection(connection)
   on.exit(pyConnection$close(), add = TRUE)
 
-  tryCatch({
-    .pgWriteDataFrame(data, pyConnection, table, schema)
-  }, error = function(error) {
-    # rollback write of data
-    pyConnection$rollback()
-    stop(error)
-  })
+  tryCatch(
+    {
+      .pgWriteDataFrame(data, pyConnection, table, schema)
+    },
+    error = function(error) {
+      # rollback write of data
+      pyConnection$rollback()
+      stop(error)
+    }
+  )
 
   # User must handle error on commits
   pyConnection$commit()

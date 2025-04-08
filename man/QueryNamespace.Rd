@@ -58,6 +58,7 @@ print(cohortNamespace$render(sql))
 result <- cohortNamespace$queryDb(sql, cohort_id = 1)
 # cleanup test data
 unlink("test_db.sqlite")
+
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -78,7 +79,7 @@ unlink("test_db.sqlite")
 \item \href{#method-QueryNamespace-queryDb}{\code{QueryNamespace$queryDb()}}
 \item \href{#method-QueryNamespace-executeSql}{\code{QueryNamespace$executeSql()}}
 \item \href{#method-QueryNamespace-getVars}{\code{QueryNamespace$getVars()}}
-\item \href{#method-QueryNamespace-finalize}{\code{QueryNamespace$finalize()}}
+\item \href{#method-QueryNamespace-closeConnection}{\code{QueryNamespace$closeConnection()}}
 \item \href{#method-QueryNamespace-clone}{\code{QueryNamespace$clone()}}
 }
 }
@@ -256,19 +257,19 @@ get vars}
 \if{latex}{\out{\hypertarget{method-QueryNamespace-getVars}{}}}
 \subsection{Method \code{getVars()}}{
 returns full list of variables that will be replaced
-Destruct object
+closeConnection
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$getVars()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-QueryNamespace-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-QueryNamespace-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-Close connections etc
+\if{html}{\out{<a id="method-QueryNamespace-closeConnection"></a>}}
+\if{latex}{\out{\hypertarget{method-QueryNamespace-closeConnection}{}}}
+\subsection{Method \code{closeConnection()}}{
+close connection, if active
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$finalize()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$closeConnection()}\if{html}{\out{</div>}}
 }
 
 }

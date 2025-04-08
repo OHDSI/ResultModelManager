@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -19,13 +19,12 @@
 
 #' @import DatabaseConnector
 #' @import R6
-#' @importFrom dplyr %>%
 #' @importFrom rlang .data
 NULL
 
 # Add custom assertions
 assertSpecificationColumns <- checkmate::makeAssertionFunction(checkSpecificationColumns)
 
-.onLoad <- function(libname, pkgname) {
+.onLoad <- function(...) {
   .loadPsycopg2Functions()
 }

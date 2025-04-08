@@ -20,16 +20,19 @@ Wrapper to python function to upload a data.frame using Postgres Copy functional
 }
 \examples{
 \dontrun{
-  connection <- DabaseConnector::connect(dbms = "postgreql",
-                                         server = "myserver.com",
-                                         port = 5432,
-                                         password = "s",
-                                         user = "me",
-                                         database = "some_db")
+connection <- DabaseConnector::connect(
+  dbms = "postgreql",
+  server = "myserver.com",
+  port = 5432,
+  password = "s",
+  user = "me",
+  database = "some_db"
+)
 
- ResultModelManager::pyUploadDataFrame(connection,
-                                       table = "my_table",
-                                       data.frame(id=1:100, value = "some_value"),
-                                       schema = "my_schema")
+ResultModelManager::pyUploadDataFrame(connection,
+  table = "my_table",
+  data.frame(id = 1:100, value = "some_value"),
+  schema = "my_schema"
+)
 }
 }

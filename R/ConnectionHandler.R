@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of CemConnector
 #
@@ -32,23 +32,20 @@
 #' @description
 #' Class for handling DatabaseConnector:connection objects with consistent R6 interfaces for pooled and non-pooled connections.
 #' Allows a connection to cleanly be opened and closed and stored within class/object variables
-#'
+#' @export
 #' @field connectionDetails             DatabaseConnector connectionDetails object
 #' @field con                           DatabaseConnector connection object
 #' @field isActive                      Is connection active or not#'
 #' @field snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
-#'
-#' @import checkmate
-#' @import R6
-#' @importFrom DBI dbIsValid
-#' @importFrom SqlRender render translate
-#' @importFrom dbplyr in_schema
-#'
-#' @export ConnectionHandler
 ConnectionHandler <- R6::R6Class(
   classname = "ConnectionHandler",
   private = list(
-    .dbms = ""
+    .dbms = "",
+    finalize = function() {
+      if (self$isActive & self$dbIsValid()) {
+        self$closeConnection()
+      }
+    }
   ),
   public = list(
     connectionDetails = NULL,
@@ -142,15 +139,6 @@ ConnectionHandler <- R6::R6Class(
       }
       self$isActive <- FALSE
       self$con <- NULL
-    },
-
-    #' close Connection
-    #' @description
-    #' Closes connection (if active)
-    finalize = function() {
-      if (self$isActive & self$dbIsValid()) {
-        self$closeConnection()
-      }
     },
 
     #' db Is Valid

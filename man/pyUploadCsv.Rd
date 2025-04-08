@@ -22,15 +22,18 @@ Wrapper to python function to upload a csv using Postgres Copy functionality
 }
 \examples{
 \dontrun{
-  connection <- DabaseConnector::connect(dbms = "postgreql",
-                                         server = "myserver.com",
-                                         port = 5432,
-                                         password = "s",
-                                         user = "me",
-                                         database = "some_db")
- ResultModelManager::pyUploadCsv(connection,
-                                 table = "my_table",
-                                 filepath = "my_massive_csv.csv",
-                                 schema = "my_schema")
+connection <- DabaseConnector::connect(
+  dbms = "postgreql",
+  server = "myserver.com",
+  port = 5432,
+  password = "s",
+  user = "me",
+  database = "some_db"
+)
+ResultModelManager::pyUploadCsv(connection,
+  table = "my_table",
+  filepath = "my_massive_csv.csv",
+  schema = "my_schema"
+)
 }
 }
