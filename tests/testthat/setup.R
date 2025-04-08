@@ -83,3 +83,4 @@ if (Sys.getenv("CDM5_POSTGRESQL_SERVER") != "") {
 } else {
   testDatabaseConnectionDetails <- DatabaseConnector::createConnectionDetails(dbms = "sqlite", server = ":memory:")
 }
+options(vsize.mem.max=32e9)

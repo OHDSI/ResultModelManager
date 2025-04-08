@@ -88,12 +88,18 @@ jobs:
         shell: Rscript {0}
         run: |
 
+          if (.Platform$OS.type == "unix" && Sys.info()["sysname"] == "Darwin") {
+            # macOS
+            python_path <- "/usr/bin/python3"
+          } else {
+            # Windows and Linux
+            python_path <- Sys.which("python")
+          }
+          
           path_to_python <- reticulate::virtualenv_create(
             envname = "r-reticulate",
-            python = Sys.which("python"), # placed on PATH by the setup-python action
-            packages = c(
-              "psycopg2-binary"
-            )
+            python = python_path,
+            packages = c("psycopg2-binary")
           )
 
           writeLines(sprintf("RETICULATE_PYTHON=%s", path_to_python),
