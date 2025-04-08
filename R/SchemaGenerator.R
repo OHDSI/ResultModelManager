@@ -26,6 +26,7 @@
 }
 
 #' Schema generator
+#' @export
 #' @description
 #' Take a csv schema definition and create a basic sql script with it.
 #' returns string containing the sql for the table
@@ -35,9 +36,6 @@
 #'                                         tableName, columnName, dataType, isRequired, primaryKey
 #' @param sqlOutputPath                 File to write sql to.
 #' @param overwrite                     Boolean - overwrite existing file?
-#' @export
-#'
-#' @importFrom readr read_csv
 generateSqlSchema <- function(csvFilepath = NULL,
                               schemaDefinition = NULL,
                               sqlOutputPath = NULL,

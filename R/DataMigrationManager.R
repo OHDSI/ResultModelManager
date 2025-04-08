@@ -44,6 +44,7 @@ isUnitTest <- function() {
 )
 
 #' DataMigrationManager (DMM)
+#' @export
 #' @description
 #' R6 class for management of database migration
 #'
@@ -51,11 +52,7 @@ isUnitTest <- function() {
 #' @field databaseSchema                Path migrations exist in
 #' @field packageName                   packageName, can be null
 #' @field tablePrefix                   tablePrefix, can be empty character vector
-#' @field packageTablePrefix                   packageTablePrefix, can be empty character vector
-#'
-#' @importFrom ParallelLogger logError logInfo
-#'
-#' @export  DataMigrationManager
+#' @field packageTablePrefix            packageTablePrefix, can be empty character vector
 DataMigrationManager <- R6::R6Class(
   classname = "DataMigrationManager",
   public = list(
@@ -238,24 +235,27 @@ DataMigrationManager <- R6::R6Class(
         }
       }
     },
+    #' closeConnection
+    #' @description
+    #' close connection, if active
+    closeConnection = function() {
+      private$connectionHandler$closeConnection()
+    },
 
     #' isPackage
     #' @description
     #' is a package folder structure or not
     isPackage = function() {
       return(!is.null(self$packageName))
-    },
-
-    #' finalize
-    #' @description close database connection
-    finalize = function() {
-      private$connectionHandler$finalize()
     }
   ),
   private = list(
     migrationRegexp = NULL,
     connectionHandler = NULL,
     connectionDetails = NULL,
+    finalize = function() {
+      private$connectionHandler$closeConnection()
+    },
     executeMigration = function(migration) {
       private$logInfo("Executing migration: ", migration$migrationFile)
       # Load, render, translate and execute sql

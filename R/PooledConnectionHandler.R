@@ -71,10 +71,6 @@ requiredPackage <- function(packageName) {
 #' Transparently works the same way as a standard connection handler but stores pooled connections.
 #' Useful for long running applications that serve multiple concurrent requests.
 #' Note that a side effect of using this is that each call to this increments the .GlobalEnv attribute `RMMPooledHandlerCount`
-#' @importFrom pool dbPool poolClose
-#' @importFrom DBI dbIsValid
-#' @importFrom withr defer
-#'
 #' @export PooledConnectionHandler
 PooledConnectionHandler <- R6::R6Class(
   classname = "PooledConnectionHandler",

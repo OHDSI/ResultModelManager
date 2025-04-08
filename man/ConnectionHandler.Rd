@@ -40,12 +40,12 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \item \href{#method-ConnectionHandler-initConnection}{\code{ConnectionHandler$initConnection()}}
 \item \href{#method-ConnectionHandler-getConnection}{\code{ConnectionHandler$getConnection()}}
 \item \href{#method-ConnectionHandler-closeConnection}{\code{ConnectionHandler$closeConnection()}}
-\item \href{#method-ConnectionHandler-finalize}{\code{ConnectionHandler$finalize()}}
 \item \href{#method-ConnectionHandler-dbIsValid}{\code{ConnectionHandler$dbIsValid()}}
 \item \href{#method-ConnectionHandler-queryDb}{\code{ConnectionHandler$queryDb()}}
 \item \href{#method-ConnectionHandler-executeSql}{\code{ConnectionHandler$executeSql()}}
 \item \href{#method-ConnectionHandler-queryFunction}{\code{ConnectionHandler$queryFunction()}}
 \item \href{#method-ConnectionHandler-executeFunction}{\code{ConnectionHandler$executeFunction()}}
+\item \href{#method-ConnectionHandler-finalize}{\code{ConnectionHandler$finalize()}}
 \item \href{#method-ConnectionHandler-clone}{\code{ConnectionHandler$clone()}}
 }
 }
@@ -152,20 +152,9 @@ Connects automatically if it isn't yet loaded
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-closeConnection}{}}}
 \subsection{Method \code{closeConnection()}}{
 Closes connection (if active)
-close Connection
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$closeConnection()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ConnectionHandler-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-ConnectionHandler-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-Closes connection (if active)
 db Is Valid
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$finalize()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$closeConnection()}\if{html}{\out{</div>}}
 }
 
 }
@@ -274,10 +263,22 @@ Does not translate or render sql.
 \describe{
 \item{\code{sql}}{sql query string}
 
-\item{\code{connection}}{connection object}
+\item{\code{connection}}{connection object
+closeConnection}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ConnectionHandler-finalize"></a>}}
+\if{latex}{\out{\hypertarget{method-ConnectionHandler-finalize}{}}}
+\subsection{Method \code{finalize()}}{
+close connection, if active
+Do not use - will be moved to private in version 0.7.0
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$finalize()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-clone"></a>}}

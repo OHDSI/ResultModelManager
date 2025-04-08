@@ -6,7 +6,7 @@ test_that("results utility functions work", {
 
 test_that("Bad model format", {
   data <- data.frame(databaseId = 1, foo = c(22))
-  expect_character(checkSpecificationColumns(data))
+  checkmate::expect_character(checkSpecificationColumns(data))
 
   junkSpec <- data.frame(
     tableName = "foo",

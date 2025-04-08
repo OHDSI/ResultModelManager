@@ -4,6 +4,10 @@ Changes:
 
 1. Added experimental wrapper functions for python based upload of csv files
 
+2. Breaking change - public use of finalize from R6 classes causes deprecation warning in use of R6 package.
+Package maintainers should replace this with class to `closeConnection` which is in use or has been added to all classes.
+Note - due to CRAN this package cannot release without making this change.
+
 Bug Fixes:
 
 1. Fixed big in type check issue in ResultExportManager
