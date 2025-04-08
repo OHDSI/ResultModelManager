@@ -41,9 +41,6 @@ ConnectionHandler <- R6::R6Class(
   classname = "ConnectionHandler",
   private = list(
     .dbms = "",
-    #' close Connection
-    #' @description
-    #' Closes connection (if active)
     finalize = function() {
       if (self$isActive & self$dbIsValid()) {
         self$closeConnection()

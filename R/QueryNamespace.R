@@ -77,10 +77,6 @@ QueryNamespace <- R6::R6Class(
     replacementVars = NULL,
     tableSpecifications = list(),
     connectionHandler = NULL,
-
-    #' Destruct object
-    #' @description
-    #' Close connections etc
     finalize = function() {
       self$closeConnection()
     }
