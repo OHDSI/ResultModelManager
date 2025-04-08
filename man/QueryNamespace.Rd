@@ -59,7 +59,6 @@ result <- cohortNamespace$queryDb(sql, cohort_id = 1)
 # cleanup test data
 unlink("test_db.sqlite")
 
-Destruct object
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -88,9 +87,6 @@ Destruct object
 \if{html}{\out{<a id="method-QueryNamespace-new"></a>}}
 \if{latex}{\out{\hypertarget{method-QueryNamespace-new}{}}}
 \subsection{Method \code{new()}}{
-Close connections etc
-
-
 initialize class
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$new(

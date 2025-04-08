@@ -26,8 +26,7 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 
 \item{\code{isActive}}{Is connection active or not#'}
 
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
-close Connection}
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
 }
 \if{html}{\out{</div>}}
 }
@@ -53,7 +52,6 @@ close Connection}
 \if{html}{\out{<a id="method-ConnectionHandler-new"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-new}{}}}
 \subsection{Method \code{new()}}{
-Closes connection (if active)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$new(
   connectionDetails,
