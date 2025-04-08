@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of OHdsiSharing
 #
@@ -182,7 +182,7 @@ checkAndFixDuplicateRows <-
            specifications) {
     primaryKeys <- specifications |>
       dplyr::filter(.data$tableName == !!tableName &
-                      tolower(.data$primaryKey) == "yes") |>
+        tolower(.data$primaryKey) == "yes") |>
       dplyr::select("columnName") |>
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
@@ -195,7 +195,7 @@ checkAndFixDuplicateRows <-
           sum(duplicatedRows)
         )
       )
-      return(table[!duplicatedRows,])
+      return(table[!duplicatedRows, ])
     } else {
       return(table)
     }
@@ -221,7 +221,7 @@ appendNewRows <-
     if (nrow(data) > 0) {
       primaryKeys <- specifications |>
         dplyr::filter(.data$tableName == !!tableName &
-                        tolower(.data$primaryKey) == "yes") |>
+          tolower(.data$primaryKey) == "yes") |>
         dplyr::select("columnName") |>
         dplyr::pull()
       newData <- newData |>
@@ -251,10 +251,10 @@ formatDouble <- function(x) {
 
 .truncateTable <- function(tableName, connection, schema, tablePrefix) {
   DatabaseConnector::renderTranslateExecuteSql(connection,
-                                               "TRUNCATE TABLE @schema.@table_prefix@table;",
-                                               table_prefix = tablePrefix,
-                                               schema = schema,
-                                               table = tableName
+    "TRUNCATE TABLE @schema.@table_prefix@table;",
+    table_prefix = tablePrefix,
+    schema = schema,
+    table = tableName
   )
   invisible(NULL)
 }
@@ -355,8 +355,8 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
     primaryKeyValuesInChunk <- unique(chunk[env$primaryKey])
     duplicates <-
       dplyr::inner_join(env$primaryKeyValuesInDb,
-                        primaryKeyValuesInChunk,
-                        by = env$primaryKey
+        primaryKeyValuesInChunk,
+        by = env$primaryKey
       )
 
     if (nrow(duplicates) != 0) {
@@ -387,7 +387,7 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
       # Remove duplicates we already dealt with:
       env$primaryKeyValuesInDb <-
         env$primaryKeyValuesInDb |>
-          dplyr::anti_join(duplicates, by = env$primaryKey)
+        dplyr::anti_join(duplicates, by = env$primaryKey)
     }
   }
   if (nrow(chunk) == 0) {
@@ -395,13 +395,16 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
   } else {
     insertTableStatus <- tryCatch(expr = {
       if (!is.null(pythonConnection)) {
-        tryCatch({
-          .pgWriteDataFrame(chunk, pyConnection = pythonConnection, table = env$tableName, schema = env$schema)
-        }, error = function(error) {
-          # rollback write of data
-          pythonConnection$rollback()
-          stop(error)
-        })
+        tryCatch(
+          {
+            .pgWriteDataFrame(chunk, pyConnection = pythonConnection, table = env$tableName, schema = env$schema)
+          },
+          error = function(error) {
+            # rollback write of data
+            pythonConnection$rollback()
+            stop(error)
+          }
+        )
       } else {
         DatabaseConnector::insertTable(
           connection = connection,
@@ -497,11 +500,11 @@ uploadTable <- function(tableName,
     convertType <- Vectorize(
       function(type) {
         switch(type,
-               varchar = "c",
-               bigint = "n",
-               int = "n",
-               date = "D",
-               "?"
+          varchar = "c",
+          bigint = "n",
+          int = "n",
+          date = "D",
+          "?"
         ) # default to guess if type not matched
       }
     )
@@ -605,10 +608,10 @@ uploadResults <- function(connection = NULL,
     ParallelLogger::logInfo("Removing all records for tables within specification")
 
     invisible(lapply(unique(specifications$tableName),
-                     .truncateTable,
-                     connection = connection,
-                     schema = schema,
-                     tablePrefix = tablePrefix
+      .truncateTable,
+      connection = connection,
+      schema = schema,
+      tablePrefix = tablePrefix
     ))
   }
 
@@ -681,8 +684,9 @@ uploadResults <- function(connection = NULL,
 #' @export
 deleteAllRowsForPrimaryKey <-
   function(connection, schema, tableName, keyValues) {
-    if (nrow(keyValues) == 0)
+    if (nrow(keyValues) == 0) {
       return(NULL)
+    }
 
     refTable <- paste0("temp_", tableName, "_del")
     DatabaseConnector::insertTable(
@@ -691,7 +695,8 @@ deleteAllRowsForPrimaryKey <-
       tempTable = TRUE,
       data = keyValues,
       createTable = TRUE,
-      dropTableIfExists = TRUE)
+      dropTableIfExists = TRUE
+    )
 
     joinKeys <- "@table_name.@key_ref = @ref_table.@key_ref"
     joinKeys <- sapply(colnames(keyValues), function(keyRef) {
@@ -712,7 +717,8 @@ deleteAllRowsForPrimaryKey <-
         schema = schema,
         join_keys = joinKeys,
         table_name = tableName,
-        ref_table = refTable)
+        ref_table = refTable
+      )
     } else if (dbms == "postgresql") {
       deleteSql <- SqlRender::render(
         "DELETE FROM @schema.@table_name
@@ -721,7 +727,8 @@ deleteAllRowsForPrimaryKey <-
         schema = schema,
         join_keys = joinKeys,
         table_name = tableName,
-        ref_table = refTable)
+        ref_table = refTable
+      )
     } else {
       # Not supported but will let user do it anyway
       deleteSql <- SqlRender::render(
@@ -731,7 +738,8 @@ deleteAllRowsForPrimaryKey <-
         join_keys = joinKeys,
         schema = schema,
         table_name = tableName,
-        ref_table = refTable) |>
+        ref_table = refTable
+      ) |>
         SqlRender::translate(targetDialect = dbms)
     }
 
@@ -791,9 +799,9 @@ deleteAllRowsForDatabaseId <-
         database_id = databaseId
       )
       DatabaseConnector::executeSql(connection,
-                                    sql,
-                                    progressBar = FALSE,
-                                    reportOverallTime = FALSE
+        sql,
+        progressBar = FALSE,
+        reportOverallTime = FALSE
       )
     }
   }

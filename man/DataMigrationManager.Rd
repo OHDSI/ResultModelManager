@@ -40,7 +40,6 @@ R6 class for management of database migration
 \item \href{#method-DataMigrationManager-executeMigrations}{\code{DataMigrationManager$executeMigrations()}}
 \item \href{#method-DataMigrationManager-closeConnection}{\code{DataMigrationManager$closeConnection()}}
 \item \href{#method-DataMigrationManager-isPackage}{\code{DataMigrationManager$isPackage()}}
-\item \href{#method-DataMigrationManager-finalize}{\code{DataMigrationManager$finalize()}}
 \item \href{#method-DataMigrationManager-clone}{\code{DataMigrationManager$clone()}}
 }
 }
@@ -187,20 +186,8 @@ isPackage
 \if{latex}{\out{\hypertarget{method-DataMigrationManager-isPackage}{}}}
 \subsection{Method \code{isPackage()}}{
 is a package folder structure or not
-finalize
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$isPackage()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DataMigrationManager-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-DataMigrationManager-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-close database connection
-do not use - will be removed in version 0.7
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DataMigrationManager$finalize()}\if{html}{\out{</div>}}
 }
 
 }

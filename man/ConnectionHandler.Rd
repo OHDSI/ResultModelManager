@@ -26,7 +26,8 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 
 \item{\code{isActive}}{Is connection active or not#'}
 
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
+close Connection}
 }
 \if{html}{\out{</div>}}
 }
@@ -45,7 +46,6 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \item \href{#method-ConnectionHandler-executeSql}{\code{ConnectionHandler$executeSql()}}
 \item \href{#method-ConnectionHandler-queryFunction}{\code{ConnectionHandler$queryFunction()}}
 \item \href{#method-ConnectionHandler-executeFunction}{\code{ConnectionHandler$executeFunction()}}
-\item \href{#method-ConnectionHandler-finalize}{\code{ConnectionHandler$finalize()}}
 \item \href{#method-ConnectionHandler-clone}{\code{ConnectionHandler$clone()}}
 }
 }
@@ -53,6 +53,7 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \if{html}{\out{<a id="method-ConnectionHandler-new"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-new}{}}}
 \subsection{Method \code{new()}}{
+Closes connection (if active)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$new(
   connectionDetails,
@@ -263,22 +264,10 @@ Does not translate or render sql.
 \describe{
 \item{\code{sql}}{sql query string}
 
-\item{\code{connection}}{connection object
-closeConnection}
+\item{\code{connection}}{connection object}
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ConnectionHandler-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-ConnectionHandler-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-close connection, if active
-Do not use - will be moved to private in version 0.7.0
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$finalize()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-clone"></a>}}

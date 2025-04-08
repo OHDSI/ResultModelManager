@@ -59,7 +59,7 @@ result <- cohortNamespace$queryDb(sql, cohort_id = 1)
 # cleanup test data
 unlink("test_db.sqlite")
 
-
+Destruct object
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -81,7 +81,6 @@ unlink("test_db.sqlite")
 \item \href{#method-QueryNamespace-executeSql}{\code{QueryNamespace$executeSql()}}
 \item \href{#method-QueryNamespace-getVars}{\code{QueryNamespace$getVars()}}
 \item \href{#method-QueryNamespace-closeConnection}{\code{QueryNamespace$closeConnection()}}
-\item \href{#method-QueryNamespace-finalize}{\code{QueryNamespace$finalize()}}
 \item \href{#method-QueryNamespace-clone}{\code{QueryNamespace$clone()}}
 }
 }
@@ -89,6 +88,9 @@ unlink("test_db.sqlite")
 \if{html}{\out{<a id="method-QueryNamespace-new"></a>}}
 \if{latex}{\out{\hypertarget{method-QueryNamespace-new}{}}}
 \subsection{Method \code{new()}}{
+Close connections etc
+
+
 initialize class
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$new(
@@ -270,20 +272,8 @@ closeConnection
 \if{latex}{\out{\hypertarget{method-QueryNamespace-closeConnection}{}}}
 \subsection{Method \code{closeConnection()}}{
 close connection, if active
-closeConnection
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$closeConnection()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-QueryNamespace-finalize"></a>}}
-\if{latex}{\out{\hypertarget{method-QueryNamespace-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-close connection, if active
-Do not use - will be moved to private in version 0.7.0
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$finalize()}\if{html}{\out{</div>}}
 }
 
 }

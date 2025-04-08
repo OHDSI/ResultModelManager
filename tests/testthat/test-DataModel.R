@@ -99,7 +99,7 @@ test_that("results are uploaded", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") |>
+        primaryKey == "Yes") |>
       dplyr::select("columnName") |>
       dplyr::pull()
 
@@ -147,7 +147,7 @@ test_that("appending results rows using primary keys works", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") |>
+        primaryKey == "Yes") |>
       dplyr::select("columnName") |>
       dplyr::pull()
 
@@ -202,7 +202,7 @@ test_that("deleting results rows using data primary key works", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") |>
+        primaryKey == "Yes") |>
       dplyr::select("columnName") |>
       dplyr::pull()
 
@@ -241,7 +241,7 @@ test_that("deleting results rows by database id works", {
   for (tableName in unique(specifications$tableName)) {
     primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-                      primaryKey == "Yes") |>
+        primaryKey == "Yes") |>
       dplyr::select("columnName") |>
       dplyr::pull()
 

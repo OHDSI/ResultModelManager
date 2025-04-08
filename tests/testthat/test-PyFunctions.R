@@ -29,8 +29,9 @@ test_that("test python postgres connection works", {
   pyConnection2 <- .createPyConnection(testDatabaseConnection2)
   on.exit(pyConnection2$close(), add = TRUE)
 
-  if(!interactive())
+  if (!interactive()) {
     expect_error(install_psycopg2(), "Session is not interactive. This is not how you want to install psycopg2")
+  }
 })
 
 
@@ -40,20 +41,25 @@ test_that("test python upload table from csv works", {
   enablePythonUploads()
   tfile <- tempfile(fileext = ".csv")
   pyConnection <- .createPyConnection(testDatabaseConnection)
-  on.exit({
-    pyConnection$close()
-    unlink(tfile)
-  }, add = TRUE)
+  on.exit(
+    {
+      pyConnection$close()
+      unlink(tfile)
+    },
+    add = TRUE
+  )
 
   table <- paste0("test_", sample(1:10000, 1))
   # create csv
-  testData <- data.frame(id = 1:10, test_string = 'some crazy vaLUEs;;a,.\t\n∑åˆø')
+  testData <- data.frame(id = 1:10, test_string = "some crazy vaLUEs;;a,.\t\n∑åˆø")
   readr::write_csv(testData, tfile)
   # upload csv
-  result <- .pyEnv$upload_table(connection = pyConnection,
-                                schema = testSchema,
-                                table = table,
-                                filepath = normalizePath(tfile))
+  result <- .pyEnv$upload_table(
+    connection = pyConnection,
+    schema = testSchema,
+    table = table,
+    filepath = normalizePath(tfile)
+  )
 
   expect_equal(result$status, -1)
   # Test internal function
@@ -63,18 +69,22 @@ test_that("test python upload table from csv works", {
   sql <- "CREATE TABLE @schema.@table (id int, test_string varchar)"
   DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, sql, schema = testSchema, table = table)
 
-  result <- .pyEnv$upload_table(connection = pyConnection,
-                                schema = testSchema,
-                                table = table,
-                                filepath = normalizePath(tfile))
+  result <- .pyEnv$upload_table(
+    connection = pyConnection,
+    schema = testSchema,
+    table = table,
+    filepath = normalizePath(tfile)
+  )
   expect_equal(result$status, 1)
 
 
-  resultData <- DatabaseConnector::renderTranslateQuerySql(connection = testDatabaseConnection,
-                                                           "SELECT * FROM @schema.@table",
-                                                           schema = testSchema,
-                                                           table = table,
-                                                           snakeCaseToCamelCase = TRUE)
+  resultData <- DatabaseConnector::renderTranslateQuerySql(
+    connection = testDatabaseConnection,
+    "SELECT * FROM @schema.@table",
+    schema = testSchema,
+    table = table,
+    snakeCaseToCamelCase = TRUE
+  )
   expect_equal(nrow(testData), nrow(resultData))
   expect_true(all(c("id", "testString") %in% names(resultData)))
 
@@ -82,11 +92,13 @@ test_that("test python upload table from csv works", {
   DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, "TRUNCATE TABLE @schema.@table;", schema = testSchema, table = table)
   pyUploadCsv(testDatabaseConnection, schema = testSchema, table = table, filepath = tfile)
 
-  resultData <- DatabaseConnector::renderTranslateQuerySql(connection = testDatabaseConnection,
-                                                           "SELECT * FROM @schema.@table",
-                                                           schema = testSchema,
-                                                           table = table,
-                                                           snakeCaseToCamelCase = TRUE)
+  resultData <- DatabaseConnector::renderTranslateQuerySql(
+    connection = testDatabaseConnection,
+    "SELECT * FROM @schema.@table",
+    schema = testSchema,
+    table = table,
+    snakeCaseToCamelCase = TRUE
+  )
   expect_equal(nrow(testData), nrow(resultData))
   expect_equal(sum(resultData$id), sum(testData$id))
   expect_true(all(c("id", "testString") %in% names(resultData)))
@@ -106,24 +118,30 @@ test_that("upload data.frame via string buffer", {
 
   pyConnection <- .createPyConnection(testDatabaseConnection)
   on.exit(pyConnection$close(), add = TRUE)
-  testData <- data.frame(id = 1:100,
-                         test_string1 = 'Sjögren syndrome',
-                         test_string2 = 'Merative MarketScan® Commercial Claims and Encounters Ωåß∂',
-                         my_date = as.Date("1980-05-28"),
-                         my_date2 = as.Date("1980-05-30"))
+  testData <- data.frame(
+    id = 1:100,
+    test_string1 = "Sjögren syndrome",
+    test_string2 = "Merative MarketScan® Commercial Claims and Encounters Ωåß∂",
+    my_date = as.Date("1980-05-28"),
+    my_date2 = as.Date("1980-05-30")
+  )
 
 
-  .pgWriteDataFrame(data = testData,
-                    pyConnection = pyConnection,
-                    table = table,
-                    schema = testSchema)
+  .pgWriteDataFrame(
+    data = testData,
+    pyConnection = pyConnection,
+    table = table,
+    schema = testSchema
+  )
   pyConnection$commit()
 
-  resultData <- DatabaseConnector::renderTranslateQuerySql(connection = testDatabaseConnection,
-                                                           "SELECT * FROM @schema.@table",
-                                                           schema = testSchema,
-                                                           table = table,
-                                                           snakeCaseToCamelCase = TRUE)
+  resultData <- DatabaseConnector::renderTranslateQuerySql(
+    connection = testDatabaseConnection,
+    "SELECT * FROM @schema.@table",
+    schema = testSchema,
+    table = table,
+    snakeCaseToCamelCase = TRUE
+  )
   expect_equal(nrow(resultData), nrow(testData))
   expect_equal(sum(resultData$id), sum(testData$id))
   expect_true(all(c("id", "testString2", "testString1", "myDate", "myDate2") %in% names(resultData)))
@@ -159,10 +177,11 @@ test_that("upload data.frame via string buffer", {
   pyUploadDataFrame(testRows, testDatabaseConnection, schema = testSchema, table = table)
 
   testRes <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
-                                                       "SELECT count(*) as count, sum(value) as sum FROM @schema.@table",
-                                                       schema = testSchema,
-                                                       table = table,
-                                                        snakeCaseToCamelCase = TRUE)
+    "SELECT count(*) as count, sum(value) as sum FROM @schema.@table",
+    schema = testSchema,
+    table = table,
+    snakeCaseToCamelCase = TRUE
+  )
 
   expect_equal(testRes$count, nrow(testRows))
   expect_equal(testRes$sum, sum(testRows$value))

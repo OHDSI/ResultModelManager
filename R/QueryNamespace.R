@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -70,7 +70,6 @@
 #' result <- cohortNamespace$queryDb(sql, cohort_id = 1)
 #' # cleanup test data
 #' unlink("test_db.sqlite")
-#'
 #'
 QueryNamespace <- R6::R6Class(
   classname = "QueryNamespace",

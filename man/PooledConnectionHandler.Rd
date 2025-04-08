@@ -35,7 +35,6 @@ Note that a side effect of using this is that each call to this increments the .
 <details open><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="dbIsValid"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-dbIsValid'><code>ResultModelManager::ConnectionHandler$dbIsValid()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="finalize"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-finalize'><code>ResultModelManager::ConnectionHandler$finalize()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="renderTranslateSql"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-renderTranslateSql'><code>ResultModelManager::ConnectionHandler$renderTranslateSql()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="ResultModelManager" data-topic="ConnectionHandler" data-id="tbl"><a href='../../ResultModelManager/html/ConnectionHandler.html#method-ConnectionHandler-tbl'><code>ResultModelManager::ConnectionHandler$tbl()</code></a></span></li>
 </ul>
