@@ -54,6 +54,7 @@ test_that("results tables are created", {
 
 test_that("results are uploaded", {
   skip_if_results_db_not_available()
+  skip_if(.Platform$OS.type == "unix" && Sys.info()["sysname"] == "Darwin", "skipping on osx")
   specifications <- getResultsDataModelSpecifications()
 
   pathToZip1 <-

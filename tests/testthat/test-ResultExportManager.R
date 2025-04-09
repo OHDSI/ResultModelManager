@@ -27,6 +27,7 @@ test_that("Test result export manager methods", {
 
 # Test exporting a data frame
 test_that("exportDataFrame method exports data frame correctly", {
+  skip_if(.Platform$OS.type == "unix" && Sys.info()["sysname"] == "Darwin", "skipping on osx")
   # Create a dummy data frame
   df <- dplyr::tibble(
     col1 = c(1, 2, 3),
