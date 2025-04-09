@@ -329,7 +329,7 @@ ResultExportManager <- R6::R6Class(
       colsNotPresent <- exportColumns[!exportColumns %in% colnames(rows)]
 
       if (length(colsNotPresent)) {
-        warning("Expected columns not found in exported data frame ", paste(colsNotPresent, collapse = " "))
+        ParallelLogger::logInfo("Expected columns not found in exported data frame ", paste(colsNotPresent, collapse = " "))
       }
 
       # Add database id, if present in spec
