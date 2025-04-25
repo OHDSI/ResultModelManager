@@ -253,9 +253,6 @@ DataMigrationManager <- R6::R6Class(
     migrationRegexp = NULL,
     connectionHandler = NULL,
     connectionDetails = NULL,
-    finalize = function() {
-      private$connectionHandler$closeConnection()
-    },
     executeMigration = function(migration) {
       private$logInfo("Executing migration: ", migration$migrationFile)
       # Load, render, translate and execute sql
