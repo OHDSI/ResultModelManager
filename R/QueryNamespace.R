@@ -76,10 +76,7 @@ QueryNamespace <- R6::R6Class(
   private = list(
     replacementVars = NULL,
     tableSpecifications = list(),
-    connectionHandler = NULL,
-    finalize = function() {
-      self$closeConnection()
-    }
+    connectionHandler = NULL
   ),
   public = list(
     #' @field tablePrefix tablePrefix to use
