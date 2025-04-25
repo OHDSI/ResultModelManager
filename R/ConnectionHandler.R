@@ -40,12 +40,7 @@
 ConnectionHandler <- R6::R6Class(
   classname = "ConnectionHandler",
   private = list(
-    .dbms = "",
-    finalize = function() {
-      if (self$isActive & self$dbIsValid()) {
-        self$closeConnection()
-      }
-    }
+    .dbms = ""
   ),
   public = list(
     connectionDetails = NULL,
