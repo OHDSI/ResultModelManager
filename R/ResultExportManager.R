@@ -47,8 +47,10 @@ ResultExportManager <- R6::R6Class(
       "character" = checkmate::testCharacter,
       "date" = checkmate::testDate
     ),
+    classKey = NULL,
     getPrimaryKeyCache = function(exportTableName) {
-      file.path(tempdir(), paste0(private$databaseId, "-", Sys.getpid(), "-", exportTableName, ".csv"))
+      dir.create(file.path(tempdir(), self$exportDir), recursive = TRUE, showWarnings = FALSE)
+      file.path(tempdir(), self$exportDir, paste0(private$databaseId, "-", Sys.getpid(),  "-", exportTableName, ".csv"))
     },
     checkPkeyCache = function(keys, exportTableName, invalidateCache) {
       cacheFile <- private$getPrimaryKeyCache(exportTableName)
