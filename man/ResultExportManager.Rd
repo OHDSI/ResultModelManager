@@ -47,6 +47,7 @@ Create a class for exporting results from a study in a standard, consistend mann
   exportDir,
   minCellCount = getOption("ohdsi.minCellCount", default = 5),
   validateTypes = FALSE,
+  usePrimaryKeyCheck = FALSE,
   databaseId = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -62,6 +63,9 @@ Create a class for exporting results from a study in a standard, consistend mann
 options("ohdsi.minCellCount" = count) in all R projects. Default is 5}
 
 \item{\code{validateTypes}}{Test if row values strictly conform to types - optional, not currently reccomended
+outside of development}
+
+\item{\code{usePrimaryKeyCheck}}{Test if primary key fields are violated at export step. - optional, not currently reccomended
 outside of development
 get table spec}
 

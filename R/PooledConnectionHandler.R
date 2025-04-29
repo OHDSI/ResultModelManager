@@ -84,6 +84,9 @@ PooledConnectionHandler <- R6::R6Class(
         pool::poolReturn(attr(frame, self$getCheckedOutConnectionPath(), exact = TRUE))
         attr(frame, self$getCheckedOutConnectionPath()) <- NULL
       }
+    },
+    finalize = function() {
+      self$closeConnection()
     }
   ),
   public = list(

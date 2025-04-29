@@ -34,6 +34,7 @@ ResultExportManager <- R6::R6Class(
     tableSpecification = NULL,
     databaseId = NULL,
     validateTypes = FALSE,
+    usePrimaryKeyCheck = FALSE,
     connection = NULL,
     minCellCount = 5,
     .colTypeValidators = list(
@@ -118,7 +119,7 @@ ResultExportManager <- R6::R6Class(
 
       if (!is.na(dataSize)) {
         if (colType %in% c("bigint", "int")) {
-          params$upper <- 2**as.integer(dataSize)
+          params$upper <- 2 ** as.integer(dataSize)
         } else if (coltype %in% c("character", "varchar") && dataSize != "max") {
           params$max.chars <- dataSize
         }
@@ -128,7 +129,6 @@ ResultExportManager <- R6::R6Class(
   ),
   public = list(
     exportDir = NULL,
-
     #' Init
     #' @description
     #' Create a class for exporting results from a study in a standard, consistend manner
@@ -139,13 +139,17 @@ ResultExportManager <- R6::R6Class(
     #' @param databaseId                database identifier - required when exporting according to many specs
     #' @param validateTypes             Test if row values strictly conform to types - optional, not currently reccomended
     #'                                  outside of development
+    #' @param usePrimaryKeyCheck        Test if primary key fields are violated at export step. - optional, not currently reccomended
+    #'                                  outside of development
     initialize = function(tableSpecification,
                           exportDir,
                           minCellCount = getOption("ohdsi.minCellCount", default = 5),
                           validateTypes = FALSE,
+                          usePrimaryKeyCheck = FALSE,
                           databaseId = NULL) {
       self$exportDir <- exportDir
       private$validateTypes <- validateTypes
+      private$usePrimaryKeyCheck <- usePrimaryKeyCheck
       # Check table spec is valid
       assertSpecificationColumns(colnames(tableSpecification))
       private$tableSpecification <- tableSpecification
@@ -313,12 +317,14 @@ ResultExportManager <- R6::R6Class(
       }
       # Convert < minCellCount to -minCellCount
       rows <- self$getMinColValues(rows, exportTableName)
-      validPkeys <- self$checkPrimaryKeys(rows, exportTableName, invalidateCache = !append)
 
-      if (!validPkeys) {
-        stop("Cannot write data - primary keys already written to cache")
+      if (private$usePrimaryKeyCheck) {
+        validPkeys <- self$checkPrimaryKeys(rows, exportTableName, invalidateCache = !append)
+
+        if (!validPkeys) {
+          stop("Cannot write data - primary keys already written to cache")
+        }
       }
-
       exportColumns <- self$getTableSpec(exportTableName) |>
         dplyr::pull("columnName")
       # Subset to required columns only
