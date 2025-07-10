@@ -247,6 +247,13 @@ DataMigrationManager <- R6::R6Class(
     #' is a package folder structure or not
     isPackage = function() {
       return(!is.null(self$packageName))
+    },
+
+    #' finalize
+    #' @description
+    #' Deprecated call, will be removed in a future version
+    finalize = function() {
+      warning("Due to changes in the R6 package, this method is deprecated and will be removed in a future version. Please use closeConnection instead")
     }
   ),
   private = list(
