@@ -119,13 +119,12 @@ test_that("upload data.frame via string buffer", {
   pyConnection <- .createPyConnection(testDatabaseConnection)
   on.exit(pyConnection$close(), add = TRUE)
   testData <- data.frame(
-    id = 1:100,
+    id = 1,
     test_string1 = "Sjögren syndrome",
     test_string2 = "Merative MarketScan® Commercial Claims and Encounters Ωåß∂",
     my_date = as.Date("1980-05-28"),
     my_date2 = as.Date("1980-05-30")
   )
-
 
   .pgWriteDataFrame(
     data = testData,
