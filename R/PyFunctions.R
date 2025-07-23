@@ -228,10 +228,10 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
   bufferEnd <- min(bufferWriteSize, nrow(data))
   stdata <- data[offset:bufferEnd, ]
 
-  while (offset < nrow(data)) {
+  while (offset <= nrow(data)) {
     readr::write_delim(stdata, buffer, delim = "\t", na = "$$$$$", quote = "all", escape = "double", col_names = FALSE)
     nchars <- seek(buffer, 0)
-    # Note this use of multiple buffers is inefficient but without R being able to write to a python buffer, the
+    # Note this use of multiple buffers is inefficient but R is unable to write to a python buffer directly
     charContent <- readChar(buffer, nchars = nchars)
     .pyEnv$upload_buffer(
       connection = pyConnection,
