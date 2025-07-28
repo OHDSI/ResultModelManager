@@ -51,7 +51,8 @@ test_that("test python upload table from csv works", {
 
   table <- paste0("test_", sample(1:10000, 1))
   # create csv
-  testData <- data.frame(id = 1:10, test_string = "some crazy vaLUEs;;a,.\t\n∑åˆø")
+  testData <- data.frame(id = 1:10,
+                         test_string = "some crazy vaLUEs;;a,.\t\n∑åˆø")
   readr::write_csv(testData, tfile)
   # upload csv
   result <- .pyEnv$upload_table(
@@ -113,17 +114,20 @@ test_that("upload data.frame via string buffer", {
   expect_true(pyPgUploadEnabled())
 
   table <- paste0("test_", sample(1:10000, 1))
-  sql <- "CREATE TABLE @schema.@table (id int, my_date date, my_date2 varchar, test_string1 varchar, test_string2 varchar)"
+  sql <- "CREATE TABLE @schema.@table (id int, my_date date, my_date2 varchar, test_string1 varchar, test_string2 varchar, json varchar)"
   DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, sql, schema = testSchema, table = table)
 
   pyConnection <- .createPyConnection(testDatabaseConnection)
   on.exit(pyConnection$close(), add = TRUE)
+
+  jsonConvert <- ParallelLogger::convertSettingsToJson(list(test = 'myTestValue')) |> as.character()
   testData <- data.frame(
     id = 1,
     test_string1 = "Sjögren syndrome",
     test_string2 = "Merative MarketScan® Commercial Claims and Encounters Ωåß∂",
     my_date = as.Date("1980-05-28"),
-    my_date2 = as.Date("1980-05-30")
+    my_date2 = as.Date("1980-05-30"),
+    json = jsonConvert
   )
 
   .pgWriteDataFrame(
@@ -143,14 +147,16 @@ test_that("upload data.frame via string buffer", {
   )
   expect_equal(nrow(resultData), nrow(testData))
   expect_equal(sum(resultData$id), sum(testData$id))
-  expect_true(all(c("id", "testString2", "testString1", "myDate", "myDate2") %in% names(resultData)))
+  expect_equal(jsonConvert, resultData$json)
+
+  expect_true(all(c("id", "testString2", "testString1", "myDate", "myDate2", "json") %in% names(resultData)))
 
   DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, "TRUNCATE TABLE @schema.@table", schema = testSchema, table = table)
   pyUploadDataFrame(testData, testDatabaseConnection, schema = testSchema, table = table)
 
   expect_equal(nrow(resultData), nrow(testData))
   expect_equal(sum(resultData$id), sum(testData$id))
-  expect_true(all(c("id", "testString2", "testString1", "myDate", "myDate2") %in% names(resultData)))
+  expect_true(all(c("id", "testString2", "testString1", "myDate", "myDate2", "json") %in% names(resultData)))
 })
 
 
