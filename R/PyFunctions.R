@@ -51,7 +51,7 @@
     user = user,
     password = password,
     host = strsplit(hostServerDb[1], ":")[[1]][1],
-    port = port
+    port = as.character(port)
   )
   return(pgConnection)
 }
