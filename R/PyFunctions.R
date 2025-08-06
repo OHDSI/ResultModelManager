@@ -210,7 +210,7 @@ pyUploadCsv <- function(connection, table, filepath, schema, disableConstraints 
   # Handle errors
   if (result$status == -1) {
     ParallelLogger::logError("Error uploading filepath to table")
-    ParallelLogger::logError(result$msg)
+    ParallelLogger::logError(result$message)
     stop("psycopg2 upload failed")
   }
 
