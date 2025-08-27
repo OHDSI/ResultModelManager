@@ -414,7 +414,7 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
           dropTableIfExists = FALSE,
           createTable = FALSE,
           tempTable = FALSE,
-          progressBar = TRUE
+          progressBar = interactive()
         )
       }
     }, error = function(e) e)
