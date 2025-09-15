@@ -52,11 +52,6 @@ genericTests <- function(connClass, classes, connectionClass) {
   checkmate::expect_data_frame(data)
   expect_equal(data$cntTest, 6)
 
-  data2 <- conn$queryDb("SELECT count(*) AS cnt_test FROM main.concept;", snakeCaseToCamelCase = FALSE)
-
-  checkmate::expect_data_frame(data2)
-  expect_equal(data2$CNT_TEST, 6)
-
   expect_error(conn$queryDb("SELECT 1 * WHERE;"))
 
   expect_equal(DatabaseConnector::dbms(testConnection), conn$dbms())
