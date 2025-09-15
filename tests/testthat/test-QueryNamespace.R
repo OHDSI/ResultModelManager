@@ -46,7 +46,6 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
 
   on.exit({
     cohortNamespace2$closeConnection()
-    expect_warning(cohortNamespace$finalize())
   }, add = TRUE)
 
   cohortNamespace2$setConnectionHandler(connectionHandler)

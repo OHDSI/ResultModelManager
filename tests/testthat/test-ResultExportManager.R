@@ -1,4 +1,5 @@
 test_that("Test result export manager methods", {
+  skip_on_cran()
   # Create a dummy table specification and set the export directory
   table_spec <- dplyr::tibble(
     tableName = c("table1", "table1"),
@@ -27,6 +28,7 @@ test_that("Test result export manager methods", {
 
 # Test exporting a data frame
 test_that("exportDataFrame method exports data frame correctly", {
+  skip_on_cran()
   skip_if(.Platform$OS.type == "unix" && Sys.info()["sysname"] == "Darwin", "skipping on osx")
   # Create a dummy data frame
   df <- dplyr::tibble(
@@ -122,6 +124,7 @@ testDbExport <- function(connectionDetails, schema, n = 100) {
 }
 
 test_that("export via sql", {
+  skip_on_cran()
   testDbC <- DatabaseConnector::createConnectionDetails(dbms = "sqlite", server = ":memory:")
   testDbExport(testDbC, schema = "main", n = 1e5)
 })

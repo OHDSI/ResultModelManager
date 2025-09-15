@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^\.idea$
 ^renv$
+^sql$
 ^renv\.lock$
 extras
 man-roxygen

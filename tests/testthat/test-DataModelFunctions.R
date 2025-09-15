@@ -93,11 +93,11 @@ test_that("Delete primary key rows function", {
   skip_if_results_db_not_available()
   sql <- "
   DROP TABLE IF EXISTS @schema.@test_table;
-  CREATE TABLE @schema.@test_table (id int, id_2 int);
-  INSERT INTO @schema.@test_table (id, id_2) VALUES (1, 2);
-  INSERT INTO @schema.@test_table (id, id_2) VALUES (3, 4);
-  INSERT INTO @schema.@test_table (id, id_2) VALUES (5, 6);
-  INSERT INTO @schema.@test_table (id, id_2) VALUES (7, 8);
+  CREATE TABLE @schema.@test_table (id int, id2 int);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (1, 2);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (3, 4);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (5, 6);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (7, 8);
   "
   testTable <- "test_delete_table"
   DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, sql, schema = testSchema, test_table = testTable)
@@ -115,7 +115,7 @@ test_that("Delete primary key rows function", {
     connection = testDatabaseConnection,
     schema = testSchema,
     tableName = testTable,
-    keyValues = data.frame(ID = c(1), ID_2 = (99)) # one key is valid, one is not
+    keyValues = data.frame(id = c(1), id2 = (99)) # one key is valid, one is not
   )
 
   result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
@@ -127,13 +127,13 @@ test_that("Delete primary key rows function", {
 
 
   deleteRows <- data.frame(
-    ID = c(1, 3),
-    ID_2 = c(2, 4)
+    id = c(1, 3),
+    id2 = c(2, 4)
   )
 
   keptRows <- data.frame(
-    ID = c(5, 7),
-    ID_2 = c(6, 8)
+    id = c(5, 7),
+    id2 = c(6, 8)
   )
 
   deleteAllRowsForPrimaryKey(
@@ -172,11 +172,11 @@ test_that("Delete primary key rows function SQLITE", {
 
   sql <- "
   DROP TABLE IF EXISTS @schema.@test_table;
-  CREATE TABLE @schema.@test_table (id int, id_2 int);
-  INSERT INTO @schema.@test_table (id, id_2) VALUES (1, 2);
-  INSERT INTO @schema.@test_table (id, id_2) VALUES (3, 4);
-  INSERT INTO @schema.@test_table (id, id_2) VALUES (5, 6);
-  INSERT INTO @schema.@test_table (id, id_2) VALUES (7, 8);
+  CREATE TABLE @schema.@test_table (id int, id2 int);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (1, 2);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (3, 4);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (5, 6);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (7, 8);
   "
   testTable <- "test_delete_table"
   DatabaseConnector::renderTranslateExecuteSql(sqliteConn, sql, schema = "main", test_table = testTable)
@@ -194,25 +194,27 @@ test_that("Delete primary key rows function SQLITE", {
     connection = sqliteConn,
     schema = "main",
     tableName = testTable,
-    keyValues = data.frame(ID = c(1), ID_2 = (99)) # one key is valid, one is not
+    keyValues = data.frame(id = c(1), id2 = (99)) # one key is valid, one is not
   )
 
-  result <- DatabaseConnector::renderTranslateQuerySql(sqliteConn,
+  result <- DatabaseConnector::renderTranslateQuerySql(
+    sqliteConn,
     "SELECT * FROM @schema.@test_table",
     schema = "main",
-    test_table = testTable
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
   )
   expect_equal(nrow(result), 4)
 
 
   deleteRows <- data.frame(
-    ID = c(1, 3),
-    ID_2 = c(2, 4)
+    id = c(1, 3),
+    id2 = c(2, 4)
   )
 
   keptRows <- data.frame(
-    ID = c(5, 7),
-    ID_2 = c(6, 8)
+    id = c(5, 7),
+    id2 = c(6, 8)
   )
 
   deleteAllRowsForPrimaryKey(
@@ -222,10 +224,12 @@ test_that("Delete primary key rows function SQLITE", {
     keyValues = deleteRows
   )
 
-  result <- DatabaseConnector::renderTranslateQuerySql(sqliteConn,
+  result <- DatabaseConnector::renderTranslateQuerySql(
+    sqliteConn,
     "SELECT * FROM @schema.@test_table",
     schema = "main",
-    test_table = testTable
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
   )
   expect_identical(result, keptRows)
 
