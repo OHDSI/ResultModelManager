@@ -85,6 +85,7 @@ test_that("Add migration and execute", {
   manager$executeMigrations()
   expect_true(all(manager$getStatus()$executed))
   manager$closeConnection()
+
 })
 
 
