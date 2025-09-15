@@ -10,7 +10,7 @@ ResultModelManager (RMM) [HADES](https://ohdsi.github.io/Hades/).
 
 Introduction
 ============
-RMM is a database data model management utilities for R packages in the [Observational Health Data Sciences and Informatics program](https://ohdsi.org). RMM provides utility functions to
+RMM is a database data model management utilities for R packages in the Observational Health Data Sciences and Informatics programme (OHDSI). RMM provides utility functions to
 allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.
 
 
