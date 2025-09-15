@@ -118,10 +118,12 @@ test_that("Delete primary key rows function", {
     keyValues = data.frame(id = c(1), id2 = (99)) # one key is valid, one is not
   )
 
-  result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
+  result <- DatabaseConnector::renderTranslateQuerySql(
+    testDatabaseConnection,
     "SELECT * FROM @schema.@test_table",
     schema = testSchema,
-    test_table = testTable
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
   )
   expect_equal(nrow(result), 4)
 
@@ -146,7 +148,8 @@ test_that("Delete primary key rows function", {
   result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
     "SELECT * FROM @schema.@test_table",
     schema = testSchema,
-    test_table = testTable
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
   )
   expect_identical(result, keptRows)
 
@@ -157,10 +160,12 @@ test_that("Delete primary key rows function", {
     keyValues = keptRows
   )
 
-  result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
+  result <- DatabaseConnector::renderTranslateQuerySql(
+    testDatabaseConnection,
     "SELECT * FROM @schema.@test_table",
     schema = testSchema,
-    test_table = testTable
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
   )
   expect_equal(nrow(result), 0)
 })
@@ -243,7 +248,8 @@ test_that("Delete primary key rows function SQLITE", {
   result <- DatabaseConnector::renderTranslateQuerySql(sqliteConn,
     "SELECT * FROM @schema.@test_table",
     schema = "main",
-    test_table = testTable
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
   )
   expect_equal(nrow(result), 0)
 })
