@@ -81,8 +81,6 @@ table names in a consistent manner that is striaghtforward to maintain over time
 <li><p><a href="#method-QueryNamespace-clone"><code>QueryNamespace$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-QueryNamespace-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
-<p>Close connections etc</p>
-
 <p>initialize class</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/QueryNamespace.html">QueryNamespace</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
@@ -243,7 +241,7 @@ execute Sql</p></dd>
 </div>
 
 </div><p></p><hr><a id="method-QueryNamespace-executeSql"></a><div class="section">
-<h3 id="method-executesql-">Method <code>executeSql()</code><a class="anchor" aria-label="anchor" href="#method-executesql-"></a></h3>
+<h3 id="method-executesql-">Method <code><a href="https://ohdsi.github.io/DatabaseConnector/reference/executeSql.html" class="external-link">executeSql()</a></code><a class="anchor" aria-label="anchor" href="#method-executesql-"></a></h3>
 <p>Call to execute sql within namespaced queries</p><div class="section">
 <h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">executeSql</span><span class="op">(</span><span class="va">sql</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
@@ -302,7 +300,61 @@ closeConnection</p><div class="section">
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/OHDSI/ResultModelManager" class="external-link">ResultModelManager</a></span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Create some junk test data</span></span></span>
+<span class="r-in"><span><span class="va">connectionDetails</span> <span class="op">&lt;-</span></span></span>
+<span class="r-in"><span>  <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/createConnectionDetails.html" class="external-link">createConnectionDetails</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    server <span class="op">=</span> <span class="st">"test_db.sqlite"</span>,</span></span>
+<span class="r-in"><span>    dbms <span class="op">=</span> <span class="st">"sqlite"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">conn</span> <span class="op">&lt;-</span> <span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/connect.html" class="external-link">connect</a></span><span class="op">(</span><span class="va">connectionDetails</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Connecting using SQLite driver</span>
+<span class="r-in"><span><span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/insertTable.html" class="external-link">insertTable</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  connection <span class="op">=</span> <span class="va">conn</span>,</span></span>
+<span class="r-in"><span>  tableName <span class="op">=</span> <span class="st">"cd_cohort"</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    cohort_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    cohort_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cohort one"</span>, <span class="st">"cohort two"</span>, <span class="st">"cohort three"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    json <span class="op">=</span> <span class="st">"{}"</span>,</span></span>
+<span class="r-in"><span>    sql <span class="op">=</span> <span class="st">"SELECT 1"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Inserting data took 0.0112 secs</span>
+<span class="r-in"><span><span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/disconnect.html" class="external-link">disconnect</a></span><span class="op">(</span><span class="va">conn</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">connectionHandler</span> <span class="op">&lt;-</span> <span class="va"><a href="ConnectionHandler.html">ConnectionHandler</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Connecting using SQLite driver</span>
+<span class="r-in"><span><span class="va">tableSpecification</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  tableName <span class="op">=</span> <span class="st">"cohort"</span>,</span></span>
+<span class="r-in"><span>  columnName <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="st">"cohort_id"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"cohort_name"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"json"</span>,</span></span>
+<span class="r-in"><span>    <span class="st">"sql"</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span>,</span></span>
+<span class="r-in"><span>  primaryKey <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  dataType <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"int"</span>, <span class="st">"varchar"</span>, <span class="st">"varchar"</span>, <span class="st">"varchar"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">cohortNamespace</span> <span class="op">&lt;-</span> <span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  connectionHandler <span class="op">=</span> <span class="va">connectionHandler</span>,</span></span>
+<span class="r-in"><span>  tableSpecification <span class="op">=</span> <span class="va">tableSpecification</span>,</span></span>
+<span class="r-in"><span>  result_schema <span class="op">=</span> <span class="st">"main"</span>,</span></span>
+<span class="r-in"><span>  tablePrefix <span class="op">=</span> <span class="st">"cd_"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">sql</span> <span class="op">&lt;-</span> <span class="st">"SELECT * FROM @result_schema.@cohort WHERE cohort_id = @cohort_id"</span></span></span>
+<span class="r-in"><span><span class="co"># Returns : "SELECT * FROM main.cd_cohort WHERE cohort_id = @cohort_id"</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cohortNamespace</span><span class="op">$</span><span class="fu">render</span><span class="op">(</span><span class="va">sql</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SELECT * FROM main.cd_cohort WHERE cohort_id = cd_cohort_id"</span>
+<span class="r-in"><span><span class="co"># Returns query result</span></span></span>
+<span class="r-in"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="va">cohortNamespace</span><span class="op">$</span><span class="fu">queryDb</span><span class="op">(</span><span class="va">sql</span>, cohort_id <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># cleanup test data</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="st">"test_db.sqlite"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

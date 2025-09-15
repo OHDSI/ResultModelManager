@@ -98,6 +98,7 @@ Init</p></dd>
 <span>  <span class="va">exportDir</span>,</span>
 <span>  minCellCount <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"ohdsi.minCellCount"</span>, default <span class="op">=</span> <span class="fl">5</span><span class="op">)</span>,</span>
 <span>  validateTypes <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  usePrimaryKeyCheck <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  databaseId <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -119,6 +120,11 @@ options("ohdsi.minCellCount" = count) in all R projects. Default is 5</p></dd>
 
 <dt><code>validateTypes</code></dt>
 <dd><p>Test if row values strictly conform to types - optional, not currently reccomended
+outside of development</p></dd>
+
+
+<dt><code>usePrimaryKeyCheck</code></dt>
+<dd><p>Test if primary key fields are violated at export step. - optional, not currently reccomended
 outside of development
 get table spec</p></dd>
 

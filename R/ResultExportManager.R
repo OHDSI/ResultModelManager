@@ -51,7 +51,7 @@ ResultExportManager <- R6::R6Class(
     classKey = NULL,
     getPrimaryKeyCache = function(exportTableName) {
       dir.create(file.path(tempdir(), self$exportDir), recursive = TRUE, showWarnings = FALSE)
-      file.path(tempdir(), self$exportDir, paste0(private$databaseId, "-", Sys.getpid(),  "-", exportTableName, ".csv"))
+      file.path(tempdir(), self$exportDir, paste0(private$databaseId, "-", Sys.getpid(), "-", exportTableName, ".csv"))
     },
     checkPkeyCache = function(keys, exportTableName, invalidateCache) {
       cacheFile <- private$getPrimaryKeyCache(exportTableName)
@@ -119,7 +119,7 @@ ResultExportManager <- R6::R6Class(
 
       if (!is.na(dataSize)) {
         if (colType %in% c("bigint", "int")) {
-          params$upper <- 2 ** as.integer(dataSize)
+          params$upper <- 2**as.integer(dataSize)
         } else if (coltype %in% c("character", "varchar") && dataSize != "max") {
           params$max.chars <- dataSize
         }

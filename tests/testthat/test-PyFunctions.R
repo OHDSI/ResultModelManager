@@ -51,8 +51,10 @@ test_that("test python upload table from csv works", {
 
   table <- paste0("test_", sample(1:10000, 1))
   # create csv
-  testData <- data.frame(id = 1:10,
-                         test_string = "some crazy vaLUEs;;a,.\t\n∑åˆø")
+  testData <- data.frame(
+    id = 1:10,
+    test_string = "some crazy vaLUEs;;a,.\t\n∑åˆø"
+  )
   readr::write_csv(testData, tfile)
   # upload csv
   result <- .pyEnv$upload_table(
@@ -120,7 +122,7 @@ test_that("upload data.frame via string buffer", {
   pyConnection <- .createPyConnection(testDatabaseConnection)
   on.exit(pyConnection$close(), add = TRUE)
 
-  jsonConvert <- ParallelLogger::convertSettingsToJson(list(test = 'myTestValue')) |> as.character()
+  jsonConvert <- ParallelLogger::convertSettingsToJson(list(test = "myTestValue")) |> as.character()
   testData <- data.frame(
     id = 1,
     test_string1 = "Sjögren syndrome",
