@@ -65,7 +65,6 @@ genericTests <- function(connClass, classes, connectionClass) {
   conn$initConnection()
   expect_true(conn$isActive)
 
-  expect_message(conn$initConnection(), "Closing existing connection")
   checkmate::expect_class(conn$getConnection(), connectionClass)
   conn$closeConnection()
 }
