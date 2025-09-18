@@ -54,6 +54,7 @@ test_that("results tables are created", {
 
 test_that("results are uploaded", {
   skip_if_results_db_not_available()
+  skip_if(.Platform$OS.type == "unix" && Sys.info()["sysname"] == "Darwin", "skipping on osx")
   specifications <- getResultsDataModelSpecifications()
 
   pathToZip1 <-
@@ -70,6 +71,7 @@ test_that("results are uploaded", {
       resultsFolder = tempDir
     )
 
+    disablePythonUploads()
     uploadResults(
       connectionDetails = testDatabaseConnectionDetails,
       schema = testSchema,
@@ -96,10 +98,10 @@ test_that("results are uploaded", {
   }
 
   for (tableName in unique(specifications$tableName)) {
-    primaryKey <- specifications %>%
+    primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-        primaryKey == "Yes") %>%
-      dplyr::select("columnName") %>%
+        primaryKey == "Yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     if ("database_id" %in% primaryKey) {
@@ -118,6 +120,7 @@ test_that("results are uploaded", {
   }
 
   # Test uploading after truncate
+  enablePythonUploads()
   uploadResults(
     connectionDetails = testDatabaseConnectionDetails,
     schema = testSchema,
@@ -129,7 +132,7 @@ test_that("results are uploaded", {
     runCheckAndFixCommands = TRUE,
     warnOnMissingTable = FALSE
   )
-
+  disablePythonUploads()
   expect_false(.removeDataUserCheck("N"))
   expect_false(.removeDataUserCheck("n"))
   expect_false(.removeDataUserCheck(""))
@@ -143,10 +146,10 @@ test_that("appending results rows using primary keys works", {
   specifications <- getResultsDataModelSpecifications()
 
   for (tableName in unique(specifications$tableName)) {
-    primaryKey <- specifications %>%
+    primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-        primaryKey == "Yes") %>%
-      dplyr::select("columnName") %>%
+        primaryKey == "Yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     # append new data into table
@@ -177,16 +180,16 @@ test_that("appending results rows using primary keys works", {
       )
 
       # verify that the duplicate row was not appended (only the single existing row remains)
-      rowCount <- mergedData %>%
-        dplyr::filter(analysis3_id == "6542456") %>%
-        dplyr::count() %>%
+      rowCount <- mergedData |>
+        dplyr::filter(analysis3_id == "6542456") |>
+        dplyr::count() |>
         dplyr::pull()
       expect_true(rowCount == 1)
 
       # verify that the two new rows were appended
-      rowCount <- mergedData %>%
-        dplyr::filter(analysis3_id == "3453111") %>%
-        dplyr::count() %>%
+      rowCount <- mergedData |>
+        dplyr::filter(analysis3_id == "3453111") |>
+        dplyr::count() |>
         dplyr::pull()
       expect_true(rowCount == 2)
     }
@@ -198,10 +201,10 @@ test_that("deleting results rows using data primary key works", {
   specifications <- getResultsDataModelSpecifications()
 
   for (tableName in unique(specifications$tableName)) {
-    primaryKey <- specifications %>%
+    primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-        primaryKey == "Yes") %>%
-      dplyr::select("columnName") %>%
+        primaryKey == "Yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     # delete rows from tables with primary key: database_id, analysis3_id
@@ -212,8 +215,7 @@ test_that("deleting results rows using data primary key works", {
         schema = testSchema,
         tableName = tableName,
         keyValues = dplyr::tibble(
-          database_id = "test1", analysis3_id =
-            "6542456"
+          database_id = "test1", analysis3_id = 6542456
         )
       )
 
@@ -224,7 +226,7 @@ test_that("deleting results rows using data primary key works", {
         schema = testSchema,
         table_name = tableName,
         database_id = "test1",
-        analysis3_id = "6542456"
+        analysis3_id = 6542456
       )
       databaseIdCount <-
         DatabaseConnector::querySql(connection = testDatabaseConnection, sql = sql)[, 1]
@@ -238,10 +240,10 @@ test_that("deleting results rows by database id works", {
   specifications <- getResultsDataModelSpecifications()
 
   for (tableName in unique(specifications$tableName)) {
-    primaryKey <- specifications %>%
+    primaryKey <- specifications |>
       dplyr::filter(tableName == !!tableName &
-        primaryKey == "Yes") %>%
-      dplyr::select("columnName") %>%
+        primaryKey == "Yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     if ("database_id" %in% primaryKey) {

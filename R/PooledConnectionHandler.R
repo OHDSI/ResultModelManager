@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -71,10 +71,6 @@ requiredPackage <- function(packageName) {
 #' Transparently works the same way as a standard connection handler but stores pooled connections.
 #' Useful for long running applications that serve multiple concurrent requests.
 #' Note that a side effect of using this is that each call to this increments the .GlobalEnv attribute `RMMPooledHandlerCount`
-#' @importFrom pool dbPool poolClose
-#' @importFrom DBI dbIsValid
-#' @importFrom withr defer
-#'
 #' @export PooledConnectionHandler
 PooledConnectionHandler <- R6::R6Class(
   classname = "PooledConnectionHandler",
@@ -88,6 +84,9 @@ PooledConnectionHandler <- R6::R6Class(
         pool::poolReturn(attr(frame, self$getCheckedOutConnectionPath(), exact = TRUE))
         attr(frame, self$getCheckedOutConnectionPath()) <- NULL
       }
+    },
+    finalize = function() {
+      self$closeConnection()
     }
   ),
   public = list(
@@ -136,7 +135,7 @@ PooledConnectionHandler <- R6::R6Class(
         warning("Closing existing connection")
         self$closeConnection()
       }
-      ParallelLogger::logInfo("Initalizing pooled connection")
+      ParallelLogger::logInfo("Initializing pooled connection")
       self$con <- do.call(pool::dbPool, private$dbConnectArgs)
 
       self$isActive <- TRUE

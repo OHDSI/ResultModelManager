@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -20,7 +20,6 @@
 #' Given a results specification and ConnectionHandler instance - this class allow queries to be namespaced within
 #' any tables specified within a list of pre-determined tables. This allows the encapsulation of queries, using specific
 #' table names in a consistent manner that is striaghtforward to maintain over time.
-#' @importFrom fastmap fastmap
 #' @examples
 #'
 #' library(ResultModelManager)
@@ -71,6 +70,7 @@
 #' result <- cohortNamespace$queryDb(sql, cohort_id = 1)
 #' # cleanup test data
 #' unlink("test_db.sqlite")
+#'
 QueryNamespace <- R6::R6Class(
   classname = "QueryNamespace",
   private = list(
@@ -156,7 +156,7 @@ QueryNamespace <- R6::R6Class(
     addTableSpecification = function(tableSpecification, useTablePrefix = TRUE, tablePrefix = self$tablePrefix, replace = TRUE) {
       checkmate::assertString(tablePrefix)
       assertSpecificationColumns(colnames(tableSpecification))
-      for (tableName in tableSpecification$tableName %>% unique()) {
+      for (tableName in tableSpecification$tableName |> unique()) {
         replacementVar <- tableName
         if (useTablePrefix) {
           replacementVar <- paste0(tablePrefix, replacementVar)
@@ -215,15 +215,14 @@ QueryNamespace <- R6::R6Class(
       return(private$replacementVars$as_list())
     },
 
-    #' Destruct object
+    #' closeConnection
     #' @description
-    #' Close connections etc
-    finalize = function() {
+    #' close connection, if active
+    closeConnection = function() {
       if (!is.null(private$connectionHandler)) {
-        private$connectionHandler$finalize()
+        private$connectionHandler$closeConnection()
         private$connectionHandler <- NULL
       }
-      invisible(NULL)
     }
   )
 )
@@ -276,7 +275,7 @@ createQueryNamespace <- function(connectionDetails = NULL,
     tableSpecification <- lapply(
       resultModelSpecificationPath,
       loadResultsDataModelSpecifications
-    ) %>%
+    ) |>
       dplyr::bind_rows(tableSpecification)
   }
 

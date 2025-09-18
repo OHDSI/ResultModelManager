@@ -1,12 +1,12 @@
 Package: ResultModelManager
 Title: Result Model Manager
-Version: 0.5.11
+Version: 0.6.0
 Authors@R:
     person("Jamie", "Gilbert", , "gilbert@ohdsi.org", role = c("aut", "cre"))
 Description: Database data model management utilities for R packages in the Observational Health Data Sciences and
-    Informatics program <https://ohdsi.org>. 'ResultModelManager' provides utility functions to allow package
+    Informatics programme. 'ResultModelManager' provides utility functions to allow package
     maintainers to migrate existing SQL database models, export and import results in consistent patterns.
-URL: https://github.com/OHDSI/ResultModelManager
+URL: https://github.com/OHDSI/ResultModelManager, https://ohdsi.github.io/ResultModelManager/
 BugReports: https://github.com/OHDSI/ResultModelManager/issues
 License: Apache License (== 2.0)
 Encoding: UTF-8
@@ -42,5 +42,6 @@ Suggests:
   pkgdown,
   remotes,
   styler,
-  Andromeda
+  rJava,
+  reticulate
 Config/testthat/edition: 3

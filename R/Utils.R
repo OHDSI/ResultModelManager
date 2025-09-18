@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -59,7 +59,7 @@ grantTablePermissions <- function(connectionDetails = NULL,
   }
 
   sql <- c()
-  for (table in tableSpecification$tableName %>% unique()) {
+  for (table in tableSpecification$tableName |> unique()) {
     sql <- c(
       sql,
       SqlRender::render("GRANT @permissions ON @database_schema.@table_prefix@table TO @user;",

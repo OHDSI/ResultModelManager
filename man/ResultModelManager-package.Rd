@@ -6,7 +6,7 @@
 \alias{ResultModelManager-package}
 \title{ResultModelManager: Result Model Manager}
 \description{
-Database data model management utilities for R packages in the Observational Health Data Sciences and Informatics program \url{https://ohdsi.org}. 'ResultModelManager' provides utility functions to allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.
+Database data model management utilities for R packages in the Observational Health Data Sciences and Informatics programme. 'ResultModelManager' provides utility functions to allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.
 }
 \seealso{
 Useful links:

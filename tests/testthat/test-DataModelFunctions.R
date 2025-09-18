@@ -6,7 +6,7 @@ test_that("results utility functions work", {
 
 test_that("Bad model format", {
   data <- data.frame(databaseId = 1, foo = c(22))
-  expect_character(checkSpecificationColumns(data))
+  checkmate::expect_character(checkSpecificationColumns(data))
 
   junkSpec <- data.frame(
     tableName = "foo",
@@ -86,4 +86,170 @@ test_that("format chunk handles int/numeric type conversions ok", {
   chunk <- formatChunk(pkValuesInDb, chunk)
   checkmate::expect_data_frame(chunk)
   checkmate::expect_numeric(chunk$id)
+})
+
+
+test_that("Delete primary key rows function", {
+  skip_if_results_db_not_available()
+  sql <- "
+  DROP TABLE IF EXISTS @schema.@test_table;
+  CREATE TABLE @schema.@test_table (id int, id2 int);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (1, 2);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (3, 4);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (5, 6);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (7, 8);
+  "
+  testTable <- "test_delete_table"
+  DatabaseConnector::renderTranslateExecuteSql(testDatabaseConnection, sql, schema = testSchema, test_table = testTable)
+
+  # Delete nothing
+  deleteAllRowsForPrimaryKey(
+    connection = testDatabaseConnection,
+    schema = testSchema,
+    tableName = testTable,
+    keyValues = data.frame()
+  )
+
+  # Delete nothing
+  deleteAllRowsForPrimaryKey(
+    connection = testDatabaseConnection,
+    schema = testSchema,
+    tableName = testTable,
+    keyValues = data.frame(id = c(1), id2 = (99)) # one key is valid, one is not
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(
+    testDatabaseConnection,
+    "SELECT * FROM @schema.@test_table",
+    schema = testSchema,
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
+  )
+  expect_equal(nrow(result), 4)
+
+
+  deleteRows <- data.frame(
+    id = c(1, 3),
+    id2 = c(2, 4)
+  )
+
+  keptRows <- data.frame(
+    id = c(5, 7),
+    id2 = c(6, 8)
+  )
+
+  deleteAllRowsForPrimaryKey(
+    connection = testDatabaseConnection,
+    schema = testSchema,
+    tableName = testTable,
+    keyValues = deleteRows
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(testDatabaseConnection,
+    "SELECT * FROM @schema.@test_table",
+    schema = testSchema,
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
+  )
+  expect_identical(result, keptRows)
+
+  deleteAllRowsForPrimaryKey(
+    connection = testDatabaseConnection,
+    schema = testSchema,
+    tableName = testTable,
+    keyValues = keptRows
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(
+    testDatabaseConnection,
+    "SELECT * FROM @schema.@test_table",
+    schema = testSchema,
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
+  )
+  expect_equal(nrow(result), 0)
+})
+
+
+test_that("Delete primary key rows function SQLITE", {
+  sqliteConn <- DatabaseConnector::connect(dbms = "sqlite", server = ":memory:")
+  on.exit(DatabaseConnector::disconnect(sqliteConn))
+
+  sql <- "
+  DROP TABLE IF EXISTS @schema.@test_table;
+  CREATE TABLE @schema.@test_table (id int, id2 int);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (1, 2);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (3, 4);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (5, 6);
+  INSERT INTO @schema.@test_table (id, id2) VALUES (7, 8);
+  "
+  testTable <- "test_delete_table"
+  DatabaseConnector::renderTranslateExecuteSql(sqliteConn, sql, schema = "main", test_table = testTable)
+
+  # Delete nothing
+  deleteAllRowsForPrimaryKey(
+    connection = sqliteConn,
+    schema = "main",
+    tableName = testTable,
+    keyValues = data.frame()
+  )
+
+  # Delete nothing
+  deleteAllRowsForPrimaryKey(
+    connection = sqliteConn,
+    schema = "main",
+    tableName = testTable,
+    keyValues = data.frame(id = c(1), id2 = (99)) # one key is valid, one is not
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(
+    sqliteConn,
+    "SELECT * FROM @schema.@test_table",
+    schema = "main",
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
+  )
+  expect_equal(nrow(result), 4)
+
+
+  deleteRows <- data.frame(
+    id = c(1, 3),
+    id2 = c(2, 4)
+  )
+
+  keptRows <- data.frame(
+    id = c(5, 7),
+    id2 = c(6, 8)
+  )
+
+  deleteAllRowsForPrimaryKey(
+    connection = sqliteConn,
+    schema = "main",
+    tableName = testTable,
+    keyValues = deleteRows
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(
+    sqliteConn,
+    "SELECT * FROM @schema.@test_table",
+    schema = "main",
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
+  )
+  expect_identical(result, keptRows)
+
+  deleteAllRowsForPrimaryKey(
+    connection = sqliteConn,
+    schema = "main",
+    tableName = testTable,
+    keyValues = keptRows
+  )
+
+  result <- DatabaseConnector::renderTranslateQuerySql(sqliteConn,
+    "SELECT * FROM @schema.@test_table",
+    schema = "main",
+    test_table = testTable,
+    snakeCaseToCamelCase = TRUE
+  )
+  expect_equal(nrow(result), 0)
 })

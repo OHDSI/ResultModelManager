@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of OHdsiSharing
 #
@@ -34,7 +34,7 @@ checkAndFixColumnNames <-
            specifications) {
     observeredNames <- tolower(colnames(table)[order(colnames(table))])
 
-    tableSpecs <- specifications %>%
+    tableSpecs <- specifications |>
       dplyr::filter(.data$tableName == !!tableName)
 
     # Set all fields to requried if optional isn't specified
@@ -42,16 +42,17 @@ checkAndFixColumnNames <-
       tableSpecs$optional <- "no"
     }
 
-    optionalNames <- tableSpecs %>%
-      dplyr::filter(tolower(.data$optional) == "yes") %>%
+    optionalNames <- tableSpecs |>
+      dplyr::filter(tolower(.data$optional) == "yes") |>
       dplyr::select("columnName")
 
-    expectedNames <- tableSpecs %>%
-      dplyr::select("columnName") %>%
-      dplyr::anti_join(dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
+    expectedNames <- tableSpecs |>
+      dplyr::select("columnName") |>
+      dplyr::anti_join(
+        dplyr::filter(optionalNames, !.data$columnName %in% observeredNames),
         by = "columnName"
-      ) %>%
-      dplyr::arrange("columnName") %>%
+      ) |>
+      dplyr::arrange("columnName") |>
       dplyr::pull()
 
     if (!(all(expectedNames %in% observeredNames))) {
@@ -86,7 +87,7 @@ checkAndFixDataTypes <-
            tableName,
            resultsFolder,
            specifications) {
-    tableSpecs <- specifications %>%
+    tableSpecs <- specifications |>
       dplyr::filter(tableName == !!tableName)
 
     observedTypes <- sapply(table, class)
@@ -179,10 +180,10 @@ checkAndFixDuplicateRows <-
            tableName,
            resultsFolder,
            specifications) {
-    primaryKeys <- specifications %>%
+    primaryKeys <- specifications |>
       dplyr::filter(.data$tableName == !!tableName &
-        tolower(.data$primaryKey) == "yes") %>%
-      dplyr::select("columnName") %>%
+        tolower(.data$primaryKey) == "yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
     duplicatedRows <- duplicated(table[, primaryKeys])
     if (any(duplicatedRows)) {
@@ -218,12 +219,12 @@ appendNewRows <-
            tableName,
            specifications) {
     if (nrow(data) > 0) {
-      primaryKeys <- specifications %>%
+      primaryKeys <- specifications |>
         dplyr::filter(.data$tableName == !!tableName &
-          tolower(.data$primaryKey) == "yes") %>%
-        dplyr::select("columnName") %>%
+          tolower(.data$primaryKey) == "yes") |>
+        dplyr::select("columnName") |>
         dplyr::pull()
-      newData <- newData %>%
+      newData <- newData |>
         dplyr::anti_join(data, by = primaryKeys)
     }
     return(dplyr::bind_rows(data, newData))
@@ -273,7 +274,7 @@ formatDouble <- function(x) {
 }
 
 
-uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connection, runCheckAndFixCommands, forceOverWriteOfSpecifications) {
+uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connection, pythonConnection, runCheckAndFixCommands, forceOverWriteOfSpecifications) {
   ParallelLogger::logInfo(
     "- Preparing to upload rows ",
     pos,
@@ -307,40 +308,40 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
   }
 
   # Ensure dates are formatted properly
-  toDate <- specifications %>%
+  toDate <- specifications |>
     dplyr::filter(
       .data$tableName == env$tableName &
         tolower(.data$dataType) == "date"
-    ) %>%
-    dplyr::select("columnName") %>%
+    ) |>
+    dplyr::select("columnName") |>
     dplyr::pull()
 
   if (length(toDate) > 0) {
-    chunk <- chunk %>%
+    chunk <- chunk |>
       dplyr::mutate_at(toDate, lubridate::as_date)
   }
 
-  toTimestamp <- specifications %>%
+  toTimestamp <- specifications |>
     dplyr::filter(
       .data$tableName == env$tableName &
         grepl("timestamp", tolower(.data$dataType))
-    ) %>%
-    dplyr::select("columnName") %>%
+    ) |>
+    dplyr::select("columnName") |>
     dplyr::pull()
   if (length(toTimestamp) > 0) {
-    chunk <- chunk %>%
+    chunk <- chunk |>
       dplyr::mutate_at(toTimestamp, lubridate::as_datetime)
   }
 
-  toDouble <- specifications %>%
+  toDouble <- specifications |>
     dplyr::filter(
       .data$tableName == env$tableName &
         tolower(.data$dataType) %in% c("decimal", "numeric", "float")
-    ) %>%
-    dplyr::select("columnName") %>%
+    ) |>
+    dplyr::select("columnName") |>
     dplyr::pull()
   if (length(toDouble) > 0) {
-    chunk <- chunk %>%
+    chunk <- chunk |>
       dplyr::mutate_at(toDouble, formatDouble)
   }
 
@@ -380,12 +381,12 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
           " rows in database with the same primary key ",
           "as the data to insert. Removing from data to insert."
         )
-        chunk <- chunk %>%
+        chunk <- chunk |>
           dplyr::anti_join(duplicates, by = env$primaryKey)
       }
       # Remove duplicates we already dealt with:
       env$primaryKeyValuesInDb <-
-        env$primaryKeyValuesInDb %>%
+        env$primaryKeyValuesInDb |>
         dplyr::anti_join(duplicates, by = env$primaryKey)
     }
   }
@@ -393,16 +394,29 @@ uploadChunk <- function(chunk, pos, env, specifications, resultsFolder, connecti
     ParallelLogger::logInfo("- No data left to insert")
   } else {
     insertTableStatus <- tryCatch(expr = {
-      DatabaseConnector::insertTable(
-        connection = connection,
-        tableName = env$tableName,
-        databaseSchema = env$schema,
-        data = chunk,
-        dropTableIfExists = FALSE,
-        createTable = FALSE,
-        tempTable = FALSE,
-        progressBar = TRUE
-      )
+      if (!is.null(pythonConnection)) {
+        tryCatch(
+          {
+            .pgWriteDataFrame(chunk, pyConnection = pythonConnection, table = env$tableName, schema = env$schema)
+          },
+          error = function(error) {
+            # rollback write of data
+            pythonConnection$rollback()
+            stop(error)
+          }
+        )
+      } else {
+        DatabaseConnector::insertTable(
+          connection = connection,
+          tableName = env$tableName,
+          databaseSchema = env$schema,
+          data = chunk,
+          dropTableIfExists = FALSE,
+          createTable = FALSE,
+          tempTable = FALSE,
+          progressBar = interactive()
+        )
+      }
     }, error = function(e) e)
     if (inherits(insertTableStatus, "error")) {
       stop(insertTableStatus$message)
@@ -421,17 +435,18 @@ uploadTable <- function(tableName,
                         runCheckAndFixCommands,
                         forceOverWriteOfSpecifications,
                         purgeSiteDataBeforeUploading,
-                        warnOnMissingTable) {
+                        warnOnMissingTable,
+                        pythonConnection) {
   csvFileName <- paste0(tableName, ".csv")
-  specifications <- specifications %>%
+  specifications <- specifications |>
     dplyr::filter(.data$tableName == !!tableName)
 
   if (csvFileName %in% list.files(resultsFolder)) {
     rlang::inform(paste0("Uploading file: ", csvFileName, " to table: ", tableName))
 
-    primaryKey <- specifications %>%
-      dplyr::filter(tolower(.data$primaryKey) == "yes") %>%
-      dplyr::select("columnName") %>%
+    primaryKey <- specifications |>
+      dplyr::filter(tolower(.data$primaryKey) == "yes") |>
+      dplyr::select("columnName") |>
       dplyr::pull()
 
     # Create an environment variable to hold
@@ -444,9 +459,9 @@ uploadTable <- function(tableName,
     env$primaryKey <- primaryKey
     env$purgeSiteDataBeforeUploading <- purgeSiteDataBeforeUploading
     if (purgeSiteDataBeforeUploading && "database_id" %in% primaryKey) {
-      type <- specifications %>%
-        dplyr::filter(.data$columnName == "database_id") %>%
-        dplyr::select("dataType") %>%
+      type <- specifications |>
+        dplyr::filter(.data$columnName == "database_id") |>
+        dplyr::select("dataType") |>
         dplyr::pull()
       # Remove the existing data for the databaseId
       deleteAllRowsForDatabaseId(
@@ -501,7 +516,7 @@ uploadTable <- function(tableName,
 
     readr::read_csv_chunked(
       file = file.path(resultsFolder, csvFileName),
-      callback = function(chunk, pos) uploadChunk(chunk, pos, env, specifications, resultsFolder, connection, runCheckAndFixCommands, forceOverWriteOfSpecifications),
+      callback = function(chunk, pos) uploadChunk(chunk, pos, env, specifications, resultsFolder, connection, pythonConnection, runCheckAndFixCommands, forceOverWriteOfSpecifications),
       chunk_size = 1e7,
       col_types = colTypes,
       guess_max = 1e6,
@@ -625,7 +640,11 @@ uploadResults <- function(connection = NULL,
       )
     }
   }
-
+  pythonConnection <- NULL
+  if (DatabaseConnector::dbms(connection) == "postgresql" && pyPgUploadEnabled()) {
+    pythonConnection <- .createPyConnection(connection)
+    on.exit(pythonConnection$close(), add = TRUE)
+  }
   for (tableName in unique(specifications$tableName)) {
     uploadTable(
       tableName,
@@ -638,8 +657,13 @@ uploadResults <- function(connection = NULL,
       runCheckAndFixCommands,
       forceOverWriteOfSpecifications,
       purgeSiteDataBeforeUploading,
-      warnOnMissingTable
+      warnOnMissingTable,
+      pythonConnection = pythonConnection
     )
+
+    if (!is.null(pythonConnection)) {
+      pythonConnection$commit()
+    }
   }
 
   delta <- Sys.time() - start
@@ -660,34 +684,66 @@ uploadResults <- function(connection = NULL,
 #' @export
 deleteAllRowsForPrimaryKey <-
   function(connection, schema, tableName, keyValues) {
-    createSqlStatement <- function(i) {
-      sql <- paste0(
-        "DELETE FROM ",
-        schema,
-        ".",
-        tableName,
-        "\nWHERE ",
-        paste(paste0(
-          colnames(keyValues), " = '", keyValues[i, ], "'"
-        ), collapse = " AND "),
-        ";"
-      )
-      return(sql)
+    if (nrow(keyValues) == 0) {
+      return(NULL)
     }
 
-    batchSize <- 1000
-    for (start in seq(1, nrow(keyValues), by = batchSize)) {
-      end <- min(start + batchSize - 1, nrow(keyValues))
-      sql <- sapply(start:end, createSqlStatement)
-      sql <- paste(sql, collapse = "\n")
-      DatabaseConnector::executeSql(
-        connection,
-        sql,
-        progressBar = FALSE,
-        reportOverallTime = FALSE,
-        runAsBatch = TRUE
+    refTable <- paste0("temp_", tableName, "_del")
+    DatabaseConnector::insertTable(
+      connection = connection,
+      tableName = refTable,
+      tempTable = TRUE,
+      data = keyValues,
+      createTable = TRUE,
+      dropTableIfExists = TRUE
+    )
+
+    joinKeys <- "@table_name.@key_ref = @ref_table.@key_ref"
+    joinKeys <- sapply(colnames(keyValues), function(keyRef) {
+      SqlRender::render(joinKeys, key_ref = keyRef, ref_table = refTable, table_name = tableName)
+    }) |>
+      paste(collapse = " AND ")
+
+    dbms <- DatabaseConnector::dbms(connection)
+
+    if (dbms == "sqlite") {
+      deleteSql <- SqlRender::render(
+        "DELETE FROM @schema.@table_name
+        WHERE EXISTS (
+            SELECT *
+            FROM @ref_table
+            WHERE @join_keys
+        );",
+        schema = schema,
+        join_keys = joinKeys,
+        table_name = tableName,
+        ref_table = refTable
       )
+    } else if (dbms == "postgresql") {
+      deleteSql <- SqlRender::render(
+        "DELETE FROM @schema.@table_name
+        USING @ref_table
+        WHERE @join_keys",
+        schema = schema,
+        join_keys = joinKeys,
+        table_name = tableName,
+        ref_table = refTable
+      )
+    } else {
+      # Not supported but will let user do it anyway
+      deleteSql <- SqlRender::render(
+        "DELETE t
+        FROM @schema.@table_name
+        INNER JOIN #@ref_table ON @join_keys;",
+        join_keys = joinKeys,
+        schema = schema,
+        table_name = tableName,
+        ref_table = refTable
+      ) |>
+        SqlRender::translate(targetDialect = dbms)
     }
+
+    DatabaseConnector::executeSql(connection, deleteSql)
   }
 
 

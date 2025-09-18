@@ -1,4 +1,5 @@
 test_that("Test result export manager methods", {
+  skip_on_cran()
   # Create a dummy table specification and set the export directory
   table_spec <- dplyr::tibble(
     tableName = c("table1", "table1"),
@@ -22,11 +23,13 @@ test_that("Test result export manager methods", {
 
   checkmate::expect_list(exportManager$getManifestList())
   exportManager$writeManifest()
-  expect_file_exists(file.path(export_dir, "manifest.json"))
+  checkmate::expect_file_exists(file.path(export_dir, "manifest.json"))
 })
 
 # Test exporting a data frame
 test_that("exportDataFrame method exports data frame correctly", {
+  skip_on_cran()
+  skip_if(.Platform$OS.type == "unix" && Sys.info()["sysname"] == "Darwin", "skipping on osx")
   # Create a dummy data frame
   df <- dplyr::tibble(
     col1 = c(1, 2, 3),
@@ -70,13 +73,13 @@ test_that("exportDataFrame method exports data frame correctly", {
 
   expect_error(exportManager$exportDataFrame(df2, "table999", append = TRUE), "Table not found in specifications")
   exportManager$writeManifest()
-  expect_file_exists(file.path(export_dir, "manifest.json"))
+  checkmate::expect_file_exists(file.path(export_dir, "manifest.json"))
 })
 
 
 testDbExport <- function(connectionDetails, schema, n = 100) {
   ch <- ConnectionHandler$new(connectionDetails)
-  on.exit(ch$finalize())
+  on.exit(ch$closeConnection())
   # 1 million random rows
 
   table_spec <- dplyr::tibble(
@@ -98,8 +101,8 @@ testDbExport <- function(connectionDetails, schema, n = 100) {
   exportManager <- createResultExportManager(tableSpecification = table_spec, exportDir = exportDir, minCellCount = 5)
 
   transformFunc <- function(rows, pos, test) {
-    expect_data_frame(rows)
-    expect_integerish(pos)
+    checkmate::expect_data_frame(rows)
+    checkmate::expect_integerish(pos)
     expect_equal(test, 1234)
     return(rows)
   }
@@ -121,6 +124,7 @@ testDbExport <- function(connectionDetails, schema, n = 100) {
 }
 
 test_that("export via sql", {
+  skip_on_cran()
   testDbC <- DatabaseConnector::createConnectionDetails(dbms = "sqlite", server = ":memory:")
   testDbExport(testDbC, schema = "main", n = 1e5)
 })

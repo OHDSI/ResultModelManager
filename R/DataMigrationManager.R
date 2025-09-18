@@ -1,4 +1,4 @@
-# Copyright 2024 Observational Health Data Sciences and Informatics
+# Copyright 2025 Observational Health Data Sciences and Informatics
 #
 # This file is part of CohortDiagnostics
 #
@@ -44,6 +44,7 @@ isUnitTest <- function() {
 )
 
 #' DataMigrationManager (DMM)
+#' @export
 #' @description
 #' R6 class for management of database migration
 #'
@@ -51,11 +52,7 @@ isUnitTest <- function() {
 #' @field databaseSchema                Path migrations exist in
 #' @field packageName                   packageName, can be null
 #' @field tablePrefix                   tablePrefix, can be empty character vector
-#' @field packageTablePrefix                   packageTablePrefix, can be empty character vector
-#'
-#' @importFrom ParallelLogger logError logInfo
-#'
-#' @export  DataMigrationManager
+#' @field packageTablePrefix            packageTablePrefix, can be empty character vector
 DataMigrationManager <- R6::R6Class(
   classname = "DataMigrationManager",
   public = list(
@@ -238,6 +235,12 @@ DataMigrationManager <- R6::R6Class(
         }
       }
     },
+    #' closeConnection
+    #' @description
+    #' close connection, if active
+    closeConnection = function() {
+      private$connectionHandler$closeConnection()
+    },
 
     #' isPackage
     #' @description
@@ -247,9 +250,13 @@ DataMigrationManager <- R6::R6Class(
     },
 
     #' finalize
-    #' @description close database connection
+    #' @description
+    #' Deprecated call, will be removed in a future version
     finalize = function() {
-      private$connectionHandler$finalize()
+      if (interactive())
+        rlang::inform("Due to changes in the R6 package, this method is deprecated and will be removed in a future version. Please use closeConnection instead")
+
+      self$closeConnection()
     }
   ),
   private = list(
@@ -360,4 +367,4 @@ DataMigrationManager <- R6::R6Class(
       }
     }
   ),
-)
+) |> suppressMessages()

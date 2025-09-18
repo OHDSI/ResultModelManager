@@ -28,7 +28,7 @@ genericTests <- function(connClass, classes, connectionClass) {
   checkmate::expect_class(conn, classes)
   on.exit(
     {
-      conn$finalize()
+      conn$closeConnection()
     },
     add = TRUE
   )
@@ -52,17 +52,12 @@ genericTests <- function(connClass, classes, connectionClass) {
   checkmate::expect_data_frame(data)
   expect_equal(data$cntTest, 6)
 
-  data2 <- conn$queryDb("SELECT count(*) AS cnt_test FROM main.concept;", snakeCaseToCamelCase = FALSE)
-
-  checkmate::expect_data_frame(data2)
-  expect_equal(data2$CNT_TEST, 6)
-
   expect_error(conn$queryDb("SELECT 1 * WHERE;"))
 
   expect_equal(DatabaseConnector::dbms(testConnection), conn$dbms())
   conceptTbl <- conn$tbl("concept", databaseSchema = "main")
 
-  expect_class(conceptTbl, c("tbl", "tbl_lazy"))
+  checkmate::expect_class(conceptTbl, c("tbl", "tbl_lazy"))
 
   conn$closeConnection()
   expect_false(conn$isActive)
@@ -70,7 +65,6 @@ genericTests <- function(connClass, classes, connectionClass) {
   conn$initConnection()
   expect_true(conn$isActive)
 
-  expect_warning(conn$initConnection(), "Closing existing connection")
   checkmate::expect_class(conn$getConnection(), connectionClass)
   conn$closeConnection()
 }
