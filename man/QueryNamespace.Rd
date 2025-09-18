@@ -95,6 +95,7 @@ initialize class
   tableSpecification = NULL,
   tablePrefix = "",
   queryFiles = NULL,
+  executeFiles = NULL,
   snakeCaseToCamelCaseFileNames = FALSE,
   ...
 )}\if{html}{\out{</div>}}
@@ -110,6 +111,8 @@ initialize class
 \item{\code{tablePrefix}}{constant string to prefix all tables with}
 
 \item{\code{queryFiles}}{vector of file paths to sql files that can be automatically loaded and translated as additional methods for this module}
+
+\item{\code{executeFiles}}{vector of file paths to sql files that can be automatically loaded and translated as additional methods for this module. Queries will executed and not return a result}
 
 \item{\code{snakeCaseToCamelCaseFileNames}}{\itemize{
 \item if true the method name will turn snake case file names in queryFiles in to camel case (e.g. my_query.sql becomes qns$myQuery)
@@ -130,7 +133,11 @@ This allows you to run the query with any settings that are encapsulated within 
 Package maintainers should take note that these functions will not be exposed and will include no validation
 checks on user input. Use with care.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$addQueryFile(filepath, snakeCaseToCamelCaseFileNames = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$addQueryFile(
+  filepath,
+  snakeCaseToCamelCaseFileNames = FALSE,
+  execFunction = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -142,6 +149,8 @@ checks on user input. Use with care.
 \item if true the method name will turn snake case names in to camel case (e.g. my_query.sql becomes qns$myQuery)
 Set Connection Handler
 }}
+
+\item{\code{execFunction}}{default false - instead of returning a result, execute a query or set of queries}
 }
 \if{html}{\out{</div>}}
 }

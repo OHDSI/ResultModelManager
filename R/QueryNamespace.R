@@ -89,11 +89,13 @@ QueryNamespace <- R6::R6Class(
     #' @param tableSpecification tableSpecification data.frame
     #' @param tablePrefix constant string to prefix all tables with
     #' @param queryFiles vector of file paths to sql files that can be automatically loaded and translated as additional methods for this module
+    #' @param executeFiles vector of file paths to sql files that can be automatically loaded and translated as additional methods for this module. Queries will executed and not return a result
     #' @param snakeCaseToCamelCaseFileNames - if true the method name will turn snake case file names in queryFiles in to camel case (e.g. my_query.sql becomes qns$myQuery)
     #' @param ... additional replacement variables e.g. database_schema, vocabulary_schema etc
-    initialize = function(connectionHandler = NULL, tableSpecification = NULL, tablePrefix = "", queryFiles = NULL, snakeCaseToCamelCaseFileNames = FALSE, ...) {
+    initialize = function(connectionHandler = NULL, tableSpecification = NULL, tablePrefix = "", queryFiles = NULL, executeFiles = NULL, snakeCaseToCamelCaseFileNames = FALSE, ...) {
       checkmate::assertString(tablePrefix)
       checkmate::assertCharacter(queryFiles, null.ok = TRUE)
+      checkmate::assertCharacter(executeFiles, null.ok = TRUE)
 
       self$tablePrefix <- tablePrefix
       private$replacementVars <- fastmap::fastmap()
@@ -113,6 +115,7 @@ QueryNamespace <- R6::R6Class(
       }
 
       lapply(queryFiles, self$addQueryFile, snakeCaseToCamelCaseFileNames = snakeCaseToCamelCaseFileNames)
+      lapply(executeFiles, self$addQueryFile, snakeCaseToCamelCaseFileNames = snakeCaseToCamelCaseFileNames, execFunction = TRUE)
 
       self
     },
@@ -124,8 +127,9 @@ QueryNamespace <- R6::R6Class(
     #' Package maintainers should take note that these functions will not be exposed and will include no validation
     #' checks on user input. Use with care.
     #' @param filepath  path to sql file - this will determine the name of the function
+    #' @param execFunction  default false - instead of returning a result, execute a query or set of queries
     #' @param snakeCaseToCamelCaseFileNames - if true the method name will turn snake case names in to camel case (e.g. my_query.sql becomes qns$myQuery)
-    addQueryFile = function(filepath, snakeCaseToCamelCaseFileNames = FALSE) {
+    addQueryFile = function(filepath, snakeCaseToCamelCaseFileNames = FALSE, execFunction = FALSE) {
       checkmate::assertFileExists(filepath)
       # Ensure file has .sql extension
       if (tolower(tools::file_ext(filepath)) != "sql") {
@@ -150,7 +154,11 @@ QueryNamespace <- R6::R6Class(
         # Render SQL with replacement variables and any additional arguments
         renderedSql <- self$render(sql, ...)
         # Query the database and return results
-        self$queryDb(renderedSql)
+        if (execFunction){
+          return(self$executeSql(sql))
+        }
+
+        return(self$queryDb(renderedSql))
       }
 
       # Dynamically add the function as a method to this instance

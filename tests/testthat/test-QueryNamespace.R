@@ -83,8 +83,13 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
   expect_error(qns$addQueryFile("sql/notAnSqlFile.txt"))
 
   expect_error(qns$addQueryFile("sql/get_results.sql", snakeCaseToCamelCaseFileNames = TRUE))
+
   expect_true("getResults" %in% names(qns))
 
+  qns$addQueryFile("sql/createTestData.sql", execFunction = TRUE)
+  expect_true("createTestData" %in% names(qns))
+
+  qns$createTestData()
 })
 
 test_that("create helper function works", {
