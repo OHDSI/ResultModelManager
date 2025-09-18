@@ -10,4 +10,7 @@ articles:
   UsingConnectionHandlers: UsingConnectionHandlers.html
   UsingPythonUploads: UsingPythonUploads.html
   UsingQueryNamespaces: UsingQueryNamespaces.html
-last_built: 2025-09-15T20:17Z
+last_built: 2025-09-18T14:52Z
+urls:
+  reference: https://ohdsi.github.io/ResultModelManager/reference
+  article: https://ohdsi.github.io/ResultModelManager/articles

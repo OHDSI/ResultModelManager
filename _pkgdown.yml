@@ -1,3 +1,5 @@
+url: https://ohdsi.github.io/ResultModelManager/
+
 template:
   bootstrap: 5
   bslib:
