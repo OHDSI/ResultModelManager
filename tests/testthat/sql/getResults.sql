@@ -1,0 +1,1 @@
+SELECT * FROM @result_schema.@cohort where cohort_id = @cohort_id

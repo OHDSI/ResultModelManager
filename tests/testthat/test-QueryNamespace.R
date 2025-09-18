@@ -61,8 +61,30 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
   result <- cohortNamespace$queryDb("SELECT * FROM @result_schema.@cohort WHERE cohort_definition_id = @cohort_id", cohort_id = 1)
   expect_true(is.data.frame(result))
 
+  cohortNamespace$addQueryFile("sql/get_results.sql", snakeCaseToCamelCaseFileNames = TRUE)
+  result <- cohortNamespace$getResults(cohort_id = 1)
+  expect_true(is.data.frame(result))
+
   result <- cohortNamespace$executeSql("SELECT * FROM @result_schema.@cohort WHERE cohort_definition_id = @cohort_id", cohort_id = 1)
   expect_type(result, "NULL")
+
+
+  qns <- QueryNamespace$new(
+    tableSpecification = tableSpecification,
+    result_schema = "main",
+    tablePrefix = "cd_",
+    queryFiles = c("sql/getResultsTest.sql", "sql/getResults.sql"),
+    connectionHandler = connectionHandler
+  )
+
+  expect_true("getResultsTest" %in% names(qns))
+
+  expect_error(qns$addQueryFile("nonExistenFile.sql"))
+  expect_error(qns$addQueryFile("sql/notAnSqlFile.txt"))
+
+  expect_error(qns$addQueryFile("sql/get_results.sql", snakeCaseToCamelCaseFileNames = TRUE))
+  expect_true("getResults" %in% names(qns))
+
 })
 
 test_that("create helper function works", {

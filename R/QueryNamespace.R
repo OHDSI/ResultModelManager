@@ -73,6 +73,7 @@
 #'
 QueryNamespace <- R6::R6Class(
   classname = "QueryNamespace",
+  lock_objects = FALSE,
   private = list(
     replacementVars = NULL,
     tableSpecifications = list(),
@@ -87,9 +88,13 @@ QueryNamespace <- R6::R6Class(
     #' @param connectionHandler  ConnectionHandler instance @seealso[ConnectionHandler]
     #' @param tableSpecification tableSpecification data.frame
     #' @param tablePrefix constant string to prefix all tables with
+    #' @param queryFiles vector of file paths to sql files that can be automatically loaded and translated as additional methods for this module
+    #' @param snakeCaseToCamelCaseFileNames - if true the method name will turn snake case file names in queryFiles in to camel case (e.g. my_query.sql becomes qns$myQuery)
     #' @param ... additional replacement variables e.g. database_schema, vocabulary_schema etc
-    initialize = function(connectionHandler = NULL, tableSpecification = NULL, tablePrefix = "", ...) {
+    initialize = function(connectionHandler = NULL, tableSpecification = NULL, tablePrefix = "", queryFiles = NULL, snakeCaseToCamelCaseFileNames = FALSE, ...) {
       checkmate::assertString(tablePrefix)
+      checkmate::assertCharacter(queryFiles, null.ok = TRUE)
+
       self$tablePrefix <- tablePrefix
       private$replacementVars <- fastmap::fastmap()
       if (!is.null(connectionHandler)) {
@@ -107,7 +112,51 @@ QueryNamespace <- R6::R6Class(
         }
       }
 
+      lapply(queryFiles, self$addQueryFile, snakeCaseToCamelCaseFileNames = snakeCaseToCamelCaseFileNames)
+
       self
+    },
+
+    #' Add query file
+    #' @description
+    #' Add an sql file query as a method to this namespace.
+    #' This allows you to run the query with any settings that are encapsulated within this object.
+    #' Package maintainers should take note that these functions will not be exposed and will include no validation
+    #' checks on user input. Use with care.
+    #' @param filepath  path to sql file - this will determine the name of the function
+    #' @param snakeCaseToCamelCaseFileNames - if true the method name will turn snake case names in to camel case (e.g. my_query.sql becomes qns$myQuery)
+    addQueryFile = function(filepath, snakeCaseToCamelCaseFileNames = FALSE) {
+      checkmate::assertFileExists(filepath)
+      # Ensure file has .sql extension
+      if (tolower(tools::file_ext(filepath)) != "sql") {
+        stop("File must have a .sql extension")
+      }
+
+      # Derive function name from file name
+      baseName <- basename(filepath)
+      functionName <- sub("\\.sql$", "", baseName)
+      if (snakeCaseToCamelCaseFileNames) {
+        # Convert snake_case to camelCase
+        functionName <- SqlRender::snakeCaseToCamelCase(functionName)
+      }
+
+      if (functionName %in% names(self)) {
+        stop(paste("Cannot add existing name", functionName, "to object"))
+      }
+
+      # Define the callback function that runs the query
+      callback <- function(...) {
+        sql <- SqlRender::readSql(filepath)
+        # Render SQL with replacement variables and any additional arguments
+        renderedSql <- self$render(sql, ...)
+        # Query the database and return results
+        self$queryDb(renderedSql)
+      }
+
+      # Dynamically add the function as a method to this instance
+      self[[functionName]] <- callback
+
+      invisible(NULL)
     },
 
     #' Set Connection Handler

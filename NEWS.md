@@ -1,3 +1,7 @@
+# ResultModelManager 0.7.0
+
+1. Query Namespaces now support adding sql files as automatically mapped functions
+
 # ResultModelManager 0.6.0
 
 Changes:
