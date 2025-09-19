@@ -98,3 +98,97 @@ tableSpecification2 <- data.frame(
 )
 qns$addTableSpecification(tableSpecification2)
 ```
+# Using type checks and sql files
+
+Optionally, you may wish to write sql only files and not require any R boilerplate.
+Query namespaces support this in two ways.
+Firstly, they allow you to add a file that is loaded as a method in the querynamespace class at runtime.
+Secondly, you can enforce type checking within these SQL files using the notation `{TYPEC <TYPE>}` or `{TYPEC <TYPE>[]}`
+to allow vectors of length +1.
+
+## TYPEC annotation
+To add runtime checks to any sql statement within a query namespace add one of the following checks:
+
+```{sql}
+{TYPEC INT @variable_name}
+{TYPEC INT[] @variable_name}
+{TYPEC BIGINT @variable_name}
+{TYPEC BIGINT[] @variable_name}
+{TYPEC CHAR @variable_name}
+{TYPEC CHAR[] @variable_name}
+{TYPEC NUMERIC @variable_name}
+{TYPEC NUMERIC[] @variable_name}
+{TYPEC INT @variable_name}
+{TYPEC INT[] @variable_name}
+```
+In this situation, a value passed to an SQL query can never be `NULL` or `NA` and must be of the type specified.
+
+For example:
+
+```{r}
+qns$queryDb(
+  "{TYPEC INT @id} SELECT * FROM @database_schema.@cohort_definition WHERE cohort_definition_id = @id",
+  id = 5
+)
+```
+In this case, if a non-integer value is passed into the SQL an error will be thrown prior to execution within the database.
+
+
+## Adding sql files
+
+For longer sql queries, using `.sql` files can be a more convenient way of managing these.
+To do this create a file that maps to the function name you wish to attach to the query namespace and add it as follows:
+
+```{sql}
+-- CREATE the sql file
+
+-- set the required types for input
+{TYPEC INT @ids[]}
+{TYPEC CHAR @database_schema}
+{TYPEC CHAR @cohort_definition}
+
+SELECT * FROM @database_schema.@cohort_definition
+WHERE cohort_definition_id IN (@ids)
+```
+
+```{r eval=FALSE}
+# requires getResults.sql to exist
+qns$addQueryFile("getResults.sql")
+results <- qns$getResults(id = 12)
+results2 <- qns$getResults(id = c(5, 6, 7, 8))
+```
+Optionally, we can attach this when creating the object
+
+```{r eval=FALSE}
+qns2 <- createQueryNamespace(
+  connectionDetails = connectionDetails,
+  usePooledConnection = FALSE,
+  tableSpecification = tableSpecification,
+  tablePrefix = "rwe_study_99_",
+  snakeCaseToCamelCase = TRUE,
+  database_schema = "main",
+  queryFiles = c("getResults.sql")
+)
+```
+If you're creating a model within a package you may wish to expose a results model as follows:
+
+```{r eval = FALSE}
+#' @expose
+myResultsMode <- function() {
+  createQueryNamespace(
+    connectionDetails = connectionDetails,
+    usePooledConnection = FALSE,
+    tableSpecification = tableSpecification,
+    tablePrefix = "rwe_study_99_",
+    snakeCaseToCamelCase = TRUE,
+    database_schema = "main",
+    queryFiles = list.files(system.file("sql", "resultsModel",
+                                        package = utils::packageName()),
+                            "*.sql",
+                            full.names = TRUE)
+  )
+}
+
+```
+
+This would expose all of the `.sql` files in the `inst/sql/resultsModel` folder of your package as methods within the query namespace.
