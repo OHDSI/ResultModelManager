@@ -14,6 +14,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+.typeCheckVariable <- function(varName, value, typeStr, isArray) {
+  # Map type strings to checking functions
+  typeChecks <- list(
+    INT = function(x) is.numeric(x) && all(x == as.integer(x)),
+    BIGINT = function(x) is.numeric(x) && all(x %% 1 == 0),
+    CHAR = function(x) is.character(x),
+    VARCHAR = function(x) is.character(x),
+    TEXT = function(x) is.character(x),
+    NUMERIC = function(x) is.numeric(x),
+    BOOLEAN = function (x) is.logical(x) || (is.numeric(x) && all(x %in% c(0, 1)))
+  )
+
+  # Check type exists
+  baseType <- gsub("\\[\\]", "", typeStr)
+  if (!baseType %in% names(typeChecks)) {
+    stop(sprintf("Unknown type check: %s", typeStr))
+  }
+  checkFun <- typeChecks[[baseType]]
+
+  # Check presence
+  if (is.null(value)) {
+    stop(sprintf("Required variable '%s' (type check %s) not supplied to render().", varName, typeStr))
+  }
+  # Check NA
+  if (any(is.na(value))) {
+    stop(sprintf("Variable '%s' (type check %s) contains NA values, which are not allowed.", varName, typeStr))
+  }
+
+  # Array vs scalar
+  if (isArray) {
+    if (!checkFun(value)) {
+      stop(sprintf("Variable '%s' must be an array of type %s.", varName, baseType))
+    }
+    # Must be vector of length >= 1
+    if (!(is.vector(value) && length(value) >= 1)) {
+      stop(sprintf("Variable '%s' must be a non-empty vector of type %s.", varName, baseType))
+    }
+  } else {
+    if (!checkFun(value) || length(value) != 1) {
+      stop(sprintf("Variable '%s' must be a scalar of type %s.", varName, baseType))
+    }
+  }
+}
+
+
 #' QueryNamespace
 #' @export
 #' @description
@@ -174,11 +220,30 @@ QueryNamespace <- R6::R6Class(
     #' @param ... additional variables to be passed to SqlRender::render - will overwrite anything in namespace
     render = function(sql, ...) {
       params <- private$replacementVars$as_list()
-
       addVars <- list(...)
-
       for (k in names(addVars)) {
         params[[k]] <- addVars[[k]]
+      }
+
+      # Regex for {TYPEC TYPE[@] @var_name}
+      typecPattern <- "\\{TYPEC\\s+([A-Z]+(\\[\\])?)\\s+@([a-zA-Z0-9_]+)\\}"
+      typecMatches <- gregexpr(typecPattern, sql, perl = TRUE)
+      matchPositions <- regmatches(sql, typecMatches)[[1]]
+
+      if (length(matchPositions) > 0) {
+        for (matchStr in matchPositions) {
+          m <- regexec(typecPattern, matchStr, perl = TRUE)
+          parts <- regmatches(matchStr, m)[[1]]
+          if (length(parts) >= 4) {
+            typeStr <- parts[2]         # e.g. INT, INT[], CHAR, CHAR[], NUMERIC, NUMERIC[]
+            isArray <- grepl("\\[\\]", typeStr)
+            varName <- parts[4]         # <-- Should be parts[4], not parts[3]
+            value <- params[[varName]]
+            .typeCheckVariable(varName, value, typeStr, isArray)
+          }
+        }
+        # Remove all {TYPEC ...} lines from SQL
+        sql <- gsub(typecPattern, "", sql, perl = TRUE)
       }
 
       params$sql <- sql

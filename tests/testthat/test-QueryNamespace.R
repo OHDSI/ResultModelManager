@@ -128,3 +128,38 @@ test_that("create helper function works", {
     )
   )
 })
+
+
+test_that("render enforces type checks in SQL", {
+  cohortNamespace <- QueryNamespace$new(
+    connectionHandler = connectionHandler,
+    tableSpecification = tableSpecification,
+    result_schema = "main",
+    tablePrefix = "cd_"
+  )
+  on.exit({
+    cohortNamespace$closeConnection()
+  }, add = TRUE)
+
+  # INT scalar OK
+  sql <- "{TYPEC INT @cohort_id} SELECT * FROM @result_schema.@cohort WHERE cohort_definition_id = @cohort_id"
+  expect_error(cohortNamespace$render(sql, cohort_id = 1.5), "scalar of type INT")
+  expect_error(cohortNamespace$render(sql, cohort_id = NA), "contains NA")
+  expect_error(cohortNamespace$render(sql), "not supplied")
+
+  # BIGINT array OK
+  sql <- "{TYPEC BIGINT[] @ids} SELECT * FROM @result_schema.@cohort WHERE cohort_definition_id IN (@ids)"
+  expect_silent(cohortNamespace$render(sql, ids = c(1, 2, 3)))
+  expect_error(cohortNamespace$render(sql, ids = c(1, 2.5)), "array of type BIGINT")
+
+  # CHAR scalar OK
+  sql <- "{TYPEC CHAR @cohort_name} SELECT * FROM @result_schema.@cohort WHERE cohort_name = @cohort_name"
+  expect_silent(cohortNamespace$render(sql, cohort_name = "test"))
+  expect_error(cohortNamespace$render(sql, cohort_name = c("a", "b")), "scalar of type CHAR")
+  expect_error(cohortNamespace$render(sql, cohort_name = NA), "contains NA")
+
+  # CHAR array OK
+  sql <- "{TYPEC CHAR[] @names} SELECT * FROM @result_schema.@cohort WHERE cohort_name IN (@names)"
+  expect_silent(cohortNamespace$render(sql, names = c("a", "b")))
+  expect_error(cohortNamespace$render(sql, names = c("a", NA)), "contains NA")
+})
