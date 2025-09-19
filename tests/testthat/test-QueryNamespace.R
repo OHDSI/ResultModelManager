@@ -90,6 +90,9 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
   expect_true("createTestData" %in% names(qns))
 
   qns$createTestData()
+
+  checkmate::expect_data_frame(qns$queryDb("SELECT * FROM @result_schema.foo"))
+  checkmate::expect_data_frame(qns$queryDb("SELECT * FROM @result_schema.foo2"))
 })
 
 test_that("create helper function works", {
