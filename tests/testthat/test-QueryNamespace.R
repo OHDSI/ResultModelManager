@@ -85,6 +85,7 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
   expect_error(qns$addQueryFile("sql/get_results.sql", snakeCaseToCamelCaseFileNames = TRUE))
 
   expect_true("getResults" %in% names(qns))
+  checkmate::expect_data_frame(qns$getResults(cohort_id = c(1,2,3)))
 
   qns$addQueryFile("sql/createTestData.sql", execFunction = TRUE)
   expect_true("createTestData" %in% names(qns))
