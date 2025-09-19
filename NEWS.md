@@ -1,3 +1,12 @@
+# ResultModelManager 0.7.0
+
+Changes:
+
+1. Use of `{TYPEC <TYPE>}` allows runtime checks for query types of inputs to sql statements. For example `{TYPEC INT[] @cohort_ids}`
+forces errors if an input is not of an array of type int. `{TYPEC INT @cohort_id}` would only allow inputs to be of
+length 1. NA/NULL is automatically prevented whenever there is a type check.
+Default SQL render behaviour is not altered.
+
 # ResultModelManager 0.6.0
 
 Changes:
