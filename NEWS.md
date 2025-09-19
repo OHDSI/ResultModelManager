@@ -7,6 +7,8 @@ forces errors if an input is not of an array of type int. `{TYPEC INT @cohort_id
 length 1. NA/NULL is automatically prevented whenever there is a type check.
 Default SQL render behaviour is not altered.
 
+2. Query Namespaces now support adding sql files as automatically mapped functions
+
 # ResultModelManager 0.6.0
 
 Changes:

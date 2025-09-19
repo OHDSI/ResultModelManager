@@ -32,7 +32,7 @@ table names in a consistent manner that is striaghtforward to maintain over time
     <li><a class="dropdown-item" href="../articles/UsingQueryNamespaces.html">Using Query Namespaces</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="nav-link" href="https://ohdsi.github.io/ResultModelManager"><img src='https://ohdsi.github.io/Hades/images/hadesMini.png' width=80 height=17 style='vertical-align: top;'></a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><a class="nav-link" href="https://ohdsi.github.io/ResultModelManager">hadesLogo</a></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/OHDSI/ResultModelManager/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
@@ -69,6 +69,7 @@ table names in a consistent manner that is striaghtforward to maintain over time
 <h3 id="public-methods">Public methods<a class="anchor" aria-label="anchor" href="#public-methods"></a></h3>
 
 <ul><li><p><a href="#method-QueryNamespace-new"><code>QueryNamespace$new()</code></a></p></li>
+<li><p><a href="#method-QueryNamespace-addQueryFile"><code>QueryNamespace$addQueryFile()</code></a></p></li>
 <li><p><a href="#method-QueryNamespace-setConnectionHandler"><code>QueryNamespace$setConnectionHandler()</code></a></p></li>
 <li><p><a href="#method-QueryNamespace-getConnectionHandler"><code>QueryNamespace$getConnectionHandler()</code></a></p></li>
 <li><p><a href="#method-QueryNamespace-addReplacementVariable"><code>QueryNamespace$addReplacementVariable()</code></a></p></li>
@@ -87,6 +88,8 @@ table names in a consistent manner that is striaghtforward to maintain over time
 <span>  connectionHandler <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  tableSpecification <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  tablePrefix <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  queryFiles <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  snakeCaseToCamelCaseFileNames <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -105,9 +108,43 @@ table names in a consistent manner that is striaghtforward to maintain over time
 <dd><p>constant string to prefix all tables with</p></dd>
 
 
+<dt><code>queryFiles</code></dt>
+<dd><p>vector of file paths to sql files that can be automatically loaded and translated as additional methods for this module</p></dd>
+
+
+<dt><code>snakeCaseToCamelCaseFileNames</code></dt>
+<dd><ul><li><p>if true the method name will turn snake case file names in queryFiles in to camel case (e.g. my_query.sql becomes qns$myQuery)</p></li>
+</ul></dd>
+
+
 <dt><code>...</code></dt>
 <dd><p>additional replacement variables e.g. database_schema, vocabulary_schema etc
-Set Connection Handler</p></dd>
+Add query file</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-QueryNamespace-addQueryFile"></a><div class="section">
+<h3 id="method-addqueryfile-">Method <code>addQueryFile()</code><a class="anchor" aria-label="anchor" href="#method-addqueryfile-"></a></h3>
+<p>Add an sql file query as a method to this namespace.
+This allows you to run the query with any settings that are encapsulated within this object.
+Package maintainers should take note that these functions will not be exposed and will include no validation
+checks on user input. Use with care.</p><div class="section">
+<h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">addQueryFile</span><span class="op">(</span><span class="va">filepath</span>, snakeCaseToCamelCaseFileNames <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>filepath</code></dt>
+<dd><p>path to sql file - this will determine the name of the function</p></dd>
+
+
+<dt><code>snakeCaseToCamelCaseFileNames</code></dt>
+<dd><ul><li><p>if true the method name will turn snake case names in to camel case (e.g. my_query.sql becomes qns$myQuery)
+Set Connection Handler</p></li>
+</ul></dd>
 
 
 </dl><p></p></div>
@@ -116,12 +153,12 @@ Set Connection Handler</p></dd>
 </div><p></p><hr><a id="method-QueryNamespace-setConnectionHandler"></a><div class="section">
 <h3 id="method-setconnectionhandler-">Method <code>setConnectionHandler()</code><a class="anchor" aria-label="anchor" href="#method-setconnectionhandler-"></a></h3>
 <p>set connection handler object for object</p><div class="section">
-<h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">setConnectionHandler</span><span class="op">(</span><span class="va">connectionHandler</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>connectionHandler</code></dt>
 <dd><p>ConnectionHandler instance
 Get connection handler</p></dd>
@@ -133,7 +170,7 @@ Get connection handler</p></dd>
 </div><p></p><hr><a id="method-QueryNamespace-getConnectionHandler"></a><div class="section">
 <h3 id="method-getconnectionhandler-">Method <code>getConnectionHandler()</code><a class="anchor" aria-label="anchor" href="#method-getconnectionhandler-"></a></h3>
 <p>get connection handler obeject or throw error if not set</p><div class="section">
-<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">getConnectionHandler</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -141,12 +178,12 @@ Get connection handler</p></dd>
 </div><p></p><hr><a id="method-QueryNamespace-addReplacementVariable"></a><div class="section">
 <h3 id="method-addreplacementvariable-">Method <code>addReplacementVariable()</code><a class="anchor" aria-label="anchor" href="#method-addreplacementvariable-"></a></h3>
 <p>add a variable to automatically be replaced in query strings (e.g. @database_schema.@table_name becomes 'database_schema.table_1')</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">addReplacementVariable</span><span class="op">(</span><span class="va">key</span>, <span class="va">value</span>, replace <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>key</code></dt>
 <dd><p>variable name string (without @) to be replaced, eg. "table_name"</p></dd>
 
@@ -167,7 +204,7 @@ add table specification</p></dd>
 <h3 id="method-addtablespecification-">Method <code>addTableSpecification()</code><a class="anchor" aria-label="anchor" href="#method-addtablespecification-"></a></h3>
 <p>add a variable to automatically be replaced in query strings (e.g. @database_schema.@table_name becomes
 'database_schema.table_1')</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">addTableSpecification</span><span class="op">(</span></span>
 <span>  <span class="va">tableSpecification</span>,</span>
 <span>  useTablePrefix <span class="op">=</span> <span class="cn">TRUE</span>,</span>
@@ -177,7 +214,7 @@ add table specification</p></dd>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>tableSpecification</code></dt>
 <dd><p>table specification data.frame conforming to column names tableName, columnName, dataType and primaryKey</p></dd>
 
@@ -201,12 +238,12 @@ Render</p></dd>
 </div><p></p><hr><a id="method-QueryNamespace-render"></a><div class="section">
 <h3 id="method-render-">Method <code>render()</code><a class="anchor" aria-label="anchor" href="#method-render-"></a></h3>
 <p>Call to SqlRender::render replacing names stored in this class</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">render</span><span class="op">(</span><span class="va">sql</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>query string</p></dd>
 
@@ -222,12 +259,12 @@ query Sql</p></dd>
 </div><p></p><hr><a id="method-QueryNamespace-queryDb"></a><div class="section">
 <h3 id="method-querydb-">Method <code>queryDb()</code><a class="anchor" aria-label="anchor" href="#method-querydb-"></a></h3>
 <p>Call to</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">queryDb</span><span class="op">(</span><span class="va">sql</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>query string</p></dd>
 
@@ -243,12 +280,12 @@ execute Sql</p></dd>
 </div><p></p><hr><a id="method-QueryNamespace-executeSql"></a><div class="section">
 <h3 id="method-executesql-">Method <code><a href="https://ohdsi.github.io/DatabaseConnector/reference/executeSql.html" class="external-link">executeSql()</a></code><a class="anchor" aria-label="anchor" href="#method-executesql-"></a></h3>
 <p>Call to execute sql within namespaced queries</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">executeSql</span><span class="op">(</span><span class="va">sql</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>sql</code></dt>
 <dd><p>query string</p></dd>
 
@@ -265,7 +302,7 @@ get vars</p></dd>
 <h3 id="method-getvars-">Method <code>getVars()</code><a class="anchor" aria-label="anchor" href="#method-getvars-"></a></h3>
 <p>returns full list of variables that will be replaced
 closeConnection</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">getVars</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -273,7 +310,7 @@ closeConnection</p><div class="section">
 </div><p></p><hr><a id="method-QueryNamespace-closeConnection"></a><div class="section">
 <h3 id="method-closeconnection-">Method <code>closeConnection()</code><a class="anchor" aria-label="anchor" href="#method-closeconnection-"></a></h3>
 <p>close connection, if active</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">closeConnection</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -281,12 +318,12 @@ closeConnection</p><div class="section">
 </div><p></p><hr><a id="method-QueryNamespace-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">QueryNamespace</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
+<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
@@ -322,7 +359,7 @@ closeConnection</p><div class="section">
 <span class="r-in"><span>    sql <span class="op">=</span> <span class="st">"SELECT 1"</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Inserting data took 0.00987 secs</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Inserting data took 0.0102 secs</span>
 <span class="r-in"><span><span class="fu">DatabaseConnector</span><span class="fu">::</span><span class="fu"><a href="https://ohdsi.github.io/DatabaseConnector/reference/disconnect.html" class="external-link">disconnect</a></span><span class="op">(</span><span class="va">conn</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">connectionHandler</span> <span class="op">&lt;-</span> <span class="va"><a href="ConnectionHandler.html">ConnectionHandler</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>connectionDetails <span class="op">=</span> <span class="va">connectionDetails</span><span class="op">)</span></span></span>

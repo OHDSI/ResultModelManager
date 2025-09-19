@@ -71,6 +71,7 @@ unlink("test_db.sqlite")
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-QueryNamespace-new}{\code{QueryNamespace$new()}}
+\item \href{#method-QueryNamespace-addQueryFile}{\code{QueryNamespace$addQueryFile()}}
 \item \href{#method-QueryNamespace-setConnectionHandler}{\code{QueryNamespace$setConnectionHandler()}}
 \item \href{#method-QueryNamespace-getConnectionHandler}{\code{QueryNamespace$getConnectionHandler()}}
 \item \href{#method-QueryNamespace-addReplacementVariable}{\code{QueryNamespace$addReplacementVariable()}}
@@ -93,6 +94,9 @@ initialize class
   connectionHandler = NULL,
   tableSpecification = NULL,
   tablePrefix = "",
+  queryFiles = NULL,
+  executeFiles = NULL,
+  snakeCaseToCamelCaseFileNames = FALSE,
   ...
 )}\if{html}{\out{</div>}}
 }
@@ -106,8 +110,47 @@ initialize class
 
 \item{\code{tablePrefix}}{constant string to prefix all tables with}
 
+\item{\code{queryFiles}}{vector of file paths to sql files that can be automatically loaded and translated as additional methods for this module}
+
+\item{\code{executeFiles}}{vector of file paths to sql files that can be automatically loaded and translated as additional methods for this module. Queries will executed and not return a result}
+
+\item{\code{snakeCaseToCamelCaseFileNames}}{\itemize{
+\item if true the method name will turn snake case file names in queryFiles in to camel case (e.g. my_query.sql becomes qns$myQuery)
+}}
+
 \item{\code{...}}{additional replacement variables e.g. database_schema, vocabulary_schema etc
-Set Connection Handler}
+Add query file}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-QueryNamespace-addQueryFile"></a>}}
+\if{latex}{\out{\hypertarget{method-QueryNamespace-addQueryFile}{}}}
+\subsection{Method \code{addQueryFile()}}{
+Add an sql file query as a method to this namespace.
+This allows you to run the query with any settings that are encapsulated within this object.
+Package maintainers should take note that these functions will not be exposed and will include no validation
+checks on user input. Use with care.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{QueryNamespace$addQueryFile(
+  filepath,
+  snakeCaseToCamelCaseFileNames = FALSE,
+  execFunction = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{filepath}}{path to sql file - this will determine the name of the function}
+
+\item{\code{snakeCaseToCamelCaseFileNames}}{\itemize{
+\item if true the method name will turn snake case names in to camel case (e.g. my_query.sql becomes qns$myQuery)
+Set Connection Handler
+}}
+
+\item{\code{execFunction}}{default false - instead of returning a result, execute a query or set of queries}
 }
 \if{html}{\out{</div>}}
 }
