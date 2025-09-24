@@ -12,6 +12,7 @@ Database data model management utilities for R packages in the Observational Hea
 Useful links:
 \itemize{
   \item \url{https://github.com/OHDSI/ResultModelManager}
+  \item \url{https://ohdsi.github.io/ResultModelManager/}
   \item Report bugs at \url{https://github.com/OHDSI/ResultModelManager/issues}
 }
 

@@ -1,3 +1,10 @@
+# ResultModelManager 0.6.1
+
+Bug Fixes:
+
+1. Removed use of `dbGetQuery` call in pooled connection handler, requiring support for DatabaseConnector 7
+
+
 # ResultModelManager 0.6.0
 
 Changes:

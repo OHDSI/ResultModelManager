@@ -253,8 +253,9 @@ DataMigrationManager <- R6::R6Class(
     #' @description
     #' Deprecated call, will be removed in a future version
     finalize = function() {
-      if (interactive())
+      if (interactive()) {
         rlang::inform("Due to changes in the R6 package, this method is deprecated and will be removed in a future version. Please use closeConnection instead")
+      }
 
       self$closeConnection()
     }
