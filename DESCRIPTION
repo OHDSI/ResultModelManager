@@ -16,7 +16,7 @@ RoxygenNote: 7.3.2
 Depends:
   R (>= 4.1.0),
   R6,
-  DatabaseConnector (>= 6.0.0)
+  DatabaseConnector (>= 7.0.0)
 Imports:
   SqlRender,
   ParallelLogger,
