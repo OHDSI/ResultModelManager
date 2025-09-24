@@ -275,7 +275,7 @@ PooledConnectionHandler <- R6::R6Class(
     #' @param connection                                   db connection assumes pooling is handled outside of call
     #' @param snakeCaseToCamelCase                  (Optional) Boolean. return the results columns in camel case (default)
     queryFunction = function(sql, snakeCaseToCamelCase = self$snakeCaseToCamelCase, connection) {
-      data <- DatabaseConnector::dbGetQuery(connection, sql, translate = FALSE)
+      data <- DatabaseConnector::querySql(connection, sql)
       if (snakeCaseToCamelCase) {
         colnames(data) <- SqlRender::snakeCaseToCamelCase(colnames(data))
       } else {

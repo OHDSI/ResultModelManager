@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ResultModelManager</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.6.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -28,7 +28,7 @@
     <li><a class="dropdown-item" href="../articles/UsingQueryNamespaces.html">Using Query Namespaces</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
-      </ul><ul class="navbar-nav"><li class="nav-item"><a class="nav-link" href="https://ohdsi.github.io/ResultModelManager"><img src='https://ohdsi.github.io/Hades/images/hadesMini.png' width=80 height=17 style='vertical-align: top;'></a></li>
+      </ul><ul class="navbar-nav"><li class="nav-item"><a class="nav-link" href="https://ohdsi.github.io/ResultModelManager">hadesLogo</a></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/OHDSI/ResultModelManager/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul></div>
 
@@ -43,7 +43,12 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.6.0" id="resultmodelmanager-060">ResultModelManager 0.6.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-060"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.6.1" id="resultmodelmanager-061">ResultModelManager 0.6.1<a class="anchor" aria-label="anchor" href="#resultmodelmanager-061"></a></h2>
+<p>Bug Fixes:</p>
+<ol style="list-style-type: decimal"><li>Removed use of <code>dbGetQuery</code> call in pooled connection handler, requiring support for DatabaseConnector 7</li>
+</ol></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.6.0" id="resultmodelmanager-060">ResultModelManager 0.6.0<a class="anchor" aria-label="anchor" href="#resultmodelmanager-060"></a></h2><p class="text-muted">CRAN release: 2025-09-18</p>
 <p>Changes:</p>
 <ol style="list-style-type: decimal"><li><p>Added experimental wrapper functions for python based upload of csv files</p></li>
 <li><p>Breaking change - public use of finalize from R6 classes causes deprecation warning in use of R6 package. Package maintainers should replace this with class to <code>closeConnection</code> which is in use or has been added to all classes. Note - due to CRAN this package cannot release without making this change.</p></li>

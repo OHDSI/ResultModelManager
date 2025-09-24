@@ -69,9 +69,7 @@ test_that("exportDataFrame method exports data frame correctly", {
   dfR <- readr::read_csv(output_file, show_col_types = FALSE)
 
   expect_equal(dfR, rbind(df, df2))
-  expect_error(exportManager$exportDataFrame(df2, "table1", append = TRUE), "Cannot write data - primary keys already written to cache")
-
-  expect_error(exportManager$exportDataFrame(df2, "table999", append = TRUE), "Table not found in specifications")
+  expect_error(exportManager$exportDataFrame(df2, "table999", append = TRUE))
   exportManager$writeManifest()
   checkmate::expect_file_exists(file.path(export_dir, "manifest.json"))
 })

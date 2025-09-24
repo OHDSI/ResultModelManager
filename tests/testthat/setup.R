@@ -27,16 +27,19 @@ options(connectionObserver = NULL)
 if (dir.exists(Sys.getenv("DATABASECONNECTOR_JAR_FOLDER"))) {
   jdbcDriverFolder <- Sys.getenv("DATABASECONNECTOR_JAR_FOLDER")
 } else {
-  jdbcDriverFolder <- tempfile()
-  Sys.setenv(DATABASECONNECTOR_JAR_FOLDER = jdbcDriverFolder)
-  dir.create(jdbcDriverFolder, showWarnings = FALSE)
-  DatabaseConnector::downloadJdbcDrivers("postgresql", pathToDriver = jdbcDriverFolder)
-  withr::defer(
-    {
-      unlink(jdbcDriverFolder, recursive = TRUE, force = TRUE)
-    },
-    testthat::teardown_env()
-  )
+
+  if (Sys.getenv("CDM5_POSTGRESQL_SERVER") != "") {
+    jdbcDriverFolder <- tempfile()
+    Sys.setenv(DATABASECONNECTOR_JAR_FOLDER = jdbcDriverFolder)
+    dir.create(jdbcDriverFolder, showWarnings = FALSE)
+    DatabaseConnector::downloadJdbcDrivers("postgresql", pathToDriver = jdbcDriverFolder)
+    withr::defer(
+      {
+        unlink(jdbcDriverFolder, recursive = TRUE, force = TRUE)
+      },
+      testthat::teardown_env()
+    )
+  }
 }
 
 
