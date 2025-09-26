@@ -7,6 +7,13 @@ forces errors if an input is not of an array of type int. `{TYPEC INT @cohort_id
 length 1. NA/NULL is automatically prevented whenever there is a type check.
 Default SQL render behaviour is not altered.
 
+# ResultModelManager 0.6.1
+
+Bug Fixes:
+
+1. Removed use of `dbGetQuery` call in pooled connection handler, requiring support for DatabaseConnector 7
+
+
 # ResultModelManager 0.6.0
 
 Changes:

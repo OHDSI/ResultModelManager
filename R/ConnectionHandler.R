@@ -151,8 +151,9 @@ ConnectionHandler <- R6::R6Class(
     #' @description
     #' Closes connection (if active)
     finalize = function() {
-      if (interactive())
+      if (interactive()) {
         rlang::inform("Due to changes in the R6 package, this method is deprecated and will be removed in a future version. Please use closeConnection instead")
+      }
       if (self$isActive & self$dbIsValid()) {
         self$closeConnection()
       }

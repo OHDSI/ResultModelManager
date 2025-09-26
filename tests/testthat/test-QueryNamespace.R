@@ -32,9 +32,12 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
     result_schema = "main",
     tablePrefix = "cd_"
   )
-  on.exit({
-    cohortNamespace$closeConnection()
-  }, add = TRUE)
+  on.exit(
+    {
+      cohortNamespace$closeConnection()
+    },
+    add = TRUE
+  )
 
   checkmate::expect_r6(cohortNamespace$getConnectionHandler(), "ConnectionHandler")
 
@@ -44,9 +47,12 @@ test_that("test setConnectionHandler and getConnectionHandler functions", {
     tablePrefix = "cd_"
   )
 
-  on.exit({
-    cohortNamespace2$closeConnection()
-  }, add = TRUE)
+  on.exit(
+    {
+      cohortNamespace2$closeConnection()
+    },
+    add = TRUE
+  )
 
   cohortNamespace2$setConnectionHandler(connectionHandler)
   expect_equal(cohortNamespace2$getConnectionHandler(), connectionHandler)
