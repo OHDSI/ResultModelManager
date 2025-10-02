@@ -1,3 +1,10 @@
+# ResultModelManager 0.6.2
+
+Bug Fixes:
+
+1. Resolved issue with migration status check failing on packages using a table prefix (e.g. cohort generator)
+
+
 # ResultModelManager 0.6.1
 
 Bug Fixes:
