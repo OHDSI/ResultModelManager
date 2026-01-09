@@ -317,7 +317,7 @@ createQueryNamespace <- function(connectionDetails = NULL,
                                  resultModelSpecificationPath = NULL,
                                  tablePrefix = "",
                                  snakeCaseToCamelCase = TRUE,
-                                 queryOptions = list(),
+                                 queryOptions = NULL,
                                  ...) {
   checkmate::assertClass(connectionDetails, "ConnectionDetails", null.ok = TRUE)
   checkmate::assertClass(connectionHandler, "ConnectionHandler", null.ok = TRUE)
@@ -354,7 +354,11 @@ createQueryNamespace <- function(connectionDetails = NULL,
     }
   }
   connectionHandler$snakeCaseToCamelCase <- snakeCaseToCamelCase
-  connectionHandler$queryOptions <- queryOptions
+
+  if (!is.null(queryOptions)) {
+      connectionHandler$queryOptions <- queryOptions
+  }
+
   qns <- QueryNamespace$new(connectionHandler,
     tableSpecification = tableSpecification,
     tablePrefix = tablePrefix,
