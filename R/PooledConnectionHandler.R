@@ -95,11 +95,13 @@ PooledConnectionHandler <- R6::R6Class(
     #' @param snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
     #' @param dbConnectArgs                 Optional arguments to call pool::dbPool overrides default usage of connectionDetails
     #' @param forceJdbcConnection           Force JDBC connection (requires using DatabaseConnector ConnectionDetails)
+    #' @param queryOptions                  (Optional) named list of options that are wrapped when queries are translated. For example `list(sqlRenderTempSchema = 'my_scratch_space')`. Will override default global behaviour without altering global option state
     initialize = function(connectionDetails = NULL,
                           snakeCaseToCamelCase = TRUE,
                           loadConnection = TRUE,
                           dbConnectArgs = NULL,
-                          forceJdbcConnection = TRUE) {
+                          forceJdbcConnection = TRUE,
+                          queryOptions = list()) {
       checkmate::assertList(dbConnectArgs, null.ok = TRUE)
       checkmate::assertClass(connectionDetails, "ConnectionDetails", null.ok = TRUE)
 
@@ -125,6 +127,8 @@ PooledConnectionHandler <- R6::R6Class(
       if (loadConnection) {
         self$initConnection()
       }
+
+      self$queryOptions <- queryOptions
     },
 
     #' initialize pooled db connection

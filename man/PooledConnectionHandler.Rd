@@ -51,7 +51,8 @@ Note that a side effect of using this is that each call to this increments the .
   snakeCaseToCamelCase = TRUE,
   loadConnection = TRUE,
   dbConnectArgs = NULL,
-  forceJdbcConnection = TRUE
+  forceJdbcConnection = TRUE,
+  queryOptions = list()
 )}\if{html}{\out{</div>}}
 }
 
@@ -66,7 +67,9 @@ Note that a side effect of using this is that each call to this increments the .
 
 \item{\code{dbConnectArgs}}{Optional arguments to call pool::dbPool overrides default usage of connectionDetails}
 
-\item{\code{forceJdbcConnection}}{Force JDBC connection (requires using DatabaseConnector ConnectionDetails)
+\item{\code{forceJdbcConnection}}{Force JDBC connection (requires using DatabaseConnector ConnectionDetails)}
+
+\item{\code{queryOptions}}{(Optional) named list of options that are wrapped when queries are translated. For example \code{list(sqlRenderTempSchema = 'my_scratch_space')}. Will override default global behaviour without altering global option state
 initialize pooled db connection}
 }
 \if{html}{\out{</div>}}
