@@ -35,12 +35,23 @@
 #' @export
 #' @field connectionDetails             DatabaseConnector connectionDetails object
 #' @field con                           DatabaseConnector connection object
-#' @field isActive                      Is connection active or not#'
+#' @field isActive                      Is connection active or not'
 #' @field snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
+#' @field queryOptions                  (Optional) Active field. Named list of options that are wrapped when queries are translated. For example `list(sqlRenderTempSchema = 'my_scratch_space')`. Will override default global behaviour without altering global option state
 ConnectionHandler <- R6::R6Class(
   classname = "ConnectionHandler",
   private = list(
-    .dbms = ""
+    .dbms = "",
+    .queryOptions = list()
+  ),
+  active = list(
+      queryOptions = function (val) {
+        if (missing(val))
+          return(private$.queryOptions)
+        # must be a named list - strictly
+        checkmate::assertList(val, names = "strict")
+        private$.queryOptions <- val
+      }
   ),
   public = list(
     connectionDetails = NULL,
@@ -51,7 +62,8 @@ ConnectionHandler <- R6::R6Class(
     #' @param connectionDetails             DatabaseConnector::connectionDetails class
     #' @param loadConnection                Boolean option to load connection right away
     #' @param snakeCaseToCamelCase          (Optional) Boolean. return the results columns in camel case (default)
-    initialize = function(connectionDetails, loadConnection = TRUE, snakeCaseToCamelCase = TRUE) {
+    #' @param queryOptions                  (Optional) named list of options that are wrapped when queries are translated. For example `list(sqlRenderTempSchema = 'my_scratch_space')`. Will override default global behaviour without altering global option state
+    initialize = function(connectionDetails, loadConnection = TRUE, snakeCaseToCamelCase = TRUE, queryOptions = list()) {
       checkmate::assertClass(connectionDetails, "ConnectionDetails")
       self$connectionDetails <- connectionDetails
       self$snakeCaseToCamelCase <- snakeCaseToCamelCase
@@ -59,6 +71,7 @@ ConnectionHandler <- R6::R6Class(
         self$initConnection()
       }
       private$.dbms <- connectionDetails$dbms
+      self$queryOptions <- queryOptions
     },
 
     #' get dbms
@@ -91,11 +104,13 @@ ConnectionHandler <- R6::R6Class(
         mustTranslate <- FALSE
       }
 
-      sql <- SqlRender::render(sql = sql, ...)
-      # Only translate if translate is needed.
-      if (mustTranslate) {
-        sql <- SqlRender::translate(sql, targetDialect = self$dbms())
-      }
+      withr::with_options(private$.queryOptions, {
+        sql <- SqlRender::render(sql = sql, ...)
+        # Only translate if translate is needed.
+        if (mustTranslate) {
+          sql <- SqlRender::translate(sql, targetDialect = self$dbms())
+        }
+      })
       return(sql)
     },
 
@@ -152,7 +167,7 @@ ConnectionHandler <- R6::R6Class(
     #' Closes connection (if active)
     finalize = function() {
       if (interactive()) {
-        rlang::inform("Due to changes in the R6 package, this method is deprecated and will be removed in a future version. Please use closeConnection instead")
+        rlang::inform("Due to changes in the R6 package, the ConnectionHandler$finalize method is deprecated and will be removed in a future version. Please use $closeConnection instead")
       }
       if (self$isActive & self$dbIsValid()) {
         self$closeConnection()
