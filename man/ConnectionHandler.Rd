@@ -24,9 +24,16 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 
 \item{\code{con}}{DatabaseConnector connection object}
 
-\item{\code{isActive}}{Is connection active or not#'}
+\item{\code{isActive}}{Is connection active or not'}
 
 \item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+}
+\if{html}{\out{</div>}}
+}
+\section{Active bindings}{
+\if{html}{\out{<div class="r6-active-bindings">}}
+\describe{
+\item{\code{queryOptions}}{(Optional) Active field. Named list of options that are wrapped when queries are translated. For example \code{list(sqlRenderTempSchema = 'my_scratch_space')}. Will override default global behaviour without altering global option state}
 }
 \if{html}{\out{</div>}}
 }
@@ -57,7 +64,8 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 \if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$new(
   connectionDetails,
   loadConnection = TRUE,
-  snakeCaseToCamelCase = TRUE
+  snakeCaseToCamelCase = TRUE,
+  queryOptions = list()
 )}\if{html}{\out{</div>}}
 }
 
@@ -68,7 +76,9 @@ Allows a connection to cleanly be opened and closed and stored within class/obje
 
 \item{\code{loadConnection}}{Boolean option to load connection right away}
 
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
+\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+
+\item{\code{queryOptions}}{(Optional) named list of options that are wrapped when queries are translated. For example \code{list(sqlRenderTempSchema = 'my_scratch_space')}. Will override default global behaviour without altering global option state
 get dbms}
 }
 \if{html}{\out{</div>}}

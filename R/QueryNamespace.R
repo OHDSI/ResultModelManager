@@ -308,6 +308,7 @@ QueryNamespace <- R6::R6Class(
 #' @param connectionHandler            ResultModelManager ConnectionHandler or PooledConnectionHandler instance
 #' @param tableSpecification           Table specfication data.frame
 #' @param snakeCaseToCamelCase         convert snakecase results to camelCase field names (TRUE by default)
+#' @param queryOptions                 (Optional) Active field. Named list of options that are wrapped when queries are translated. For example `list(sqlRenderTempSchema = 'my_scratch_space')`. Will override default global behaviour without altering global option state
 #' @param ...                          Elipsis - use for any additional string keys to replace
 createQueryNamespace <- function(connectionDetails = NULL,
                                  connectionHandler = NULL,
@@ -316,6 +317,7 @@ createQueryNamespace <- function(connectionDetails = NULL,
                                  resultModelSpecificationPath = NULL,
                                  tablePrefix = "",
                                  snakeCaseToCamelCase = TRUE,
+                                 queryOptions = NULL,
                                  ...) {
   checkmate::assertClass(connectionDetails, "ConnectionDetails", null.ok = TRUE)
   checkmate::assertClass(connectionHandler, "ConnectionHandler", null.ok = TRUE)
@@ -352,6 +354,10 @@ createQueryNamespace <- function(connectionDetails = NULL,
     }
   }
   connectionHandler$snakeCaseToCamelCase <- snakeCaseToCamelCase
+
+  if (!is.null(queryOptions)) {
+      connectionHandler$queryOptions <- queryOptions
+  }
 
   qns <- QueryNamespace$new(connectionHandler,
     tableSpecification = tableSpecification,
