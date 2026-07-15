@@ -40,21 +40,49 @@ The aspects this package will cover are as follows:
 First we will create an R package called `SimpleFeatureExtractor` a toy example that pulls a set of aggregate features
 for specified cohorts from an OMOP CDM and exports the result set to a relational database for further analysis.
 
-In this example we will export a single csv file that contains the following:
+In this example we will export a single table that contains the following:
 
-| table_name           | column_name           | data_type | is_required | primary_key | optional | empty_is_na |
-|----------------------|-----------------------|-----------|-------------|-------------|----------|-------------|
-| covariate_definition | covariate_id          | int       | Yes         | Yes         | No       | No          |
-| covariate_definition | covariate_name        | varchar   | Yes         | No          | No       | No          |
-| covariate_result     | cohort_definition_id  | int       | Yes         | Yes         | No       | No          |
-| covariate_result     | covariate_id          | bigint    | Yes         | Yes         | No       | No          |
-| covariate_result     | covariate_mean        | numeric   | Yes         | No          | No       | No          |
+| namespace | table_name           | column_name           | data_type | primary_key | optional |
+|-----------|----------------------|-----------------------|-----------|-------------|----------|
+| sfe       | covariate_definition | covariate_id          | int       | Yes         | No       |
+| sfe       | covariate_definition | covariate_name        | varchar   | No          | No       |
+| sfe       | covariate_result     | cohort_definition_id  | int       | Yes         | No       |
+| sfe       | covariate_result     | covariate_id          | bigint    | Yes         | No       |
+| sfe       | covariate_result     | covariate_mean        | numeric   | No          | No       |
 
 
-Results exported from this package are covariate prevalances related to a cohorts and given a covariate_id, these are
+Results exported from this package are covariate prevalences related to a cohorts and given a covariate_id, these are
 related to names in a second table.
-This table should be saved to the `inst` folder of your R pacakge.
-Preferably, this file should be called `resultsDataModelSpecification.csv`
+
+The recommended format is a namespaced YAML file saved to the `inst` folder of your R package.
+This file should be called `resultsDataModelSpecification.yaml`:
+
+```yaml
+version: "1.0"
+
+namespace:
+  sfe:
+    tables:
+      covariate_definition:
+        columns:
+          - name: covariate_id
+            type: int
+            primary_key: true
+          - name: covariate_name
+            type: varchar
+      covariate_result:
+        columns:
+          - name: cohort_definition_id
+            type: int
+            primary_key: true
+          - name: covariate_id
+            type: bigint
+            primary_key: true
+          - name: covariate_mean
+            type: numeric
+```
+
+CSV format is still supported but deprecated; use `csvToYaml()` to migrate existing CSV files.
 
 The package should create results csv files that correspond to these fields in terms of type and name.
 
@@ -63,7 +91,7 @@ The package should create results csv files that correspond to these fields in t
 ## Creating a results database schema
 First we should load our specification
 ```{r,eval=FALSE}
-specification <- ResultModelManager::loadResultsDataModelSpecifications("resultsDataModelSpecification")
+specification <- ResultModelManager::loadResultsDataModelSpecifications("resultsDataModelSpecification.yaml")
 ```
 
 We can then create our schema from this sql:

@@ -958,7 +958,7 @@ loadResultsDataModelSpecifications <- function(filePath) {
   warning(
     "CSV-based results data model specifications are deprecated. ",
     "Use the namespaced YAML format instead. ",
-    "See the 'YAML Specification Format' vignette and the csvToYaml() function to migrate.",
+    "See vignette('UploadFunctionality') and the csvToYaml() function to migrate.",
     call. = FALSE
   )
   spec <- readr::read_csv(file = filePath, col_types = readr::cols())

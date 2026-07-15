@@ -122,7 +122,7 @@ generateSqlSchema <- function(csvFilepath = NULL,
       warning(
         "CSV-based schema definitions are deprecated. ",
         "Use the namespaced YAML format instead. ",
-        "See the 'YAML Specification Format' vignette and the csvToYaml() function to migrate.",
+        "See vignette('UploadFunctionality') and the csvToYaml() function to migrate.",
         call. = FALSE
       )
       schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)

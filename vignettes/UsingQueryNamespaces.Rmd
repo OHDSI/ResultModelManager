@@ -38,7 +38,8 @@ tableSpecification <- data.frame(
   dataType = c("bigint", "varchar", "varchar", "varchar")
 )
 ```
-Note, that generally we would save these tables to a csv file that can be loaded.
+Note, that generally we would save these tables to a yaml file that can be loaded
+(see the "Upload Functionality" vignette for the YAML schema format).
 
 We then load a `QueryNamespace` instance with this table:
 

@@ -20,59 +20,118 @@ In the examples here, we assume the use of sqlite for simplicity.
 However, in principle any platform supported by the `DatabaseConnector` and `SqlRender` packages should work.
 
 # Creating a schema definition file
-It is recommended that every analytics package that creates data output should contain a csv file.
-This is a requirement for packages that use the OHDSI `Strategus` library.
+Every analytics package that creates data output should contain a YAML or CSV specification that defines
+its results data model. This package uses a **namespaced YAML format** by default; CSV support is deprecated.
 
-Schema definitions should conform to the following column headers:
+Schema definitions must include the following information per column:
 
+- **table name** (within a namespace)
+- **column name**
+- **data type** (e.g., `varchar`, `bigint`, `int`, `float`, `date`, `varchar(255)`)
+- **primary key** indicator
+
+In addition, optional fields such as `optional`, `min_cell_count`, `empty_is_na`, and `description`
+may be included.
+
+## YAML format (recommended)
+
+A namespaced YAML specification looks like this:
+
+```yaml
+version: "1.0"
+
+namespace:
+  my_analysis:
+    tables:
+      table_1:
+        columns:
+          - name: database_id
+            type: varchar
+            primary_key: true
+          - name: analysis_id
+            type: bigint
+            primary_key: true
+          - name: analysis_name
+            type: varchar
+          - name: domain_id
+            type: varchar(20)
+            optional: true
+          - name: start_day
+            type: float
+            optional: true
+          - name: end_day
+            type: float
+            optional: true
+          - name: is_binary
+            type: varchar(1)
+          - name: missing_means_zero
+            type: varchar(1)
+            optional: true
+      table_2:
+        columns:
+          - name: database_id
+            type: varchar
+            primary_key: true
+          - name: analysis2_id
+            type: bigint
+            primary_key: true
+          - name: concept_id
+            type: int
+          - name: logic_description
+            type: varchar
+            optional: true
+          - name: valid_start_date
+            type: Date
+          - name: concept_name
+            type: varchar(255)
+          - name: p_10_value
+            type: float
 ```
-table_name, column_name, data_type, is_required, primary_key
-```
 
-In addition, other packages may make use of additional fields such as `optional` or `empty_is_na`.
-These are not required for uploading to a schem.
+The namespace name (e.g. `my_analysis`) becomes the table prefix in the database.
+A table named `table_1` in namespace `my_analysis` will be created as `my_analysis_table_1`.
 
-An example csv file may look like this:
+Platform-specific features such as table partitioning and indexes can be configured
+per DBMS platform. See `?loadResultsDataModelFromYaml` for details.
 
-```
+## CSV format (deprecated)
+
+```{r eval=FALSE}
 # File inst/settings/resulsDataModelSpecifications.csv
 table_name,column_name,data_type,is_required,primary_key
 table_1,database_id,varchar,Yes,Yes
 table_1,analysis_id,bigint,Yes,Yes
-table_1,analysis_name,varchar,Yes,No
-table_1,domain_id,varchar(20),No,No
-table_1,start_day,float,No,No
-table_1,end_day,float,No,No
-table_1,is_binary,varchar(1),Yes,No
-table_1,missing_means_zero,varchar(1),No,No
-table_2,database_id,varchar,Yes,Yes
-table_2,analysis2_id,bigint,Yes,Yes
-table_2,concept_id,int,Yes,No
-table_2,logic_description,varchar,No,No
-table_2,valid_start_date,Date,Yes,No
-table_2,concept_name,varchar(255),Yes,No
-table_2,p_10_value,float,Yes,No
-table_3,database_id,varchar,Yes,Yes
-table_3,analysis3_id,bigint,Yes,Yes
-table_3,concept_id,int,Yes,No
-table_3,logic_description,varchar,No,No
-table_3,valid_start_date,Date,Yes,No
-table_3,concept_name,varchar(255),Yes,No
-table_3,p_10_value,float,Yes,No
+...
 ```
 
-Note the use of sql server data types in the `data_type` field as well as `yes` and `no` in the binary field `is_required`
-and `primary_key`.
+CSV-based specifications are deprecated. Use `csvToYaml()` to migrate existing CSV files
+to the YAML format.
 
-We should also define a function for loading this file that converts the column headers to camel case format.
+## Loading specifications
+
+To load a specification file:
 
 ```{r eval = FALSE}
-#' Get Results Data Model Specifcations
+# YAML (recommended)
+spec <- ResultModelManager::loadResultsDataModelSpecifications("path/to/spec.yaml")
+
+# The YAML specification is loaded via
+result <- ResultModelManager::loadResultsDataModelFromYaml("path/to/spec.yaml")
+spec <- result$specification  # data.frame
+platforms <- result$platforms  # platform-specific config
+
+# CSV (deprecated)
+spec <- ResultModelManager::loadResultsDataModelSpecifications("path/to/spec.csv")
+```
+
+For loading inside an R package via `system.file`:
+
+```{r eval = FALSE}
+#' Get Results Data Model Specifications
 getResultsDataModelSpec <- function() {
-  # For loading inside an R package
-  specPath <- system.file("settings", "resulsDataModelSpecifications.csv", package = utils::packageName())
-  spec <- readr::read_csv(specPath, show_col_types = FALSE)
-  colnames(spec) <- SqlRender::snakeCaseToCamelCase(colnames(spec))
+  specPath <- system.file("settings", "resultsDataModelSpecification.yaml",
+                          package = utils::packageName())
+  spec <- ResultModelManager::loadResultsDataModelSpecifications(specPath)
   return(spec)
 }
 ```
@@ -93,7 +152,7 @@ parameter `table_prefix`.
 # Uploading results
 This section shows how to upload results conforming to the above specified schema.
 It is assumed that a zip file has been created with csv files corresponding to the table names provided in the
-`resulsDataModelSpecifications.csv` file.
+`resultsDataModelSpecification` file.
 
 ```{r eval=FALSE}
 ResultModelManager::unzipResults(zipFile = "MyResultsZip.zip", resultsFolder = "extraction_folder")
