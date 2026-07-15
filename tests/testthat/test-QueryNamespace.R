@@ -78,9 +78,7 @@ test_that("create helper function works", {
   qns <- createQueryNamespace(
     connectionDetails = connectionDetails,
     usePooledConnection = FALSE,
-    tableSpecification = suppressWarnings(
-      loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.csv")
-    ),
+    tableSpecification = loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.yaml"),
     resultModelSpecificationPath = NULL,
     tablePrefix = "",
     snakeCaseToCamelCase = TRUE,
@@ -90,27 +88,27 @@ test_that("create helper function works", {
   vars <- qns$getVars()
   expect_true("databaseSchema" %in% names(vars))
 
-  qns <- suppressWarnings(createQueryNamespace(
+  qns <- createQueryNamespace(
     connectionDetails = connectionDetails,
     usePooledConnection = TRUE,
     tableSpecification = NULL,
     resultModelSpecificationPath = c(
-      "settings/resultsDataModelSpecification.csv",
-      "settings/testSchemaDef.csv"
+      "settings/resultsDataModelSpecification.yaml",
+      "settings/testSchemaDef.yaml"
     ),
     tablePrefix = "",
     snakeCaseToCamelCase = TRUE,
     databaseSchema = "main"
-  ))
+  )
 
   vars <- qns$getVars()
-  expect_true("cohort_counts" %in% names(vars))
-  expect_true("cohort_definition" %in% names(vars))
-  expect_true("cdm_source_info" %in% names(vars))
-  expect_true("cosine_similarity" %in% names(vars))
-  expect_true("covariate_definition" %in% names(vars))
-  expect_true("covariate_mean" %in% names(vars))
-  expect_true("test_table_1" %in% names(vars))
+  expect_true("cg_cohort_counts" %in% names(vars))
+  expect_true("cg_cohort_definition" %in% names(vars))
+  expect_true("cg_cdm_source_info" %in% names(vars))
+  expect_true("cg_cosine_similarity" %in% names(vars))
+  expect_true("cg_covariate_definition" %in% names(vars))
+  expect_true("cg_covariate_mean" %in% names(vars))
+  expect_true("test_test_table_1" %in% names(vars))
 
   expect_error(
     createQueryNamespace(
@@ -125,15 +123,15 @@ test_that("create helper function works", {
   )
 
   expect_error(
-    suppressWarnings(createQueryNamespace(
+    createQueryNamespace(
       connectionDetails = NULL,
       usePooledConnection = FALSE,
       tableSpecification = NULL,
-      resultModelSpecificationPath = c("settings/resultsDataModelSpecification.csv"),
+      resultModelSpecificationPath = c("settings/resultsDataModelSpecification.yaml"),
       tablePrefix = "",
       snakeCaseToCamelCase = TRUE,
       databaseSchema = "main"
-    ))
+    )
   )
 })
 

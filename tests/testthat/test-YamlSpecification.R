@@ -53,18 +53,17 @@ test_that("yaml spec validation fails on invalid files", {
   expect_error(loadResultsDataModelSpecifications(tmpYaml))
 })
 
-test_that("csv and yaml specs produce equivalent data for data model tables", {
-  csvSpec <- suppressWarnings(
-    loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.csv")
-  )
-  yamlSpec <- loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.yaml")
+test_that("loadResultsDataModelSpecifications and loadResultsDataModelFromYaml produce same data", {
+  directSpec <- loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.yaml")
+  fromYaml <- loadResultsDataModelFromYaml("settings/resultsDataModelSpecification.yaml")
+  yamlSpec <- fromYaml$specification
 
-  csvTables <- unique(csvSpec$tableName)
-  yamlTables <- unique(yamlSpec$tableName)
-  expect_setequal(csvTables, yamlTables)
+  directTables <- sort(unique(directSpec$tableName))
+  yamlTables <- sort(unique(yamlSpec$tableName))
+  expect_setequal(directTables, yamlTables)
 
-  for (tbl in csvTables) {
-    csvCols <- csvSpec |>
+  for (tbl in directTables) {
+    directCols <- directSpec |>
       dplyr::filter(.data$tableName == tbl) |>
       dplyr::pull("columnName") |>
       sort()
@@ -72,6 +71,6 @@ test_that("csv and yaml specs produce equivalent data for data model tables", {
       dplyr::filter(.data$tableName == tbl) |>
       dplyr::pull("columnName") |>
       sort()
-    expect_setequal(csvCols, yamlCols)
+    expect_setequal(directCols, yamlCols)
   }
 })

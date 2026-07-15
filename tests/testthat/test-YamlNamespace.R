@@ -97,23 +97,23 @@ test_that("createQueryNamespace works with yaml spec files", {
   expect_equal(vars[["cg_cohort_definition"]], "test_cg_cohort_definition")
 })
 
-test_that("createQueryNamespace merges csv and yaml specs", {
+test_that("createQueryNamespace merges two yaml specs", {
   skip_on_cran()
 
-  qns <- suppressWarnings(createQueryNamespace(
+  qns <- createQueryNamespace(
     connectionDetails = connectionDetails,
     usePooledConnection = FALSE,
     resultModelSpecificationPath = c(
-      "settings/resultsDataModelSpecification.csv",
+      "settings/resultsDataModelSpecification.yaml",
       "settings/testSchemaDef.yaml"
     ),
     tablePrefix = "",
     snakeCaseToCamelCase = TRUE,
     databaseSchema = "main"
-  ))
+  )
 
   vars <- qns$getVars()
-  expect_true("test_table_1" %in% names(vars))
+  expect_true("test_test_table_1" %in% names(vars))
   expect_true("cg_cohort_definition" %in% names(vars))
   expect_true("cg_cohort_counts" %in% names(vars))
 })
