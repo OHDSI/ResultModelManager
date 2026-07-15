@@ -1,0 +1,68 @@
+version: "1.0"
+
+namespace:
+  test:
+    description: "Test namespace for basic upload/validation"
+    tables:
+      test_table_1:
+        columns:
+          - name: database_id
+            type: varchar
+            primary_key: true
+          - name: analysis_id
+            type: bigint
+            primary_key: true
+          - name: analysis_name
+            type: varchar
+          - name: domain_id
+            type: varchar(20)
+            optional: true
+          - name: start_day
+            type: float
+            optional: true
+          - name: end_day
+            type: float
+            optional: true
+          - name: is_binary
+            type: varchar(1)
+          - name: missing_means_zero
+            type: varchar(1)
+            optional: true
+      test_table_2:
+        columns:
+          - name: database_id
+            type: varchar
+            primary_key: true
+          - name: analysis2_id
+            type: bigint
+            primary_key: true
+          - name: concept_id
+            type: int
+          - name: logic_description
+            type: varchar
+            optional: true
+          - name: valid_start_date
+            type: Date
+          - name: concept_name
+            type: varchar(255)
+          - name: p_10_value
+            type: float
+      test_table_3:
+        columns:
+          - name: database_id
+            type: varchar
+            primary_key: true
+          - name: analysis3_id
+            type: bigint
+            primary_key: true
+          - name: concept_id
+            type: int
+          - name: logic_description
+            type: varchar
+            optional: true
+          - name: valid_start_date
+            type: Date
+          - name: concept_name
+            type: varchar(255)
+          - name: p_10_value
+            type: float

@@ -1,0 +1,133 @@
+version: "1.0"
+
+namespace:
+  cg:
+    description: "Cohort Generator namespace"
+    tables:
+      cohort_definition:
+        columns:
+          - name: cohort_definition_id
+            type: bigint
+            primary_key: true
+          - name: concept_id
+            type: bigint
+          - name: cohort_name
+            type: varchar
+          - name: short_name
+            type: varchar
+          - name: atc_flag
+            type: int
+          - name: database_id
+            type: bigint
+            primary_key: true
+      cdm_source_info:
+        columns:
+          - name: database_id
+            type: bigint
+            primary_key: true
+          - name: cdm_source_abbreviation
+            type: varchar
+            optional: true
+          - name: cdm_holder
+            type: varchar
+            optional: true
+          - name: source_description
+            type: varchar
+            optional: true
+          - name: source_documentation_reference
+            type: varchar
+            optional: true
+          - name: cdm_etl_reference
+            type: varchar
+            optional: true
+          - name: source_release_date
+            type: date
+            optional: true
+          - name: cdm_release_date
+            type: date
+            optional: true
+          - name: cdm_version
+            type: varchar
+            optional: true
+          - name: vocabulary_version
+            type: varchar
+            optional: true
+      cohort_counts:
+        columns:
+          - name: num_persons
+            type: bigint
+            min_cell_count: true
+          - name: cohort_definition_id
+            type: bigint
+            primary_key: true
+          - name: database_id
+            type: bigint
+            primary_key: true
+      cosine_similarity:
+        columns:
+          - name: database_id
+            type: bigint
+            primary_key: true
+          - name: cohort_definition_id_1
+            type: bigint
+            primary_key: true
+          - name: cohort_definition_id_2
+            type: bigint
+            primary_key: true
+          - name: covariate_type
+            type: varchar
+          - name: cosine_similarity
+            type: float
+      covariate_definition:
+        columns:
+          - name: covariate_id
+            type: bigint
+          - name: covariate_name
+            type: varchar
+          - name: concept_id
+            type: bigint
+          - name: time_at_risk_start
+            type: int
+          - name: time_at_risk_end
+            type: int
+          - name: covariate_type
+            type: varchar
+      covariate_mean:
+        columns:
+          - name: database_id
+            type: bigint
+            primary_key: true
+          - name: cohort_definition_id
+            type: bigint
+            primary_key: true
+          - name: covariate_id
+            type: bigint
+            primary_key: true
+          - name: covariate_mean
+            type: float
+            primary_key: true
+
+platforms:
+  postgresql:
+    namespace:
+      cg:
+        tables:
+          cohort_counts:
+            partition_by: RANGE (cohort_definition_id)
+            indexes:
+              - columns: [database_id, cohort_definition_id]
+                unique: true
+          covariate_mean:
+            partition_by: RANGE (cohort_definition_id)
+  sql_server:
+    namespace:
+      cg:
+        tables:
+          cohort_counts:
+            indexes:
+              - columns: [database_id]
+          covariate_mean:
+            indexes:
+              - columns: [cohort_definition_id, covariate_id]
+  duckdb: {}
+  sqlite: {}

@@ -8,7 +8,9 @@ test_that("Schema gen from file", {
     DatabaseConnector::disconnect(connection)
   })
 
-  schema <- generateSqlSchema(csvFilepath = "settings/testSchemaDef.csv", sqlOutputPath = tfile)
+  schema <- suppressWarnings(
+    generateSqlSchema(csvFilepath = "settings/testSchemaDef.csv", sqlOutputPath = tfile)
+  )
   checkmate::expect_file_exists(tfile)
 
   schemaDetails <- readr::read_csv("settings/testSchemaDef.csv", show_col_types = FALSE)

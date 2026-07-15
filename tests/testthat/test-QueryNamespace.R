@@ -78,7 +78,9 @@ test_that("create helper function works", {
   qns <- createQueryNamespace(
     connectionDetails = connectionDetails,
     usePooledConnection = FALSE,
-    tableSpecification = loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.csv"),
+    tableSpecification = suppressWarnings(
+      loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.csv")
+    ),
     resultModelSpecificationPath = NULL,
     tablePrefix = "",
     snakeCaseToCamelCase = TRUE,
@@ -88,7 +90,7 @@ test_that("create helper function works", {
   vars <- qns$getVars()
   expect_true("databaseSchema" %in% names(vars))
 
-  qns <- createQueryNamespace(
+  qns <- suppressWarnings(createQueryNamespace(
     connectionDetails = connectionDetails,
     usePooledConnection = TRUE,
     tableSpecification = NULL,
@@ -99,7 +101,7 @@ test_that("create helper function works", {
     tablePrefix = "",
     snakeCaseToCamelCase = TRUE,
     databaseSchema = "main"
-  )
+  ))
 
   vars <- qns$getVars()
   expect_true("cohort_counts" %in% names(vars))
@@ -123,7 +125,7 @@ test_that("create helper function works", {
   )
 
   expect_error(
-    createQueryNamespace(
+    suppressWarnings(createQueryNamespace(
       connectionDetails = NULL,
       usePooledConnection = FALSE,
       tableSpecification = NULL,
@@ -131,7 +133,7 @@ test_that("create helper function works", {
       tablePrefix = "",
       snakeCaseToCamelCase = TRUE,
       databaseSchema = "main"
-    )
+    ))
   )
 })
 

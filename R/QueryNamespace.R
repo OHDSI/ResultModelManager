@@ -194,21 +194,39 @@ QueryNamespace <- R6::R6Class(
     #' add table specification
     #' @description
     #' add a variable to automatically be replaced in query strings (e.g. @database_schema.@table_name becomes
-    #' 'database_schema.table_1')
-    #' @param tableSpecification table specification data.frame conforming to column names tableName, columnName, dataType and primaryKey
+    #' 'database_schema.table_1'). If the specification data.frame contains a 'namespace' column, table names
+    #' will be registered as '@namespace_tableName' and map to '{tablePrefix}{namespace}_{tableName}'.
+    #' @param tableSpecification table specification data.frame conforming to column names tableName, columnName, dataType and primaryKey.
+    #'                            May optionally include a 'namespace' column for namespace-aware registration.
     #' @param useTablePrefix prefix the results with the tablePrefix (TRUE)
     #' @param tablePrefix prefix string - defaults to class variable set during initialization
     #' @param replace replace existing variables of the same name
     addTableSpecification = function(tableSpecification, useTablePrefix = TRUE, tablePrefix = self$tablePrefix, replace = TRUE) {
       checkmate::assertString(tablePrefix)
       assertSpecificationColumns(colnames(tableSpecification))
-      for (tableName in tableSpecification$tableName |> unique()) {
-        replacementVar <- tableName
-        if (useTablePrefix) {
-          replacementVar <- paste0(tablePrefix, replacementVar)
+
+      hasNamespace <- "namespace" %in% colnames(tableSpecification)
+
+      tableEntries <- tableSpecification |>
+        dplyr::select(dplyr::any_of(c("namespace", "tableName"))) |>
+        dplyr::distinct()
+
+      for (i in seq_len(nrow(tableEntries))) {
+        ns <- tableEntries$namespace[i]
+        tableName <- tableEntries$tableName[i]
+
+        if (hasNamespace && !is.na(ns)) {
+          registryKey <- paste0(ns, "_", tableName)
+          replacementVar <- paste0(tablePrefix, ns, "_", tableName)
+        } else if (useTablePrefix) {
+          registryKey <- tableName
+          replacementVar <- paste0(tablePrefix, tableName)
+        } else {
+          registryKey <- tableName
+          replacementVar <- tableName
         }
 
-        self$addReplacementVariable(tableName, replacementVar, replace = replace)
+        self$addReplacementVariable(registryKey, replacementVar, replace = replace)
       }
       invisible(NULL)
     },

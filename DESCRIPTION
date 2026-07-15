@@ -30,7 +30,8 @@ Imports:
   rlang,
   lubridate,
   fastmap,
-  withr
+  withr,
+  yaml
 Suggests:
   testthat (>= 3.0.0),
   RSQLite,

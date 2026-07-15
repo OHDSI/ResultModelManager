@@ -25,38 +25,118 @@
   str
 }
 
+.getPlatformConfig <- function(platforms, platform, namespace, table) {
+  if (is.null(platforms) || is.null(platform)) {
+    return(NULL)
+  }
+  platforms[[platform]]$namespace[[namespace]]$tables[[table]]
+}
+
+.generatePartitionBy <- function(partitionBy, tableName, platform) {
+  if (is.null(partitionBy)) {
+    return("")
+  }
+
+  supportedPlatforms <- c("postgresql")
+  if (!platform %in% supportedPlatforms) {
+    warning(sprintf(
+      "Partitioning is not supported for platform '%s'. Supported platforms: %s. Skipping partitioning for table '%s'.",
+      platform, paste(supportedPlatforms, collapse = ", "), tableName
+    ))
+    return("")
+  }
+
+  paste0(" PARTITION BY ", partitionBy)
+}
+
+.generateIndexes <- function(platformConfig, platform) {
+  if (is.null(platformConfig) || is.null(platformConfig$indexes)) {
+    return("")
+  }
+
+  supportedPlatforms <- c("postgresql", "sql_server")
+  if (!platform %in% supportedPlatforms) {
+    warning(sprintf(
+      "Index DDL generation is not supported for platform '%s'. Supported platforms: %s.",
+      platform, paste(supportedPlatforms, collapse = ", ")
+    ))
+    return("")
+  }
+
+  indexStatements <- character()
+  for (idx in platformConfig$indexes) {
+    columns <- paste(idx$columns, collapse = ", ")
+    uniqueStr <- if (isTRUE(idx$unique)) "UNIQUE " else ""
+    indexName <- gsub("[^a-zA-Z0-9_]", "_", paste(c("idx", idx$columns), collapse = "_"))
+    indexStatements <- c(indexStatements,
+      sprintf("\nCREATE %sINDEX %s ON @database_schema.@table_prefix@table_name (%s);",
+        uniqueStr, indexName, columns))
+  }
+
+  paste(indexStatements, collapse = "")
+}
+
 #' Schema generator
 #' @export
 #' @description
-#' Take a csv schema definition and create a basic sql script with it.
+#' Take a csv or yaml schema definition and create a basic sql script with it.
+#' For YAML files with platform-specific configuration, use the `platform` parameter
+#' to include features like partitioning and indexes.
 #' returns string containing the sql for the table
-#' @param csvFilepath                   Path to schema file. Csv file must have the columns:
-#'                                      "table_name", "column_name", "data_type", "primary_key"
-#' @param schemaDefinition              A schemaDefintiion data.frame` with the columns:
-#'                                         tableName, columnName, dataType, isRequired, primaryKey
+#' @param csvFilepath                   Path to schema file (csv or yaml). Csv file must have the columns:
+#'                                      "table_name", "column_name", "data_type", "primary_key".
+#'                                      Yaml file must follow the namespaced YAML schema format.
+#' @param schemaDefinition              A schemaDefinition data.frame with the columns:
+#'                                         tableName, columnName, dataType, isRequired, primaryKey.
+#'                                         May optionally include a 'namespace' column.
 #' @param sqlOutputPath                 File to write sql to.
 #' @param overwrite                     Boolean - overwrite existing file?
+#' @param platform                      Target database platform for platform-specific DDL
+#'                                      (e.g. "postgresql", "sql_server", "sqlite", "duckdb").
+#'                                      Only applies when loading from a YAML file.
 generateSqlSchema <- function(csvFilepath = NULL,
                               schemaDefinition = NULL,
                               sqlOutputPath = NULL,
-                              overwrite = FALSE) {
+                              overwrite = FALSE,
+                              platform = NULL) {
   if (all(is.null(c(csvFilepath, schemaDefinition)))) {
-    stop("Must spcify a csv file or schema definition")
-  } else if (is.null(schemaDefinition)) {
+    stop("Must spcify a csv or yaml file or schema definition")
+  }
+
+  platformConfig <- NULL
+
+  if (is.null(schemaDefinition)) {
     if (!is.null(sqlOutputPath) && (file.exists(sqlOutputPath) & !overwrite)) {
       stop("Output file ", sqlOutputPath, "already exists. Set overwrite = TRUE to continue")
     }
 
     checkmate::assertFileExists(csvFilepath)
-    schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
-    names(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(names(schemaDefinition))
+
+    if (grepl("\\.ya?ml$", csvFilepath, ignore.case = TRUE)) {
+      yamlResult <- loadResultsDataModelFromYaml(csvFilepath)
+      schemaDefinition <- yamlResult$specification
+      if (!is.null(platform)) {
+        platformConfig <- yamlResult$platforms
+      }
+    } else {
+      warning(
+        "CSV-based schema definitions are deprecated. ",
+        "Use the namespaced YAML format instead. ",
+        "See the 'YAML Specification Format' vignette and the csvToYaml() function to migrate.",
+        call. = FALSE
+      )
+      schemaDefinition <- readr::read_csv(csvFilepath, show_col_types = FALSE)
+      names(schemaDefinition) <- SqlRender::snakeCaseToCamelCase(names(schemaDefinition))
+    }
   }
   assertSpecificationColumns(colnames(schemaDefinition))
+
+  hasNamespace <- "namespace" %in% colnames(schemaDefinition)
 
   tableSqlStr <- "
 CREATE TABLE @database_schema.@table_prefix@table_name (
   @table_columns
-);
+)@partition_by;
 "
   fullScript <- ""
   defs <- "{DEFAULT @table_prefix = ''}\n"
@@ -72,18 +152,50 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
     }
 
     columnDefinitions <- paste(columnDefinitions, collapse = ",\n")
+
+    varName <- table
+    if (hasNamespace) {
+      ns <- tableColumns$namespace[1]
+      if (!is.na(ns)) {
+        varName <- paste0(ns, "_", table)
+      }
+    }
+
+    partitionBySql <- ""
+    if (!is.null(platformConfig) && hasNamespace) {
+      ns <- tableColumns$namespace[1]
+      if (!is.na(ns)) {
+        tblPlatformConfig <- .getPlatformConfig(platformConfig, platform, ns, table)
+        partitionBySql <- .generatePartitionBy(tblPlatformConfig$partition_by, varName, platform)
+      }
+    }
+
     tableString <- SqlRender::render(tableSqlStr,
-      table_name = paste0("@", table),
-      table_columns = columnDefinitions
+      table_name = paste0("@", varName),
+      table_columns = columnDefinitions,
+      partition_by = partitionBySql
     )
 
-    tableDefStr <- paste0("{DEFAULT @", table, " = ", table, "}\n")
+    tableDefStr <- paste0("{DEFAULT @", varName, " = ", varName, "}\n")
     defs <- paste0(defs, tableDefStr)
 
-    fullScript <- paste(fullScript, tableString)
+    indexSql <- ""
+    if (!is.null(platformConfig) && hasNamespace) {
+      ns <- tableColumns$namespace[1]
+      if (!is.na(ns)) {
+        tblPlatformConfig <- .getPlatformConfig(platformConfig, platform, ns, table)
+        indexSql <- .generateIndexes(tblPlatformConfig, platform)
+        if (nchar(indexSql) > 0) {
+          indexSql <- SqlRender::render(indexSql,
+            table_name = paste0("@", varName)
+          )
+        }
+      }
+    }
+
+    fullScript <- paste(fullScript, tableString, indexSql)
   }
 
-  # Get columns for each table
   lines <- paste(defs, fullScript)
   if (!is.null(sqlOutputPath)) {
     writeLines(lines, sqlOutputPath)
