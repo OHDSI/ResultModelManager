@@ -207,17 +207,31 @@ QueryNamespace <- R6::R6Class(
 
       hasNamespace <- "namespace" %in% colnames(tableSpecification)
 
-      tableEntries <- tableSpecification |>
-        dplyr::select(dplyr::any_of(c("namespace", "tableName"))) |>
-        dplyr::distinct()
+      if (hasNamespace) {
+        tableEntries <- tableSpecification |>
+          dplyr::select("namespace", "tableName") |>
+          dplyr::distinct()
+      } else {
+        tableEntries <- tableSpecification |>
+          dplyr::select("tableName") |>
+          dplyr::distinct()
+      }
 
       for (i in seq_len(nrow(tableEntries))) {
-        ns <- tableEntries$namespace[i]
         tableName <- tableEntries$tableName[i]
 
-        if (hasNamespace && !is.na(ns)) {
-          registryKey <- paste0(ns, "_", tableName)
-          replacementVar <- paste0(tablePrefix, ns, "_", tableName)
+        if (hasNamespace) {
+          ns <- tableEntries$namespace[i]
+          if (!is.na(ns)) {
+            registryKey <- paste0(ns, "_", tableName)
+            replacementVar <- paste0(tablePrefix, ns, "_", tableName)
+          } else if (useTablePrefix) {
+            registryKey <- tableName
+            replacementVar <- paste0(tablePrefix, tableName)
+          } else {
+            registryKey <- tableName
+            replacementVar <- tableName
+          }
         } else if (useTablePrefix) {
           registryKey <- tableName
           replacementVar <- paste0(tablePrefix, tableName)
