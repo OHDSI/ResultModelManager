@@ -20,34 +20,52 @@ In the examples here, we assume the use of sqlite for simplicity.
 However, in principle any platform supported by the `DatabaseConnector` and `SqlRender` packages should work.
 
 # Creating a schema definition file
-Every analytics package that creates data output should contain a YAML or CSV specification that defines
-its results data model. This package uses a **namespaced YAML format** by default; CSV support is deprecated.
+Every analytics package that creates data output should contain a **YAML specification** that defines
+its results data model. The format is a namespaced YAML schema; CSV support is deprecated
+(use `csvToYaml()` to migrate existing CSV files).
 
-Schema definitions must include the following information per column:
+## Schema ownership philosophy
 
-- **table name** (within a namespace)
-- **column name**
-- **data type** (e.g., `varchar`, `bigint`, `int`, `float`, `date`, `varchar(255)`)
-- **primary key** indicator
+Each HADES package ships its own `resultsDataModelSpecification.yaml` in its `inst/settings/` directory.
+A package's YAML defines **only the tables produced by that package**.
 
-In addition, optional fields such as `optional`, `min_cell_count`, `empty_is_na`, and `description`
-may be included.
+This avoids the circular dependency problem of a central results model repository:
+packages do not need to know about each other's schemas. Combining specifications from multiple
+packages into a unified HADES results schema is the responsibility of a higher-level orchestrator
+such as Strategus.
 
 ## YAML format (recommended)
 
-A namespaced YAML specification looks like this:
+Schema definitions must include the following information per column:
+
+- **column name** and **data type** (e.g., `varchar`, `bigint`, `int`, `float`, `date`, `varchar(255)`)
+- **primary key** indicator
+- **nullable** flag (whether the column may contain NULL values)
+
+Additional optional fields:
+
+- `min_cell_count` — marks columns requiring minimum cell count enforcement for privacy
+- `empty_is_na` — whether empty strings should be treated as NA (default: true)
+- `description` — human-readable description of the column
+- `references` — foreign key reference in `table.column` format
+
+A fully-featured namespaced YAML specification looks like this:
 
 ```yaml
 version: "1.0"
 
 namespace:
   my_analysis:
+    prefix: my_analysis_        # database table prefix (defaults to {namespace}_)
+    description: "Results from the MyAnalysis package"
     tables:
       table_1:
+        description: "Primary analysis results"
         columns:
           - name: database_id
             type: varchar
             primary_key: true
+            description: "The database identifier"
           - name: analysis_id
             type: bigint
             primary_key: true
@@ -55,23 +73,24 @@ namespace:
             type: varchar
           - name: domain_id
             type: varchar(20)
-            optional: true
+            nullable: true
           - name: start_day
             type: float
-            optional: true
+            nullable: true
           - name: end_day
             type: float
-            optional: true
+            nullable: true
           - name: is_binary
             type: varchar(1)
           - name: missing_means_zero
             type: varchar(1)
-            optional: true
+            nullable: true
       table_2:
         columns:
           - name: database_id
             type: varchar
             primary_key: true
+            references: table_1.database_id
           - name: analysis2_id
             type: bigint
             primary_key: true
@@ -79,7 +98,7 @@ namespace:
             type: int
           - name: logic_description
             type: varchar
-            optional: true
+            nullable: true
           - name: valid_start_date
             type: Date
           - name: concept_name
@@ -88,11 +107,38 @@ namespace:
             type: float
 ```
 
-The namespace name (e.g. `my_analysis`) becomes the table prefix in the database.
-A table named `table_1` in namespace `my_analysis` will be created as `my_analysis_table_1`.
+The namespace name (and `prefix`) determine the database table names.
+A table `table_1` in namespace `my_analysis` with prefix `my_analysis_` will be created as
+`my_analysis_table_1`. The `prefix` field is optional and defaults to `{namespace}_`.
+
+## Platform-specific configuration
 
 Platform-specific features such as table partitioning and indexes can be configured
-per DBMS platform. See `?loadResultsDataModelFromYaml` for details.
+per DBMS platform in the same YAML file:
+
+```yaml
+platforms:
+  postgresql:
+    namespace:
+      my_analysis:
+        tables:
+          table_1:
+            partition_by: RANGE (analysis_id)
+            indexes:
+              - columns: [database_id, analysis_id]
+                unique: true
+  sql_server:
+    namespace:
+      my_analysis:
+        tables:
+          table_1:
+            indexes:
+              - columns: [database_id]
+  duckdb: {}
+  sqlite: {}
+```
+
+Features not supported by a platform (e.g., partitioning in duckdb) will emit a warning.
 
 ## CSV format (deprecated)
 
@@ -112,15 +158,15 @@ to the YAML format.
 To load a specification file:
 
 ```{r eval = FALSE}
-# YAML (recommended)
+# YAML (recommended) - returns a data.frame
 spec <- ResultModelManager::loadResultsDataModelSpecifications("path/to/spec.yaml")
 
-# The YAML specification is loaded via
+# YAML with platform config - returns list(specification, platforms)
 result <- ResultModelManager::loadResultsDataModelFromYaml("path/to/spec.yaml")
-spec <- result$specification  # data.frame
-platforms <- result$platforms  # platform-specific config
+spec <- result$specification      # data.frame with namespace, tableName, ...
+platforms <- result$platforms     # platform-specific config
 
-# CSV (deprecated)
+# CSV (deprecated) - emits a deprecation warning
 spec <- ResultModelManager::loadResultsDataModelSpecifications("path/to/spec.csv")
 ```
 
@@ -146,8 +192,19 @@ sql <- ResultModelManager::generateSqlSchema(schemaDefinition = getResultsDataMo
 DatabaseConnector::renderTranslateExecuteSql(connection, sql, database_schema = "main", table_prefix = "pre_")
 DatabaseConnector::disconnect(connection)
 ```
+
 Note that the SQL generated by `generateSqlSchema` contains the required parameter `database_schema` and the optional
 parameter `table_prefix`.
+
+If the specification was loaded from a YAML file (not a data.frame), you can pass a `platform` parameter
+for platform-specific DDL (partitioning, indexes):
+
+```{r eval=FALSE}
+sql <- ResultModelManager::generateSqlSchema(
+  csvFilepath = "path/to/spec.yaml",
+  platform = "postgresql"
+)
+```
 
 # Uploading results
 This section shows how to upload results conforming to the above specified schema.

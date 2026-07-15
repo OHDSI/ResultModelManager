@@ -10,8 +10,52 @@ ResultModelManager (RMM) [HADES](https://ohdsi.github.io/Hades/).
 
 Introduction
 ============
-RMM is a database data model management utilities for R packages in the Observational Health Data Sciences and Informatics programme (OHDSI). RMM provides utility functions to
-allow package maintainers to migrate existing SQL database models, export and import results in consistent patterns.
+RMM is a database data model management utility for R packages in the Observational Health Data Sciences and Informatics programme (OHDSI). RMM provides utility functions to
+allow package maintainers to define results data models in YAML, migrate existing SQL database models, export and import results in consistent patterns.
+
+YAML-based Data Model Specifications
+=====================================
+
+Package maintainers define their results data model in a namespaced YAML file
+shipped within their package (`inst/settings/resultsDataModelSpecification.yaml`):
+
+```yaml
+version: "1.0"
+
+namespace:
+  mypackage:
+    prefix: mp_
+    tables:
+      my_table:
+        columns:
+          - name: database_id
+            type: varchar
+            primary_key: true
+          - name: result_id
+            type: bigint
+            primary_key: true
+          - name: result_value
+            type: float
+            nullable: true
+```
+
+Each HADES package owns its own specification — there is no central results model
+repository. This avoids circular dependencies between packages. Multiple
+specifications are combined by higher-level orchestrators such as Strategus.
+
+Platform-specific features (partitioning, indexes) are configured in the same file:
+
+```yaml
+platforms:
+  postgresql:
+    namespace:
+      mypackage:
+        tables:
+          my_table:
+            partition_by: RANGE (result_id)
+```
+
+CSV-based specifications are deprecated; use `csvToYaml()` to migrate.
 
 
 System Requirements

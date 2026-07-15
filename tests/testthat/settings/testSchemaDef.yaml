@@ -2,13 +2,16 @@ version: "1.0"
 
 namespace:
   cg:
+    prefix: cg_
     description: "Cohort Generator namespace"
     tables:
       cohort_definition:
+        description: "Stores cohort definitions"
         columns:
           - name: cohort_definition_id
             type: bigint
             primary_key: true
+            description: "The unique identifier for the cohort definition"
           - name: concept_id
             type: bigint
           - name: cohort_name
@@ -20,46 +23,52 @@ namespace:
           - name: database_id
             type: bigint
             primary_key: true
+            description: "The database identifier"
       cdm_source_info:
+        description: "CDM source information"
         columns:
           - name: database_id
             type: bigint
             primary_key: true
+            references: cg_cohort_definition.database_id
           - name: cdm_source_abbreviation
             type: varchar
-            optional: true
+            nullable: true
           - name: cdm_holder
             type: varchar
-            optional: true
+            nullable: true
           - name: source_description
             type: varchar
-            optional: true
+            nullable: true
           - name: source_documentation_reference
             type: varchar
-            optional: true
+            nullable: true
           - name: cdm_etl_reference
             type: varchar
-            optional: true
+            nullable: true
           - name: source_release_date
             type: date
-            optional: true
+            nullable: true
           - name: cdm_release_date
             type: date
-            optional: true
+            nullable: true
           - name: cdm_version
             type: varchar
-            optional: true
+            nullable: true
           - name: vocabulary_version
             type: varchar
-            optional: true
+            nullable: true
       cohort_counts:
+        description: "Counts of subjects per cohort"
         columns:
           - name: num_persons
             type: bigint
             min_cell_count: true
+            description: "Number of persons (min cell count enforced)"
           - name: cohort_definition_id
             type: bigint
             primary_key: true
+            references: cg_cohort_definition.cohort_definition_id
           - name: database_id
             type: bigint
             primary_key: true

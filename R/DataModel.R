@@ -861,11 +861,15 @@ checkSpecificationColumns <- function(columnNames) {
 
 .yamlColDefaults <- list(
   primaryKey = "No",
+  nullable = "No",
   isRequired = "Yes",
   optional = "No",
   minCellCount = "No",
   emptyIsNa = "Yes",
-  description = NA_character_
+  references = NA_character_,
+  description = NA_character_,
+  tableDescription = NA_character_,
+  namespacePrefix = NA_character_
 )
 
 .yamlSpecToDataFrame <- function(yamlContent) {
@@ -877,6 +881,13 @@ checkSpecificationColumns <- function(columnNames) {
 
   for (nsName in names(yamlContent$namespace)) {
     nsDef <- yamlContent$namespace[[nsName]]
+
+    nsPrefix <- nsDef$prefix
+    if (is.null(nsPrefix)) {
+      nsPrefix <- paste0(nsName, "_")
+    }
+    nsDescription <- nsDef$description %||% NA_character_
+
     if (!"tables" %in% names(nsDef)) {
       stop(sprintf("Namespace '%s' must contain a 'tables' key", nsName))
     }
@@ -887,6 +898,8 @@ checkSpecificationColumns <- function(columnNames) {
         stop(sprintf("Table '%s' in namespace '%s' must contain a 'columns' key", tableName, nsName))
       }
 
+      tblDescription <- tableDef$description %||% .yamlColDefaults$tableDescription
+
       for (col in tableDef$columns) {
         if (is.null(col$name)) {
           stop(sprintf("Column in table '%s' (namespace '%s') must have a 'name'", tableName, nsName))
@@ -895,17 +908,32 @@ checkSpecificationColumns <- function(columnNames) {
           stop(sprintf("Column '%s' in table '%s' (namespace '%s') must have a 'type'", col$name, tableName, nsName))
         }
 
+        colNullable <- FALSE
+        if (!is.null(col$nullable)) {
+          colNullable <- isTRUE(col$nullable)
+        } else if (isTRUE(col$optional)) {
+          colNullable <- TRUE
+        } else if (isFALSE(col$required)) {
+          colNullable <- TRUE
+        }
+
+        colReferences <- col$references %||% .yamlColDefaults$references
+
         row <- list(
           namespace = nsName,
+          namespacePrefix = nsPrefix,
           tableName = tableName,
+          tableDescription = tblDescription,
           columnName = col$name,
           dataType = col$type,
           primaryKey = ifelse(isTRUE(col$primary_key), "Yes", .yamlColDefaults$primaryKey),
-          isRequired = ifelse(isFALSE(col$required), "No", .yamlColDefaults$isRequired),
-          optional = ifelse(isTRUE(col$optional), "Yes", .yamlColDefaults$optional),
+          nullable = ifelse(colNullable, "Yes", "No"),
+          isRequired = ifelse(colNullable, "No", "Yes"),
+          optional = ifelse(colNullable, "Yes", "No"),
           minCellCount = ifelse(isTRUE(col$min_cell_count), "Yes", .yamlColDefaults$minCellCount),
           emptyIsNa = ifelse(isFALSE(col$empty_is_na), "No", .yamlColDefaults$emptyIsNa),
-          description = if (is.null(col$description)) .yamlColDefaults$description else col$description
+          references = colReferences,
+          description = col$description %||% .yamlColDefaults$description
         )
         rows[[length(rows) + 1]] <- row
       }
@@ -922,9 +950,21 @@ checkSpecificationColumns <- function(columnNames) {
 #' Load a YAML results data model specification file. Returns a list containing
 #' the flattened specification data frame and optional platform-specific configuration.
 #'
+#' Each HADES package should ship its own \code{resultsDataModelSpecification.yaml} in
+#' its \code{inst/settings/} directory. A package's YAML defines only the tables
+#' produced by that package.
+#'
+#' Combining multiple YAML specifications (e.g. from different packages) into a
+#' unified HADES results schema is the responsibility of a higher-level
+#' orchestrator such as Strategus or a future \code{OhdsiResultsManager} package.
+#' This package provides per-spec loading only, to avoid circular dependencies
+#' between packages that share no direct relationship at install time.
+#'
 #' @param filePath Path to a valid YAML file
 #' @return A list with elements:
-#'   \item{specification}{A tibble data frame with columns: namespace, tableName, columnName, dataType, primaryKey, isRequired, optional, minCellCount, emptyIsNa, description}
+#'   \item{specification}{A tibble data frame with columns: namespace, namespacePrefix,
+#'     tableName, tableDescription, columnName, dataType, primaryKey, nullable,
+#'     isRequired, optional, minCellCount, emptyIsNa, references, description}
 #'   \item{platforms}{Platform-specific configuration (postgresql, sql_server, duckdb, sqlite) or NULL}
 #'
 #' @export
@@ -1008,26 +1048,35 @@ csvToYaml <- function(csvFilepath,
       pk <- tolower(tblSpec$primaryKey[i])
       if (pk == "yes") {
         col$primary_key <- TRUE
+      } else {
+        col$primary_key <- FALSE
       }
 
+      colNullable <- FALSE
       if ("optional" %in% colnames(tblSpec)) {
         opt <- tolower(tblSpec$optional[i])
         if (opt == "yes") {
-          col$optional <- TRUE
+          colNullable <- TRUE
         }
       }
-
       if ("isRequired" %in% colnames(tblSpec)) {
         req <- tolower(tblSpec$isRequired[i])
         if (req == "no") {
-          col$required <- FALSE
+          colNullable <- TRUE
         }
+      }
+      if (colNullable) {
+        col$nullable <- TRUE
+      } else {
+        col$nullable <- FALSE
       }
 
       if ("minCellCount" %in% colnames(tblSpec)) {
         mcc <- tolower(tblSpec$minCellCount[i])
         if (mcc == "yes") {
           col$min_cell_count <- TRUE
+        } else {
+          col$min_cell_count <- FALSE
         }
       }
 
@@ -1035,6 +1084,8 @@ csvToYaml <- function(csvFilepath,
         ein <- tolower(tblSpec$emptyIsNa[i])
         if (ein == "no") {
           col$empty_is_na <- FALSE
+        } else {
+          col$empty_is_na <- TRUE
         }
       }
 
@@ -1048,11 +1099,14 @@ csvToYaml <- function(csvFilepath,
     tables[[tbl]] <- list(columns = columns)
   }
 
+  nsConfig <- list(tables = tables)
+  nsConfig$prefix <- paste0(namespace, "_")
+
   yamlContent <- list(
     version = "1.0",
     namespace = list()
   )
-  yamlContent$namespace[[namespace]] <- list(tables = tables)
+  yamlContent$namespace[[namespace]] <- nsConfig
 
   yamlStr <- yaml::as.yaml(yamlContent, indent.mapping.sequence = TRUE)
 

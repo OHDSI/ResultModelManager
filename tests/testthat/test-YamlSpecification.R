@@ -1,15 +1,34 @@
 test_that("loadResultsDataModelSpecifications supports yaml files", {
   spec <- loadResultsDataModelSpecifications("settings/resultsDataModelSpecification.yaml")
   expect_true("namespace" %in% colnames(spec))
+  expect_true("namespacePrefix" %in% colnames(spec))
   expect_true("tableName" %in% colnames(spec))
+  expect_true("tableDescription" %in% colnames(spec))
   expect_true("columnName" %in% colnames(spec))
   expect_true("dataType" %in% colnames(spec))
   expect_true("primaryKey" %in% colnames(spec))
+  expect_true("nullable" %in% colnames(spec))
+  expect_true("isRequired" %in% colnames(spec))
+  expect_true("optional" %in% colnames(spec))
+  expect_true("references" %in% colnames(spec))
 
   expect_equal(unique(spec$namespace), "test")
+  expect_equal(unique(spec$namespacePrefix), "test_")
   expect_true("test_table_1" %in% spec$tableName)
   expect_true("test_table_2" %in% spec$tableName)
   expect_true("test_table_3" %in% spec$tableName)
+
+  nbRows <- spec |>
+    dplyr::filter(.data$columnName == "domain_id" & .data$tableName == "test_table_1")
+  expect_equal(nbRows$nullable, "Yes")
+  expect_equal(nbRows$isRequired, "No")
+  expect_equal(nbRows$optional, "Yes")
+
+  reqRows <- spec |>
+    dplyr::filter(.data$columnName == "database_id" & .data$tableName == "test_table_1")
+  expect_equal(reqRows$nullable, "No")
+  expect_equal(reqRows$isRequired, "Yes")
+  expect_equal(reqRows$optional, "No")
 })
 
 test_that("loadResultsDataModelSpecifications still works with csv files and warns deprecation", {
@@ -23,14 +42,36 @@ test_that("loadResultsDataModelSpecifications still works with csv files and war
   expect_equal(unique(spec$tableName), c("test_table_1", "test_table_2", "test_table_3"))
 })
 
-test_that("loadResultsDataModelFromYaml returns platform config", {
+test_that("loadResultsDataModelFromYaml returns platform config and rich metadata", {
   result <- loadResultsDataModelFromYaml("settings/testSchemaDef.yaml")
   expect_true("specification" %in% names(result))
   expect_true("platforms" %in% names(result))
 
   spec <- result$specification
   expect_true("namespace" %in% colnames(spec))
+  expect_true("namespacePrefix" %in% colnames(spec))
+  expect_true("tableDescription" %in% colnames(spec))
+  expect_true("nullable" %in% colnames(spec))
+  expect_true("references" %in% colnames(spec))
   expect_equal(unique(spec$namespace), "cg")
+  expect_equal(unique(spec$namespacePrefix), "cg_")
+
+  tblDesc <- spec$tableDescription[spec$tableName == "cohort_definition"][1]
+  expect_equal(tblDesc, "Stores cohort definitions")
+
+  refRows <- spec |>
+    dplyr::filter(.data$columnName == "database_id" & .data$tableName == "cdm_source_info")
+  expect_equal(refRows$references, "cg_cohort_definition.database_id")
+
+  cdIdRef <- spec |>
+    dplyr::filter(.data$columnName == "cohort_definition_id" & .data$tableName == "cohort_counts")
+  expect_equal(cdIdRef$references, "cg_cohort_definition.cohort_definition_id")
+
+  nullableRows <- spec |>
+    dplyr::filter(.data$columnName == "cdm_source_abbreviation")
+  expect_equal(nullableRows$nullable, "Yes")
+  expect_equal(nullableRows$isRequired, "No")
+  expect_equal(nullableRows$optional, "Yes")
 
   platforms <- result$platforms
   expect_true("postgresql" %in% names(platforms))

@@ -132,6 +132,7 @@ generateSqlSchema <- function(csvFilepath = NULL,
   assertSpecificationColumns(colnames(schemaDefinition))
 
   hasNamespace <- "namespace" %in% colnames(schemaDefinition)
+  hasNamespacePrefix <- "namespacePrefix" %in% colnames(schemaDefinition)
 
   tableSqlStr <- "
 CREATE TABLE @database_schema.@table_prefix@table_name (
@@ -157,7 +158,16 @@ CREATE TABLE @database_schema.@table_prefix@table_name (
     if (hasNamespace) {
       ns <- tableColumns$namespace[1]
       if (!is.na(ns)) {
-        varName <- paste0(ns, "_", table)
+        if (hasNamespacePrefix) {
+          nsPrefix <- tableColumns$namespacePrefix[1]
+          if (!is.na(nsPrefix)) {
+            varName <- paste0(nsPrefix, table)
+          } else {
+            varName <- paste0(ns, "_", table)
+          }
+        } else {
+          varName <- paste0(ns, "_", table)
+        }
       }
     }
 

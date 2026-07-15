@@ -2,6 +2,7 @@ version: "1.0"
 
 namespace:
   test:
+    prefix: test_
     description: "Test namespace for basic upload/validation"
     tables:
       test_table_1:
@@ -16,18 +17,18 @@ namespace:
             type: varchar
           - name: domain_id
             type: varchar(20)
-            optional: true
+            nullable: true
           - name: start_day
             type: float
-            optional: true
+            nullable: true
           - name: end_day
             type: float
-            optional: true
+            nullable: true
           - name: is_binary
             type: varchar(1)
           - name: missing_means_zero
             type: varchar(1)
-            optional: true
+            nullable: true
       test_table_2:
         columns:
           - name: database_id
@@ -40,7 +41,7 @@ namespace:
             type: int
           - name: logic_description
             type: varchar
-            optional: true
+            nullable: true
           - name: valid_start_date
             type: Date
           - name: concept_name
@@ -59,7 +60,7 @@ namespace:
             type: int
           - name: logic_description
             type: varchar
-            optional: true
+            nullable: true
           - name: valid_start_date
             type: Date
           - name: concept_name
