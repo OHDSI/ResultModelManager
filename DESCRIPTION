@@ -12,7 +12,6 @@ License: Apache License (== 2.0)
 Encoding: UTF-8
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Depends:
   R (>= 4.1.0),
   R6,
@@ -46,3 +45,4 @@ Suggests:
   rJava,
   reticulate
 Config/testthat/edition: 3
+Config/roxygen2/version: 8.0.0

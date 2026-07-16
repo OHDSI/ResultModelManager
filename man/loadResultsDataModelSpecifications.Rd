@@ -7,7 +7,7 @@
 loadResultsDataModelSpecifications(filePath)
 }
 \arguments{
-\item{filePath}{path to a valid csv file}
+\item{filePath}{path to a valid csv or yaml file}
 }
 \value{
 A tibble data frame object with specifications

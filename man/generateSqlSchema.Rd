@@ -8,21 +8,30 @@ generateSqlSchema(
   csvFilepath = NULL,
   schemaDefinition = NULL,
   sqlOutputPath = NULL,
-  overwrite = FALSE
+  overwrite = FALSE,
+  platform = NULL
 )
 }
 \arguments{
-\item{csvFilepath}{Path to schema file. Csv file must have the columns:
-"table_name", "column_name", "data_type", "primary_key"}
+\item{csvFilepath}{Path to schema file (csv or yaml). Csv file must have the columns:
+"table_name", "column_name", "data_type", "primary_key".
+Yaml file must follow the namespaced YAML schema format.}
 
-\item{schemaDefinition}{A schemaDefintiion data.frame` with the columns:
-tableName, columnName, dataType, isRequired, primaryKey}
+\item{schemaDefinition}{A schemaDefinition data.frame with the columns:
+tableName, columnName, dataType, isRequired, primaryKey.
+May optionally include a 'namespace' column.}
 
 \item{sqlOutputPath}{File to write sql to.}
 
 \item{overwrite}{Boolean - overwrite existing file?}
+
+\item{platform}{Target database platform for platform-specific DDL
+(e.g. "postgresql", "sql_server", "sqlite", "duckdb").
+Only applies when loading from a YAML file.}
 }
 \description{
-Take a csv schema definition and create a basic sql script with it.
+Take a csv or yaml schema definition and create a basic sql script with it.
+For YAML files with platform-specific configuration, use the \code{platform} parameter
+to include features like partitioning and indexes.
 returns string containing the sql for the table
 }

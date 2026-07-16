@@ -20,5 +20,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Jamie Gilbert \email{gilbert@ohdsi.org}
 
+Authors:
+\itemize{
+  \item Jamie Gilbert \email{gilbert@ohdsi.org}
+}
+
 }
 \keyword{internal}
