@@ -26,23 +26,25 @@ This is not intended to replace usage of `dbplyr` style operations which are exp
 However, many find that writing SQL strings is often more convenient and portable to other programming language
 than `dplyr` calls allow.
 
-# Basic usage
-The most basic usage is to create a specification with a single table that conforms to a valid data model specification
+# Namespaced table specs
+
+For packages that ship YAML specifications, the table names include a namespace prefix
+(see the "Upload Functionality" vignette for the YAML schema format).
+With a namespaced spec, the `QueryNamespace` registers tables as `@namespace_tableName`:
+
 ```{r}
 library(ResultModelManager)
 
+# Namespaced table spec (from a YAML file with namespace = "cg")
 tableSpecification <- data.frame(
+  namespace = "cg",
+  namespacePrefix = "cg_",
   tableName = "cohort_definition",
   columnName = c("cohort_definition_id", "cohort_name", "json", "sql"),
   primaryKey = c("yes", "no", "no", "no"),
   dataType = c("bigint", "varchar", "varchar", "varchar")
 )
-```
-Note, that generally we would save these tables to a csv file that can be loaded.
 
-We then load a `QueryNamespace` instance with this table:
-
-```{r}
 connectionDetails <- DatabaseConnector::createConnectionDetails("sqlite", server = tempfile())
 qns <- createQueryNamespace(
   connectionDetails = connectionDetails,
@@ -55,24 +57,22 @@ qns <- createQueryNamespace(
 
 # Create our schema within the namespace
 sql <- generateSqlSchema(schemaDefinition = tableSpecification)
-# note - the table prefix and schema parameters are not neeeded
+# note - the table prefix and schema parameters are not needed
 qns$executeSql(sql)
 ```
 We can then query the table with sql that automatically replaces the table names:
 
 ```{r}
-qns$queryDb("SELECT * FROM @database_schema.@cohort_definition")
+qns$queryDb("SELECT * FROM @database_schema.@cg_cohort_definition")
 ```
-Note that the underlying query is already handling our `tablePrefix` for us, so we don't need to add it:
-
-```{r}
-qns$queryDb("SELECT * FROM @database_schema.@cohort_definition")
-```
+Note that the underlying query is already handling our `tablePrefix` for us,
+so we don't need to add it. Here `@cg_cohort_definition` resolves to
+`rwe_study_99_cg_cohort_definition`.
 
 # Adding replacement variables at runtime
 Variables can naturally be added at runtime, for example, in a query:
 ```{r}
-qns$queryDb("SELECT * FROM @database_schema.@cohort_definition WHERE cohort_definition_id = @id",
+qns$queryDb("SELECT * FROM @database_schema.@cg_cohort_definition WHERE cohort_definition_id = @id",
   id = 5
 )
 ```
@@ -86,15 +86,34 @@ Note that replacing the same variable will result in an error
 qns$addReplacementVariable("database_id", "my_cdm")
 ```
 
+# Non-namespaced table specs (backward compat)
 
-We can also add to the table specification
+For backward compatibility, table specs without a `namespace` column work the same way
+as before, registering tables as `@tableName`:
 
 ```{r}
+# Non-namespaced spec - separate QueryNamespace
+connectionDetails2 <- DatabaseConnector::createConnectionDetails("sqlite", server = tempfile())
+
 tableSpecification2 <- data.frame(
   tableName = "database_info",
   columnName = c("database_id", "database_name"),
   primaryKey = c("yes", "no"),
   dataType = c("varchar", "varchar")
 )
-qns$addTableSpecification(tableSpecification2)
+
+qns2 <- createQueryNamespace(
+  connectionDetails = connectionDetails2,
+  tableSpecification = tableSpecification2,
+  tablePrefix = "legacy_",
+  snakeCaseToCamelCase = TRUE,
+  database_schema = "main"
+)
+
+sql2 <- generateSqlSchema(schemaDefinition = tableSpecification2)
+qns2$executeSql(sql2)
+```
+Tables registered without a namespace are queried by their plain name:
+```{r}
+qns2$queryDb("SELECT * FROM @database_schema.@database_info")
 ```

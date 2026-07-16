@@ -207,7 +207,7 @@ It is desirable, but not a hard requirement for the initial package version, to 
 To provide the ability to add a new migration to an existing project
 
 ### Create DDL design
-Function to create a ddl csv that conforms to common standards
+Function to create a YAML specification that conforms to common standards.
 
 ### Create new DDL
 In principle this could be added for new projects that will generate results.

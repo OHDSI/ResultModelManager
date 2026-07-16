@@ -859,18 +859,260 @@ checkSpecificationColumns <- function(columnNames) {
 }
 
 
+.yamlColDefaults <- list(
+  primaryKey = "No",
+  nullable = "No",
+  isRequired = "Yes",
+  optional = "No",
+  minCellCount = "No",
+  emptyIsNa = "Yes",
+  references = NA_character_,
+  description = NA_character_,
+  tableDescription = NA_character_,
+  namespacePrefix = NA_character_
+)
+
+.yamlSpecToDataFrame <- function(yamlContent) {
+  if (!"namespace" %in% names(yamlContent)) {
+    stop("YAML specification must contain a 'namespace' key")
+  }
+
+  rows <- list()
+
+  for (nsName in names(yamlContent$namespace)) {
+    nsDef <- yamlContent$namespace[[nsName]]
+
+    nsPrefix <- nsDef$prefix
+    if (is.null(nsPrefix)) {
+      nsPrefix <- paste0(nsName, "_")
+    }
+    nsDescription <- nsDef$description %||% NA_character_
+
+    if (!"tables" %in% names(nsDef)) {
+      stop(sprintf("Namespace '%s' must contain a 'tables' key", nsName))
+    }
+
+    for (tableName in names(nsDef$tables)) {
+      tableDef <- nsDef$tables[[tableName]]
+      if (!"columns" %in% names(tableDef)) {
+        stop(sprintf("Table '%s' in namespace '%s' must contain a 'columns' key", tableName, nsName))
+      }
+
+      tblDescription <- tableDef$description %||% .yamlColDefaults$tableDescription
+
+      for (col in tableDef$columns) {
+        if (is.null(col$name)) {
+          stop(sprintf("Column in table '%s' (namespace '%s') must have a 'name'", tableName, nsName))
+        }
+        if (is.null(col$type)) {
+          stop(sprintf("Column '%s' in table '%s' (namespace '%s') must have a 'type'", col$name, tableName, nsName))
+        }
+
+        colNullable <- FALSE
+        if (!is.null(col$nullable)) {
+          colNullable <- isTRUE(col$nullable)
+        } else if (isTRUE(col$optional)) {
+          colNullable <- TRUE
+        } else if (isFALSE(col$required)) {
+          colNullable <- TRUE
+        }
+
+        colReferences <- col$references %||% .yamlColDefaults$references
+
+        row <- list(
+          namespace = nsName,
+          namespacePrefix = nsPrefix,
+          tableName = tableName,
+          tableDescription = tblDescription,
+          columnName = col$name,
+          dataType = col$type,
+          primaryKey = ifelse(isTRUE(col$primary_key), "Yes", .yamlColDefaults$primaryKey),
+          nullable = ifelse(colNullable, "Yes", "No"),
+          isRequired = ifelse(colNullable, "No", "Yes"),
+          optional = ifelse(colNullable, "Yes", "No"),
+          minCellCount = ifelse(isTRUE(col$min_cell_count), "Yes", .yamlColDefaults$minCellCount),
+          emptyIsNa = ifelse(isFALSE(col$empty_is_na), "No", .yamlColDefaults$emptyIsNa),
+          references = colReferences,
+          description = col$description %||% .yamlColDefaults$description
+        )
+        rows[[length(rows) + 1]] <- row
+      }
+    }
+  }
+
+  spec <- dplyr::bind_rows(rows)
+  return(spec)
+}
+
+#' Load results data model from YAML file
+#'
+#' @description
+#' Load a YAML results data model specification file. Returns a list containing
+#' the flattened specification data frame and optional platform-specific configuration.
+#'
+#' Each HADES package should ship its own \code{resultsDataModelSpecification.yaml} in
+#' its \code{inst/settings/} directory. A package's YAML defines only the tables
+#' produced by that package.
+#'
+#' Combining multiple YAML specifications (e.g. from different packages) into a
+#' unified HADES results schema is the responsibility of a higher-level
+#' orchestrator such as Strategus or a future \code{OhdsiResultsManager} package.
+#' This package provides per-spec loading only, to avoid circular dependencies
+#' between packages that share no direct relationship at install time.
+#'
+#' @param filePath Path to a valid YAML file
+#' @return A list with elements:
+#'   \item{specification}{A tibble data frame with columns: namespace, namespacePrefix,
+#'     tableName, tableDescription, columnName, dataType, primaryKey, nullable,
+#'     isRequired, optional, minCellCount, emptyIsNa, references, description}
+#'   \item{platforms}{Platform-specific configuration (postgresql, sql_server, duckdb, sqlite) or NULL}
+#'
+#' @export
+loadResultsDataModelFromYaml <- function(filePath) {
+  checkmate::assertFileExists(filePath)
+  yamlContent <- yaml::read_yaml(filePath)
+  spec <- .yamlSpecToDataFrame(yamlContent)
+  assertSpecificationColumns(colnames(spec))
+
+  platforms <- yamlContent$platforms %||% NULL
+
+  list(
+    specification = spec,
+    platforms = platforms
+  )
+}
+
+
 #' Get specifications from a given file path
-#' @param filePath path to a valid csv file
+#' @param filePath path to a valid csv or yaml file
 #' @return
 #' A tibble data frame object with specifications
 #'
 #' @export
 loadResultsDataModelSpecifications <- function(filePath) {
   checkmate::assertFileExists(filePath)
+  if (grepl("\\.ya?ml$", filePath, ignore.case = TRUE)) {
+    result <- loadResultsDataModelFromYaml(filePath)
+    return(result$specification)
+  }
+  warning(
+    "CSV-based results data model specifications are deprecated. ",
+    "Use the namespaced YAML format instead. ",
+    "See vignette('UploadFunctionality') and the csvToYaml() function to migrate.",
+    call. = FALSE
+  )
   spec <- readr::read_csv(file = filePath, col_types = readr::cols())
   colnames(spec) <- SqlRender::snakeCaseToCamelCase(colnames(spec))
   assertSpecificationColumns(colnames(spec))
   return(spec)
+}
+
+#' Convert a CSV specification to YAML format
+#'
+#' @description
+#' Reads a CSV results data model specification file and writes the equivalent
+#' YAML file. This is a migration helper to transition from the legacy CSV format
+#' to the namespaced YAML format.
+#'
+#' @param csvFilepath    Path to the CSV specification file
+#' @param yamlOutputPath Path to write the YAML output file
+#' @param namespace      Namespace name to use for all tables in the output.
+#'                       Defaults to "default".
+#' @param overwrite      Boolean - overwrite existing output file?
+#'
+#' @return Invisibly returns the YAML content as a string
+#' @export
+csvToYaml <- function(csvFilepath,
+                      yamlOutputPath,
+                      namespace = "default",
+                      overwrite = FALSE) {
+  checkmate::assertFileExists(csvFilepath)
+  checkmate::assertString(namespace, min.chars = 1)
+
+  if (file.exists(yamlOutputPath) && !overwrite) {
+    stop("Output file ", yamlOutputPath, " already exists. Set overwrite = TRUE to continue")
+  }
+
+  spec <- loadResultsDataModelSpecifications(csvFilepath)
+
+  tables <- list()
+  for (tbl in unique(spec$tableName)) {
+    tblSpec <- spec[spec$tableName == tbl, ]
+    columns <- list()
+    for (i in seq_len(nrow(tblSpec))) {
+      col <- list(
+        name = tblSpec$columnName[i],
+        type = tblSpec$dataType[i]
+      )
+
+      pk <- tolower(tblSpec$primaryKey[i])
+      if (pk == "yes") {
+        col$primary_key <- TRUE
+      } else {
+        col$primary_key <- FALSE
+      }
+
+      colNullable <- FALSE
+      if ("optional" %in% colnames(tblSpec)) {
+        opt <- tolower(tblSpec$optional[i])
+        if (opt == "yes") {
+          colNullable <- TRUE
+        }
+      }
+      if ("isRequired" %in% colnames(tblSpec)) {
+        req <- tolower(tblSpec$isRequired[i])
+        if (req == "no") {
+          colNullable <- TRUE
+        }
+      }
+      if (colNullable) {
+        col$nullable <- TRUE
+      } else {
+        col$nullable <- FALSE
+      }
+
+      if ("minCellCount" %in% colnames(tblSpec)) {
+        mcc <- tolower(tblSpec$minCellCount[i])
+        if (mcc == "yes") {
+          col$min_cell_count <- TRUE
+        } else {
+          col$min_cell_count <- FALSE
+        }
+      }
+
+      if ("emptyIsNa" %in% colnames(tblSpec)) {
+        ein <- tolower(tblSpec$emptyIsNa[i])
+        if (ein == "no") {
+          col$empty_is_na <- FALSE
+        } else {
+          col$empty_is_na <- TRUE
+        }
+      }
+
+      if ("description" %in% colnames(tblSpec) && !is.na(tblSpec$description[i])) {
+        col$description <- tblSpec$description[i]
+      }
+
+      columns[[i]] <- col
+    }
+
+    tables[[tbl]] <- list(columns = columns)
+  }
+
+  nsConfig <- list(tables = tables)
+  nsConfig$prefix <- paste0(namespace, "_")
+
+  yamlContent <- list(
+    version = "1.0",
+    namespace = list()
+  )
+  yamlContent$namespace[[namespace]] <- nsConfig
+
+  yamlStr <- yaml::as.yaml(yamlContent, indent.mapping.sequence = TRUE)
+
+  writeLines(yamlStr, yamlOutputPath)
+
+  invisible(yamlStr)
 }
 
 

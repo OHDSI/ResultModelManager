@@ -1,5 +1,5 @@
 test_that("Grant permissions", {
-  tableSpecification <- loadResultsDataModelSpecifications("settings/testSchemaDef.csv")
+  tableSpecification <- loadResultsDataModelSpecifications("settings/testSchemaDef.yaml")
 
   expect_error(
     grantTablePermissions(

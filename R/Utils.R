@@ -58,12 +58,21 @@ grantTablePermissions <- function(connectionDetails = NULL,
     warning("Untested grant function for this database platform")
   }
 
+  hasNamespace <- "namespace" %in% colnames(tableSpecification)
+
   sql <- c()
   for (table in tableSpecification$tableName |> unique()) {
+    tableVar <- table
+    if (hasNamespace) {
+      ns <- tableSpecification$namespace[tableSpecification$tableName == table][1]
+      if (!is.na(ns)) {
+        tableVar <- paste0(ns, "_", table)
+      }
+    }
     sql <- c(
       sql,
       SqlRender::render("GRANT @permissions ON @database_schema.@table_prefix@table TO @user;",
-        table = table,
+        table = tableVar,
         table_prefix = tablePrefix
       )
     )

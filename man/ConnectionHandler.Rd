@@ -3,297 +3,316 @@
 \name{ConnectionHandler}
 \alias{ConnectionHandler}
 \title{ConnectionHandler}
-\value{
-DatabaseConnector Connection instance
-close Connection
-
-boolean TRUE if connection is valid
-close Connection
-
-boolean TRUE if connection is valid
-executeSql
-}
 \description{
 Class for handling DatabaseConnector:connection objects with consistent R6 interfaces for pooled and non-pooled connections.
 Allows a connection to cleanly be opened and closed and stored within class/object variables
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{connectionDetails}}{DatabaseConnector connectionDetails object}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{connectionDetails}}{DatabaseConnector connectionDetails object}
 
-\item{\code{con}}{DatabaseConnector connection object}
+    \item{\code{con}}{DatabaseConnector connection object}
 
-\item{\code{isActive}}{Is connection active or not#'}
+    \item{\code{isActive}}{Is connection active or not#'}
 
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
-}
-\if{html}{\out{</div>}}
+    \item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-ConnectionHandler-new}{\code{ConnectionHandler$new()}}
-\item \href{#method-ConnectionHandler-dbms}{\code{ConnectionHandler$dbms()}}
-\item \href{#method-ConnectionHandler-tbl}{\code{ConnectionHandler$tbl()}}
-\item \href{#method-ConnectionHandler-renderTranslateSql}{\code{ConnectionHandler$renderTranslateSql()}}
-\item \href{#method-ConnectionHandler-initConnection}{\code{ConnectionHandler$initConnection()}}
-\item \href{#method-ConnectionHandler-getConnection}{\code{ConnectionHandler$getConnection()}}
-\item \href{#method-ConnectionHandler-closeConnection}{\code{ConnectionHandler$closeConnection()}}
-\item \href{#method-ConnectionHandler-dbIsValid}{\code{ConnectionHandler$dbIsValid()}}
-\item \href{#method-ConnectionHandler-finalize}{\code{ConnectionHandler$finalize()}}
-\item \href{#method-ConnectionHandler-queryDb}{\code{ConnectionHandler$queryDb()}}
-\item \href{#method-ConnectionHandler-executeSql}{\code{ConnectionHandler$executeSql()}}
-\item \href{#method-ConnectionHandler-queryFunction}{\code{ConnectionHandler$queryFunction()}}
-\item \href{#method-ConnectionHandler-executeFunction}{\code{ConnectionHandler$executeFunction()}}
-\item \href{#method-ConnectionHandler-clone}{\code{ConnectionHandler$clone()}}
-}
+  \itemize{
+    \item \href{#method-ConnectionHandler-initialize}{\code{ConnectionHandler$new()}}
+    \item \href{#method-ConnectionHandler-dbms}{\code{ConnectionHandler$dbms()}}
+    \item \href{#method-ConnectionHandler-tbl}{\code{ConnectionHandler$tbl()}}
+    \item \href{#method-ConnectionHandler-renderTranslateSql}{\code{ConnectionHandler$renderTranslateSql()}}
+    \item \href{#method-ConnectionHandler-initConnection}{\code{ConnectionHandler$initConnection()}}
+    \item \href{#method-ConnectionHandler-getConnection}{\code{ConnectionHandler$getConnection()}}
+    \item \href{#method-ConnectionHandler-closeConnection}{\code{ConnectionHandler$closeConnection()}}
+    \item \href{#method-ConnectionHandler-dbIsValid}{\code{ConnectionHandler$dbIsValid()}}
+    \item \href{#method-ConnectionHandler-finalize}{\code{ConnectionHandler$finalize()}}
+    \item \href{#method-ConnectionHandler-queryDb}{\code{ConnectionHandler$queryDb()}}
+    \item \href{#method-ConnectionHandler-executeSql}{\code{ConnectionHandler$executeSql()}}
+    \item \href{#method-ConnectionHandler-queryFunction}{\code{ConnectionHandler$queryFunction()}}
+    \item \href{#method-ConnectionHandler-executeFunction}{\code{ConnectionHandler$executeFunction()}}
+    \item \href{#method-ConnectionHandler-clone}{\code{ConnectionHandler$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-ConnectionHandler-new"></a>}}
-\if{latex}{\out{\hypertarget{method-ConnectionHandler-new}{}}}
-\subsection{Method \code{new()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$new(
+\if{html}{\out{<a id="method-ConnectionHandler-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-ConnectionHandler-initialize}{}}}
+\subsection{\code{ConnectionHandler$new()}}{
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$new(
   connectionDetails,
   loadConnection = TRUE,
   snakeCaseToCamelCase = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{connectionDetails}}{DatabaseConnector::connectionDetails class}
-
-\item{\code{loadConnection}}{Boolean option to load connection right away}
-
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{connectionDetails}}{DatabaseConnector::connectionDetails class}
+      \item{\code{loadConnection}}{Boolean option to load connection right away}
+      \item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)
 get dbms}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-dbms"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-dbms}{}}}
-\subsection{Method \code{dbms()}}{
-Get the dbms type of the connection
+\subsection{\code{ConnectionHandler$dbms()}}{
+  Get the dbms type of the connection
 get table
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$dbms()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$dbms()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-tbl"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-tbl}{}}}
-\subsection{Method \code{tbl()}}{
-get a dplyr table object (i.e. lazy loaded)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$tbl(table, databaseSchema = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{table}}{table name}
-
-\item{\code{databaseSchema}}{databaseSchema to which table belongs
+\subsection{\code{ConnectionHandler$tbl()}}{
+  get a dplyr table object (i.e. lazy loaded)
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$tbl(table, databaseSchema = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{table}}{table name}
+      \item{\code{databaseSchema}}{databaseSchema to which table belongs
 Render Translate Sql.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-renderTranslateSql"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-renderTranslateSql}{}}}
-\subsection{Method \code{renderTranslateSql()}}{
-Masked call to SqlRender
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$renderTranslateSql(sql, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{sql}}{Sql query string}
-
-\item{\code{...}}{Elipsis
+\subsection{\code{ConnectionHandler$renderTranslateSql()}}{
+  Masked call to SqlRender
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$renderTranslateSql(sql, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{sql}}{Sql query string}
+      \item{\code{...}}{Elipsis
 initConnection}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-initConnection"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-initConnection}{}}}
-\subsection{Method \code{initConnection()}}{
-Load connection
+\subsection{\code{ConnectionHandler$initConnection()}}{
+  Load connection
 Get Connection
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$initConnection()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$initConnection()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-getConnection"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-getConnection}{}}}
-\subsection{Method \code{getConnection()}}{
-Returns connection for use with standard DatabaseConnector calls.
+\subsection{\code{ConnectionHandler$getConnection()}}{
+  Returns connection for use with standard DatabaseConnector calls.
 Connects automatically if it isn't yet loaded
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$getConnection()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$getConnection()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    DatabaseConnector Connection instance
+close Connection
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-closeConnection"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-closeConnection}{}}}
-\subsection{Method \code{closeConnection()}}{
-Closes connection (if active)
+\subsection{\code{ConnectionHandler$closeConnection()}}{
+  Closes connection (if active)
 db Is Valid
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$closeConnection()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$closeConnection()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-dbIsValid"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-dbIsValid}{}}}
-\subsection{Method \code{dbIsValid()}}{
-Masks call to DBI::dbIsValid. Returns False if connection is NULL
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$dbIsValid()}\if{html}{\out{</div>}}
+\subsection{\code{ConnectionHandler$dbIsValid()}}{
+  Masks call to DBI::dbIsValid. Returns False if connection is NULL
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$dbIsValid()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    boolean TRUE if connection is valid
+close Connection
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-finalize"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-finalize}{}}}
-\subsection{Method \code{finalize()}}{
-Closes connection (if active)
+\subsection{\code{ConnectionHandler$finalize()}}{
+  Closes connection (if active)
 queryDb
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$finalize()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$finalize()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-queryDb"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-queryDb}{}}}
-\subsection{Method \code{queryDb()}}{
-query database and return the resulting data.frame
+\subsection{\code{ConnectionHandler$queryDb()}}{
+  query database and return the resulting data.frame
 
 If environment variable LIMIT_ROW_COUNT is set Returned rows are limited to this value (no default)
 Limit row count is intended for web applications that may cause a denial of service if they consume too many
 resources.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$queryDb(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$queryDb(
   sql,
   snakeCaseToCamelCase = self$snakeCaseToCamelCase,
   overrideRowLimit = FALSE,
   ...
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{sql}}{sql query string}
-
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
-
-\item{\code{overrideRowLimit}}{(Optional) Boolean. In some cases, where row limit is enforced on the system
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{sql}}{sql query string}
+      \item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+      \item{\code{overrideRowLimit}}{(Optional) Boolean. In some cases, where row limit is enforced on the system
 You may wish to ignore it.}
+      \item{\code{...}}{Additional query parameters}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    boolean TRUE if connection is valid
+executeSql
+  }
+}
 
-\item{\code{...}}{Additional query parameters}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-executeSql"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-executeSql}{}}}
-\subsection{Method \code{executeSql()}}{
-execute set of database queries
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$executeSql(sql, ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{sql}}{sql query string}
-
-\item{\code{...}}{Additional query parameters
+\subsection{\code{ConnectionHandler$executeSql()}}{
+  execute set of database queries
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$executeSql(sql, ...)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{sql}}{sql query string}
+      \item{\code{...}}{Additional query parameters
 query Function}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-queryFunction"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-queryFunction}{}}}
-\subsection{Method \code{queryFunction()}}{
-queryFunction that can be overriden with subclasses (e.g. use different base function or intercept query)
+\subsection{\code{ConnectionHandler$queryFunction()}}{
+  queryFunction that can be overriden with subclasses (e.g. use different base function or intercept query)
 Does not translate or render sql.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$queryFunction(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$queryFunction(
   sql,
   snakeCaseToCamelCase = self$snakeCaseToCamelCase,
   connection = self$getConnection()
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{sql}}{sql query string}
-
-\item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
-
-\item{\code{connection}}{(Optional) connection object
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{sql}}{sql query string}
+      \item{\code{snakeCaseToCamelCase}}{(Optional) Boolean. return the results columns in camel case (default)}
+      \item{\code{connection}}{(Optional) connection object
 execute Function}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-executeFunction"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-executeFunction}{}}}
-\subsection{Method \code{executeFunction()}}{
-exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
+\subsection{\code{ConnectionHandler$executeFunction()}}{
+  exec query Function that can be overriden with subclasses (e.g. use different base function or intercept query)
 Does not translate or render sql.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$executeFunction(sql, connection = self$getConnection())}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$executeFunction(sql, connection = self$getConnection())}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{sql}}{sql query string}
+      \item{\code{connection}}{connection object}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{sql}}{sql query string}
-
-\item{\code{connection}}{connection object}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ConnectionHandler-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-ConnectionHandler-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{ConnectionHandler$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{ConnectionHandler$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ConnectionHandler$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }
