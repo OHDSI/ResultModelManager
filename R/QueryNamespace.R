@@ -290,7 +290,10 @@ QueryNamespace <- R6::R6Class(
 
       params$sql <- sql
       params$warnOnMissingParameters <- FALSE
-      do.call(SqlRender::render, params)
+      utils::capture.output({
+        result <- do.call(SqlRender::render, params)
+      })
+      return(result)
     },
 
     #' query Sql
