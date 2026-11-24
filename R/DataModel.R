@@ -185,6 +185,15 @@ checkAndFixDuplicateRows <-
         tolower(.data$primaryKey) == "yes") |>
       dplyr::select("columnName") |>
       dplyr::pull()
+
+    # A table with no primary key in its specification has no defined row
+    # identity, so duplicates cannot be determined. Subsetting by an empty set of
+    # columns gives a zero column data frame, for which duplicated() flags every
+    # row but the first - which would silently discard the data.
+    if (length(primaryKeys) == 0) {
+      return(table)
+    }
+
     duplicatedRows <- duplicated(table[, primaryKeys])
     if (any(duplicatedRows)) {
       warning(

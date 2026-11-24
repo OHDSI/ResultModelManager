@@ -4,6 +4,8 @@ Bug Fixes:
 
 1. Resolved issue with migration status check failing on packages using a table prefix (e.g. cohort generator)
 
+2. `uploadResults()` no longer discards all but the first row of a table whose specification defines no primary key. With no key columns, `duplicated()` on a zero column data frame flagged every row after the first as a duplicate, silently reducing the table to a single row (OHDSI/CohortDiagnostics#1203)
+
 
 # ResultModelManager 0.6.1
 

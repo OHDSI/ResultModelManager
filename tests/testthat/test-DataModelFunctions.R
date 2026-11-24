@@ -89,6 +89,38 @@ test_that("format chunk handles int/numeric type conversions ok", {
 })
 
 
+test_that("Duplicates are not removed from tables without a primary key", {
+  # A specification with no primary key gives no way to identify duplicate rows,
+  # so every row must be preserved (see #1203).
+  noKeySpec <- data.frame(
+    tableName = "foo",
+    columnName = c("databaseId", "charField"),
+    dataType = c("bigint", "varchar"),
+    isRequired = "Yes",
+    primaryKey = "No",
+    optional = "No"
+  )
+  data <- data.frame(databaseId = c(1, 1, 1), charField = c("a", "a", "b"))
+
+  expect_silent(result <- checkAndFixDuplicateRows(data, "foo", "foo.zip", noKeySpec))
+  expect_identical(result, data)
+})
+
+test_that("Duplicate rows are removed when a primary key is specified", {
+  keySpec <- data.frame(
+    tableName = "foo",
+    columnName = c("databaseId", "charField"),
+    dataType = c("bigint", "varchar"),
+    isRequired = "Yes",
+    primaryKey = "Yes",
+    optional = "No"
+  )
+  data <- data.frame(databaseId = c(1, 1, 2), charField = c("a", "a", "b"))
+
+  expect_warning(result <- checkAndFixDuplicateRows(data, "foo", "foo.zip", keySpec))
+  expect_equal(nrow(result), 2)
+})
+
 test_that("Delete primary key rows function", {
   skip_if_results_db_not_available()
   sql <- "
